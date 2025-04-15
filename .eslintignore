@@ -1,0 +1,4 @@
+./eslintrc.js
+dist/
+static/
+shime-uni.d.ts

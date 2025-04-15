@@ -1,0 +1,8 @@
+package.json
+/dist
+.eslintignore
+.eslintrc
+*.png
+.editorconfig
+.gitignore
+.prettierignore

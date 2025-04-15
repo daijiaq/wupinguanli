@@ -1,0 +1,157 @@
+{
+  "easycom": {
+    "custom": {
+      "^u-(.*)": "uview-plus/components/u-$1/u-$1.vue"
+    }
+  },
+  "pages": [
+    {
+      "path": "pages/login/login"
+    },
+    {
+      "path": "pages/login/loginInput"
+    },
+    {
+      "path": "pages/home/home"
+    },
+    {
+      "path": "pages/home/spaces/spaces"
+    },
+    {
+      "path": "pages/details/details"
+    },
+    {
+      "path": "pages/new/new"
+    },
+    {
+      "path": "pages/square/square"
+    },
+    {
+      "path": "pages/new/dependence/dependence"
+    },
+    {
+      "path": "pages/new/tag/tag"
+    },
+    {
+      "path": "pages/edit/edit"
+    },
+    {
+      "path": "pages/edit/multiple/multiple"
+    },
+    {
+      "path": "pages/user/user"
+    },
+    {
+      "path": "pages/user/update/update"
+    },
+    {
+      "path": "pages/user/feedback/feedback"
+    },
+    {
+      "path": "pages/user/deleted/deleted"
+      // "style": {
+      //   "enablePullDownRefresh": true
+      // }
+    },
+    {
+      "path": "pages/user/settings/index"
+    },
+    {
+      "path": "pages/user/settings/account"
+    },
+    {
+      "path": "pages/user/settings/passwordSet"
+    },
+    {
+      "path": "pages/user/settings/switchAccount"
+    },
+    {
+      "path": "pages/user/settings/showQrCode"
+    },
+    {
+      "path": "pages/user/history/history",
+      "style": {
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/message/message"
+    },
+    {
+      "path": "pages/message/chatbox/systemMessage"
+    },
+    {
+      "path": "pages/message/chatbox/friendApplications"
+    },
+    {
+      "path": "pages/message/chatbox/managingApplications"
+    },
+    {
+      "path": "pages/message/chatbox/itemShare"
+    },
+    {
+      "path": "pages/user/friends/friends"
+    },
+    {
+      "path": "pages/user/friends/new/new"
+    },
+    {
+      "path": "pages/user/friends/groups/groups"
+    },
+    {
+      "path": "pages/user/friends/detail/detail"
+    },
+    {
+      "path": "pages/user/friends/history/history"
+    },
+    {
+      "path": "pages/user/friends/move/move"
+    },
+    {
+      "path": "pages/user/friends/groups/friends/friends"
+    },
+    {
+      "path": "pages/user/friends/share/share"
+    },
+    {
+      "path": "pages/search/search",
+      "style": {
+        "enablePullDownRefresh": true
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationStyle": "custom"
+  },
+  "tabBar": {
+    "backgroundColor": "#F2F2F2",
+    "color": "#000",
+    "selectedColor": "#3988FF",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "首页",
+        "iconPath": "static/icons/tabBar/home.png",
+        "selectedIconPath": "static/icons/tabBar/home-selected.png"
+      },
+      // {
+      //   "pagePath": "pages/square/square",
+      //   "text": "广场",
+      //   "iconPath": "static/icons/tabBar/ground.png",
+      //   "selectedIconPath": "static/icons/tabBar/ground-selected.png"
+      // },
+      {
+        "pagePath": "pages/message/message",
+        "text": "消息",
+        "iconPath": "static/icons/tabBar/message.png",
+        "selectedIconPath": "static/icons/tabBar/message-selected.png"
+      },
+      {
+        "pagePath": "pages/user/user",
+        "text": "我的",
+        "iconPath": "static/icons/tabBar/user.png",
+        "selectedIconPath": "static/icons/tabBar/user-selected.png"
+      }
+    ]
+  }
+}

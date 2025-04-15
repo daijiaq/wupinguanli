@@ -1,0 +1,174 @@
+import service from '..'
+import type { PagingParams, Pages, T1 } from '@/utils/typings'
+import type { Group, Friend, Log, IFriendRelationship } from '@/types/friend'
+
+// 获取好友分组
+export function getAllGroupsAPI({
+  offset,
+  limit = 10
+}: PagingParams): Promise<Pages<{ id: number; name: string }>> {
+  return service<Pages<{ id: number; name: string }>>({
+    url: `/groups?offset=${offset}&limit=${limit}`,
+    method: 'GET'
+  })
+}
+
+// 添加分组
+export function createGroupAPI(name: string): Promise<T1> {
+  return service({
+    url: `/groups`,
+    method: 'POST',
+    data: name
+  })
+}
+
+// 删除分组
+export function deleteGroupAPI(id: number): Promise<null> {
+  return service({
+    url: `/groups/${id}`,
+    method: 'DELETE'
+  })
+}
+
+// 修改分组
+export function updateGroupAPI(id: number, name: string): Promise<T1> {
+  return service({
+    url: `/groups/${id}?name=${name}`,
+    method: 'PUT'
+  })
+}
+
+// 添加好友
+export function addFriendAPI(userId: number, groupId: number): Promise<T1> {
+  return service({
+    /**
+     * Bug修复 加上notes=
+     */
+    url: `/friends/${userId}/${groupId}?notes=`,
+    method: 'POST'
+  })
+}
+
+// 获取所有好友
+export function getAllFriendsAPI(): Promise<Group[]> {
+  return service({
+    url: `/friends`,
+    method: 'GET'
+  })
+}
+
+//旧接口 搜索用户
+// export function searchUserAPI(id: number): Promise<Friend> {
+//   return service({
+//     url: `/friends/search/${id}`,
+//     method: 'GET'
+//   })
+// }
+
+// 新接口搜索用户
+export function searchUserAPI(id: number): Promise<Friend> {
+  return service({
+    url: `/friends/search/buddy/${id}`,
+    method: 'GET'
+  })
+}
+
+// 移动好友分组
+export function moveFriendAPI(groupId: number, ids: number[]): Promise<null> {
+  return service({
+    url: `/friends/move/${groupId}`,
+    method: 'PUT',
+    data: ids
+  })
+}
+
+// 修改好友备注
+export function updateFriendNoteAPI(id: number, notes: string): Promise<null> {
+  return service({
+    url: `/friends/${id}?notes=${notes}`,
+    method: 'PUT'
+  })
+}
+
+// 批量删除好友
+export function batchDeleteFriendsAPI(ids: number[]): Promise<null> {
+  return service({
+    url: '/friends',
+    method: 'DELETE',
+    data: ids
+  })
+}
+
+// 删除单个好友
+export function deleteFriendAPI(id: number): Promise<null> {
+  return service({
+    url: `/friends/${id}`,
+    method: 'DELETE'
+  })
+}
+/**
+ * 获取好友日志
+ * @param id 好友id
+ * @param content 搜索内容
+ */
+export function getFriendLogsAPI(id: number, content: string): Promise<Log[]> {
+  return service({
+    url: `/friends/logs/${id}?content=${content}`,
+    method: 'GET'
+  })
+}
+
+/**
+ * 获取好友信息
+ * @param userId 用户id
+ */
+export function getUserInfoAPI(userId: number): Promise<Friend> {
+  return service({
+    method: 'GET',
+    url: `/users/${userId}`
+  })
+}
+
+/**
+ * 发送好友申请
+ * @param userId 用户id
+ */
+export function sendApplicationAPI(userId: number): Promise<Friend[]> {
+  return service({
+    method: 'POST',
+    url: `/notices`,
+    data: {
+      userId,
+      type: 2,
+      content: null,
+      itemId: 0
+    }
+  })
+}
+
+/**
+ * 分享物品
+ */
+export function shareItemAPI(ItemId: number, userId: number): Promise<Friend[]> {
+  return service({
+    method: 'POST',
+    url: `/notices`,
+    data: {
+      userId,
+      type: 3,
+      content: null,
+      itemId: ItemId
+    }
+  })
+}
+
+/**
+ * 查询是否为好友
+ * @param userId 用户id
+ */
+export function determineWhetherFriend(userId: number): Promise<IFriendRelationship> {
+  return service({
+    method: 'GET',
+    url: `/friends/${userId}`
+  })
+}

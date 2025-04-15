@@ -1,0 +1,13 @@
+{
+	"files.associations": {
+		"pages.json": "jsonc",
+		"manifest.json": "jsonc"
+	},
+	"editor.codeActionsOnSave": {
+		"source.fixAll": "never",
+		"source.fixAll.eslint": "explicit"
+	},
+	"editor.formatOnSave": true,
+	"i18n-ally.localesPaths": [],
+	"vue.features.codeActions.enable": false
+}

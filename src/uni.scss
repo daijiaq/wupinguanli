@@ -1,0 +1,38 @@
+@import 'uview-plus/theme.scss';
+
+/* 颜色变量 */
+
+/* 文字基本颜色 */
+$uni-text-color: #353535; // 基本色
+$uni-text-color-inverse: #fff; // 反色
+$uni-text-color-grey: #999; // 辅助灰色，如加载更多的提示信息
+$uni-text-color-placeholder: #808080;
+$uni-text-color-disable: #c0c0c0;
+
+/* 背景颜色 */
+$uni-bg-color-grey: #f8f8f8;
+$uni-bg-color-hover: #f1f1f1; // 点击状态颜色
+$uni-bg-color-mask: rgba(0, 0, 0, 0.6); // 遮罩颜色
+
+/* 主题颜色 */
+$uni-theme-color: #3988ff;
+
+/* 渐变背景颜色 */
+$uni-bg-color-gradient: linear-gradient(
+  167.84deg,
+  rgba(155, 195, 255, 0.35) 0%,
+  rgba(255, 255, 255, 0.44) 38.02%,
+  rgba(255, 255, 255, 0.31) 41.67%,
+  rgba(161, 159, 241, 0.12) 72.92%,
+  rgba(57, 136, 255, 0.08) 100%
+),
+#fff;
+
+/* 分界颜色 */
+$uni-divider-color: #ebefff;
+
+/* 图标背景颜色 */
+$uni-icon-bg-color: rgba($color: #d8d7db, $alpha: 0.37);
+
+/* 阴影颜色 */
+$uni-box-shadow: 0 5px 5px #e3ebfe;
