@@ -1,5 +1,6 @@
 import service from '..'
 import type { Settings, AccountsInfo } from '@/types/settings'
+import { LoginResponse } from '@/types/auth'
 
 // 获取设置
 export function getAllSettings(): Promise<Settings> {
@@ -68,5 +69,16 @@ export function getAccounts(userId: number[]): Promise<AccountsInfo[]> {
     url: '/users/account',
     method: 'POST',
     data: userId
+  })
+}
+
+export function changeToken(
+  loginId: number,
+  password: string,
+  identify = 0
+): Promise<LoginResponse> {
+  return service({
+    url: `/users/login/userId?loginId=${loginId}&password=${password}&identify=0`,
+    method: 'PUT'
   })
 }

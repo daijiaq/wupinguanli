@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia'
+import { defineStore, storeToRefs } from 'pinia'
 import { ref } from 'vue'
 import {
   getAllSettings,
@@ -8,6 +8,8 @@ import {
   getAccounts
 } from '@/network/apis/settings'
 import type { Settings, AccountsInfo } from '@/types/settings'
+import { useUserStore } from '@/stores/user'
+const user = useUserStore()
 
 export const useSettingsStore = defineStore('settings', () => {
   // 基础设置
@@ -77,6 +79,8 @@ export const useSettingsStore = defineStore('settings', () => {
   const initSwitchAccounts = async (userId: number[]) => {
     const data = await getAccounts(userId)
     accountsInfo.value = data
+    console.log(accountsInfo.value)
+    console.log(user.passwordMap.size)
   }
 
   return {

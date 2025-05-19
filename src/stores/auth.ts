@@ -6,5 +6,8 @@ export const useAuthStore = defineStore('auth', () => {
   // 是否已登录
   const logined = ref(false)
 
-  return { toLogin, logined }
+  // password
+  const password = ref('')
+
+  return { toLogin, logined, password }
 })

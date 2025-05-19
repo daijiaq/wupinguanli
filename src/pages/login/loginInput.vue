@@ -55,8 +55,11 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
+import { storeToRefs } from 'pinia'
 import { loginByPassword } from '@/network/apis/auth'
 import { useAuthStore } from '@/stores/auth'
+const AuthStore = useAuthStore()
+const { password } = storeToRefs(AuthStore)
 
 const auth = useAuthStore()
 
@@ -127,11 +130,49 @@ const userIdArr = ref<number[]>([])
 userIdArr.value = JSON.parse(uni.getStorageSync('userId') || '[]')
 
 // 提交登录表单
+// const loginSubmit = () => {
+//   loginFormRef.value.validate().then(async () => {
+//     try {
+//       isLoading.value = true
+//       const { token, id, userId } = await loginByPassword(loginForm)
+//       // console.log(userId)
+//       uni.showToast({
+//         title: '登录成功',
+//         icon: 'success'
+//       })
+//       isLoading.value = false
+//       uni.setStorageSync('token', token)
+//       uni.setStorageSync('uuid', id)
+//       // 登录时添加 userId 到数组中
+//       userIdArr.value.push(userId)
+//       // userId 数组去重
+//       userIdArr.value = Array.from(new Set(userIdArr.value))
+//       uni.setStorageSync('userId', JSON.stringify(userIdArr.value))
+
+//       auth.toLogin = false
+//       auth.logined = true
+
+//       setTimeout(() => {
+//         uni.switchTab({
+//           url: '/pages/home/home'
+//         })
+//       }, 1500)
+//     } catch {
+//       auth.toLogin = true
+//       auth.logined = false
+//       isLoading.value = false
+//     }
+//   })
+// }
 const loginSubmit = () => {
   loginFormRef.value.validate().then(async () => {
     try {
       isLoading.value = true
       const { token, id, userId } = await loginByPassword(loginForm)
+      password.value = loginForm.password
+      uni.setStorageSync('password', password.value)
+      // console.log(password.value)
+      // console.log(userId)
       uni.showToast({
         title: '登录成功',
         icon: 'success'
@@ -140,7 +181,7 @@ const loginSubmit = () => {
       uni.setStorageSync('token', token)
       uni.setStorageSync('uuid', id)
       // 登录时添加 userId 到数组中
-      userIdArr.value.push(userId)
+      userIdArr.value.push(id)
       // userId 数组去重
       userIdArr.value = Array.from(new Set(userIdArr.value))
       uni.setStorageSync('userId', JSON.stringify(userIdArr.value))

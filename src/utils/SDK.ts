@@ -49,7 +49,8 @@ export const uploadSDK = (address: string, res: any, fileList1: Ref<any>) => {
       // 配置cos
       cos.postObject(
         {
-          Bucket: 'smart-management-1310045286',
+          // Bucket: 'smart-management-1310045286',
+          Bucket: 'szlab-1327149304',
           Region: 'ap-guangzhou',
           Key: `${address}/${year}/${month}/${day}/${currentTimestamp}.${urlPart}`,
           FilePath: file.url
@@ -61,7 +62,8 @@ export const uploadSDK = (address: string, res: any, fileList1: Ref<any>) => {
           } else {
             console.log('上传成功')
             // 当前地址
-            const key = `https://szpic.lxtlovely.top/${address}/${year}/${month}/${day}/${currentTimestamp}.${urlPart}`
+            // const key = `https://szpic.lxtlovely.top/${address}/${year}/${month}/${day}/${currentTimestamp}.${urlPart}`
+            const key = `https://www.szlab.xyz/${address}/${year}/${month}/${day}/${currentTimestamp}.${urlPart}`
             // 图片地址数组
             photeUrl.value.push(key)
             resolve() // 解决Promise以确保异步操作完成
@@ -117,7 +119,8 @@ export const AvatarSDk = async (address: string, res: any, avatarPath: string) =
     // 配置cos
     cos.postObject(
       {
-        Bucket: 'smart-management-1310045286',
+        // Bucket: 'smart-management-1310045286',
+        Bucket: 'szlab-1327149304',
         Region: 'ap-guangzhou',
         Key: `${address}/${year}/${month}/${day}/${currentTimestamp}.${urlPart}`,
         FilePath: avatarPath
@@ -129,7 +132,8 @@ export const AvatarSDk = async (address: string, res: any, avatarPath: string) =
         } else {
           console.log('上传成功')
           // 当前地址
-          const key = `https://szpic.lxtlovely.top/${address}/${year}/${month}/${day}/${currentTimestamp}.${urlPart}`
+          // const key = `https://szpic.lxtlovely.top/${address}/${year}/${month}/${day}/${currentTimestamp}.${urlPart}`
+          const key = `https://www.szlab.xyz/${address}/${year}/${month}/${day}/${currentTimestamp}.${urlPart}`
           // 图片地址数组
           avatarUrl.value = key
           resolve(avatarUrl.value)
