@@ -1,6 +1,9 @@
 <template>
   <view class="login">
-    <image src="https://www.szlab.xyz/item/image/2025/03/08/aaebdddacZbZknfhm4fomf.png" class="login__bg"></image>
+    <image
+      src="https://www.szlab.xyz/item/image/2025/03/08/aaebdddacZbZknfhm4fomf.png"
+      class="login__bg"
+    ></image>
     <view class="login__welcome">
       <view class="login__welcome__text-content">
         <view class="login__welcome__text-content__title1">理物</view>

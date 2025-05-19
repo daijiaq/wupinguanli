@@ -138,7 +138,17 @@ const confirmNewPassword = () => {
         title: '修改中'
       })
       // 验证旧密码
-      await validateUserPassword(passwordForm.oldPassword)
+      try {
+        await validateUserPassword(passwordForm.oldPassword)
+      } catch (error) {
+        uni.hideLoading()
+        return uni.showToast({
+          title: '原密码错误',
+          icon: 'error',
+          duration: 2000
+        })
+      }
+      // await validateUserPassword(passwordForm.oldPassword)
 
       // 验证两次新密码输入是否一致
       if (passwordForm.newPassword !== passwordForm.reEnterNewPassword) {
@@ -150,6 +160,14 @@ const confirmNewPassword = () => {
       }
       // 修改密码
       await updateUserPassword(passwordForm.oldPassword, passwordForm.newPassword)
+      // 修改对应 password 新加
+      uni.setStorageSync('password', passwordForm.newPassword)
+      const data = uni.getStorageSync('passwordId')
+      if (data) user.passwordMap = new Map(JSON.parse(data))
+      const userId = uni.getStorageSync('uuid')
+      user.passwordMap.set(userId, passwordForm.newPassword)
+      // console.log(user.passwordMap)
+      uni.setStorageSync('passwordId', JSON.stringify([...user.passwordMap]))
       uni.showToast({
         title: '修改成功',
         icon: 'success'
