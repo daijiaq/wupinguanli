@@ -10,7 +10,7 @@
     <view class="switch-account">
       <view
         v-for="item in accountsInfo"
-        :key="item.id"
+        :key="item.userId"
         class="switch-account__item"
         @click="switchAccount(item)"
       >
@@ -73,6 +73,7 @@ import { useSettingsStore } from '@/stores/settings'
 import { useUserStore } from '@/stores/user'
 import { storeToRefs } from 'pinia'
 import type { AccountsInfo } from '@/types/settings'
+import { changeToken } from '@/network/apis/settings'
 
 const user = useUserStore()
 const { userInfo } = storeToRefs(user)
@@ -97,7 +98,16 @@ const isSetting = ref(false)
 // })
 
 // 点击切换账号
-const switchAccount = (item: AccountsInfo) => {
+const switchAccount = async (item: AccountsInfo) => {
+  console.log(item)
+  // const data = await changeToken(item.id, user.passwordMap.get(item.id))
+  // const data = uni.getStorageSync('passwordId')
+  const data = uni.getStorageSync('passwordId')
+  if (data) user.passwordMap = new Map(JSON.parse(data))
+  console.log(user.passwordMap)
+  console.log(item.userId, user.passwordMap.get(item.userId))
+  const dataToken = await changeToken(item.userId, user.passwordMap.get(item.userId))
+  console.log(dataToken)
   // 非管理状态下，点击切换账号
   if (!isSetting.value) {
     uni.showModal({
@@ -106,8 +116,9 @@ const switchAccount = (item: AccountsInfo) => {
       success: async (res) => {
         if (res.confirm) {
           // 改变存储中的 token 和 uuid
-          uni.setStorageSync('uuid', item.id)
-          uni.setStorageSync('token', item.token)
+          // uni.setStorageSync('uuid', item.id)
+          uni.setStorageSync('uuid', dataToken.id)
+          uni.setStorageSync('token', dataToken.token)
           // 重新获取当前用户信息
           await fetchUserInfo()
         }
@@ -115,6 +126,7 @@ const switchAccount = (item: AccountsInfo) => {
     })
   }
 }
+// switchAccount(11)
 
 // 添加账号
 const addNewAccount = () => {
@@ -135,6 +147,13 @@ const logOut = (userId: number) => {
     content: '确定删除此账号吗？',
     success: (res) => {
       if (res.confirm) {
+        console.log(userId)
+        // 删除对应 password 新加
+        const data = uni.getStorageSync('passwordId')
+        if (data) user.passwordMap = new Map(JSON.parse(data))
+        user.passwordMap.delete(userId)
+        console.log(user.passwordMap)
+        uni.setStorageSync('passwordId', JSON.stringify([...user.passwordMap]))
         // 获取本地 userId 数组
         const userIdArr = JSON.parse(uni.getStorageSync('userId'))
         // 删除当前 userId
@@ -151,11 +170,15 @@ const logOut = (userId: number) => {
 // 获取已登录过的账号列表
 const getAccounts = () => {
   const userId = JSON.parse(uni.getStorageSync('userId'))
+  console.log(userId)
   initSwitchAccounts(userId)
 }
 
-onShow(() => {
-  getAccounts()
+// onShow(() => {
+//   getAccounts()
+// })
+onShow(async () => {
+  await getAccounts() // 确保数据加载完成
 })
 </script>
 
