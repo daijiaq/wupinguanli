@@ -21,7 +21,7 @@ export interface AccountsInfo {
   /**
    * userId，用于请求
    */
-  userId?: number
+  userId: number
   /**
    * 用户名
    */

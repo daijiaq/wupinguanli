@@ -16,7 +16,7 @@
       >
         <!-- 遮罩层 -->
         <view
-          v-if="userInfo.id === item.userId && isSetting"
+          v-if="userInfo.userId === item.userId && isSetting"
           class="switch-account__item__mask"
         ></view>
         <view class="switch-account__item__left">
@@ -30,13 +30,13 @@
         </view>
         <!-- 当前账号 -->
         <u-icon
-          v-if="userInfo.id === item.userId"
+          v-if="userInfo.userId === item.userId"
           name="checkmark-circle-fill"
           color="#3988ff"
         ></u-icon>
         <!-- 退出登录按钮 -->
         <image
-          v-if="userInfo.id !== item.userId && isSetting"
+          v-if="userInfo.userId !== item.userId && isSetting"
           src="https://www.szlab.xyz/item/image/2025/03/08/cZbZbcceacebaknfHtsomf.png"
           style="width: 40rpx; height: 40rpx"
           @click="logOut(item.userId)"
