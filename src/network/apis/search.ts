@@ -19,7 +19,8 @@ export function getAllItems(
       name: '',
       lowPrice: -1,
       labelId: [],
-      deleted
+      deleted,
+      hide: 0
     }
   })
 }
@@ -49,7 +50,8 @@ export function searchByScreen(
       dateType,
       lowPrice,
       labelId,
-      deleted
+      deleted,
+      hide: 0
     }
   })
 }
@@ -71,7 +73,8 @@ export function searchByInput(
       dateType,
       lowPrice,
       labelId,
-      deleted
+      deleted,
+      hide: 0
     }
   })
 }

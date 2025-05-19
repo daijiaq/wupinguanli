@@ -11,6 +11,7 @@
               height="120rpx"
               radius="50%"
             ></u-image>
+            <u-badge isDot type="warning"></u-badge>
           </view>
           <view class="message-list__item__info">
             <view class="message-list__item__info__username">系统通知</view>
@@ -27,6 +28,7 @@
               height="120rpx"
               radius="50%"
             ></u-image>
+            <u-badge isDot type="warning"></u-badge>
           </view>
           <view class="message-list__item__info">
             <view class="message-list__item__info__username">好友申请</view>
@@ -56,6 +58,7 @@
               height="120rpx"
               radius="50%"
             ></u-image>
+            <u-badge isDot type="warning"></u-badge>
           </view>
           <view class="message-list__item__info">
             <view class="message-list__item__info__username">物品分享</view>
@@ -71,68 +74,93 @@
 import { ref, computed } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { useMessageStore } from '@/stores/message'
-import type { MessageItem } from '@/types/message'
-
+// import type { MessageItem } from '@/types/message'
+import type { FriendMsgDetail, ItemMessageDetail } from '@/types/message'
+import { getFirstMsg } from '@/network/apis/message'
 const userStore = useMessageStore()
-const { fetchSystemMessage, fetchNewMessageList, fetchItemShareList } = userStore
-
+const { fetchSystemMessage, fetchNewMessageList, fetchItemShareList, fetchAllDots } = userStore
+const friendApplicationMsg = ref('')
+const itemShareMsg = ref('')
 onShow(async () => {
   // 重置页码
   userStore.itemShareList.currentPage = 1
   userStore.currentMessageList.currentPage = 1
+  const result = await getFirstMsg()
+  const validItems = Array.from(result || []).filter(Boolean)
+  // 每种类型第一条数据
+  console.log(result)
+  for (let i of validItems) {
+    console.log(i)
+    if (i.type === 0) {
+      userStore.systemMessageList.unshift({
+        noticeId: i.id,
+        content: i.content,
+        type: i.type,
+        publishTime: '',
+        title: ''
+      })
+    } else if (i.type === 2) {
+      friendApplicationMsg.value = i.content
+    } else if (i.type === 3) {
+      itemShareMsg.value = i.content
+    }
+  }
+  console.log(userStore.systemMessageList)
+  // 获取未读通知显示红点
+  await fetchAllDots()
   // 获取系统通知、好友申请、物品分享
-  fetchSystemMessage(0, 1)
-  fetchNewMessageList(2, 1)
-  fetchItemShareList(3, 1)
+  // fetchSystemMessage(0, 1)
+  // fetchNewMessageList(2, 1)
+  // fetchItemShareList(3, 1)
 })
 
 // 好友申请栏展示信息
-const friendApplicationMsg = computed(() => {
-  if (userStore.currentMessageList.messageList.length !== 0) {
-    if (userStore.currentMessageList.messageList[0].label === 0) {
-      // 自己发出去的好友申请
-      if (userStore.currentMessageList.messageList[0].choice === 0) {
-        // 未选
-        return `等待${userStore.currentMessageList.messageList[0].friend.name}验证好友申请`
-      } else if (userStore.currentMessageList.messageList[0].choice === 1) {
-        // 同意
-        return `${userStore.currentMessageList.messageList[0].friend.name}已通过您的好友申请`
-      } else {
-        // 特殊情况处理
-        return '等待验证'
-      }
-    } else {
-      // 别人发送给自己的好友申请
-      if (userStore.currentMessageList.messageList[0].choice === 0) {
-        // 未选
-        return `${userStore.currentMessageList.messageList[0].friend.name}申请添加您为好友`
-      } else if (userStore.currentMessageList.messageList[0].choice === 1) {
-        // 同意
-        return `已接受${userStore.currentMessageList.messageList[0].friend.name}的好友申请`
-      } else {
-        // 特殊情况处理
-        return '等待验证'
-      }
-    }
-  } else {
-    return ''
-  }
-})
+// const friendApplicationMsg = computed(() => {
+//   if (userStore.currentMessageList.messageList.length !== 0) {
+//     if (userStore.currentMessageList.messageList[0].label === 0) {
+//       // 自己发出去的好友申请
+//       if (userStore.currentMessageList.messageList[0].choice === 0) {
+//         // 未选
+//         return `等待${userStore.currentMessageList.messageList[0].friend.name}验证好友申请`
+//       } else if (userStore.currentMessageList.messageList[0].choice === 1) {
+//         // 同意
+//         return `${userStore.currentMessageList.messageList[0].friend.name}已通过您的好友申请`
+//       } else {
+//         // 特殊情况处理
+//         return '等待验证'
+//       }
+//     } else {
+//       // 别人发送给自己的好友申请
+//       if (userStore.currentMessageList.messageList[0].choice === 0) {
+//         // 未选
+//         return `${userStore.currentMessageList.messageList[0].friend.name}申请添加您为好友`
+//       } else if (userStore.currentMessageList.messageList[0].choice === 1) {
+//         // 同意
+//         return `已接受${userStore.currentMessageList.messageList[0].friend.name}的好友申请`
+//       } else {
+//         // 特殊情况处理
+//         return '等待验证'
+//       }
+//     }
+//   } else {
+//     return ''
+//   }
+// })
 
-// 物品分享栏展示信息
-const itemShareMsg = computed(() => {
-  if (userStore.itemShareList.messageList.length !== 0) {
-    if (userStore.itemShareList.messageList[0].label === 1) {
-      // 别人分享给自己的
-      return `${userStore.itemShareList.messageList[0].friend.name}向您分享了物品`
-    } else {
-      // 自己分享出去的
-      return `您向${userStore.itemShareList.messageList[0].friend.name}分享了物品`
-    }
-  } else {
-    return ''
-  }
-})
+// // 物品分享栏展示信息
+// const itemShareMsg = computed(() => {
+//   if (userStore.itemShareList.messageList.length !== 0) {
+//     if (userStore.itemShareList.messageList[0].label === 1) {
+//       // 别人分享给自己的
+//       return `${userStore.itemShareList.messageList[0].friend.name}向您分享了物品`
+//     } else {
+//       // 自己分享出去的
+//       return `您向${userStore.itemShareList.messageList[0].friend.name}分享了物品`
+//     }
+//   } else {
+//     return ''
+//   }
+// })
 
 // 是否正在加载
 const isLoading = ref(false)
@@ -205,5 +233,12 @@ const chooseMessage = (index: number) => {
       }
     }
   }
+}
+.message-list__item__avatar :deep(.u-badge--warning.data-v-aa9883b1) {
+  height: 16rpx !important;
+  position: relative !important;
+  left: -42rpx !important;
+  top: -38rpx !important;
+  width: 16rpx !important;
 }
 </style>

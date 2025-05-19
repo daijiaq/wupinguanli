@@ -24,9 +24,10 @@ export interface GroupsInfo {
   groupsData: T1[]
 }
 
-export interface Friend {
+// 获取好友接口返回的数据类型
+export interface GetFriend {
   /**
-   * uuid
+   * uuid好友id
    */
   id: number
   /**
@@ -52,9 +53,8 @@ export interface Friend {
   /**
    * 好友状态
    */
-  checked?: boolean
+  // checked?: boolean
 }
-
 export interface Group {
   /**
    * 分组ID
@@ -67,7 +67,59 @@ export interface Group {
   /**
    * 朋友数组
    */
+  // friendVO: GetFriend[]
   friendVO: Friend[]
+}
+
+// 根据id搜索陌生人返回的数据类型
+export interface Friend {
+  /**
+   * ID
+   */
+  id: number
+  /**
+   * 好友备注
+   */
+  notes: string
+  /**
+   * 好友名字
+   */
+  name: string
+  /**
+   * 好友头像
+   */
+  avatar: string
+  /**
+   * 好友二维码
+   */
+  qrCode: string
+  /**
+   * 邮箱
+   */
+  email: string
+  /**
+   * 手机
+   */
+  phone: string
+  /**
+   * 是否为好友
+   */
+  buddy: boolean
+  /**
+   * 如果是好友，该好友分组的基本信息
+   */
+  groupBaseInfo: GroupBaseInfo
+}
+
+export interface GroupBaseInfo {
+  /**
+   * 分组ID
+   */
+  groupId: number
+  /**
+   * 分组名称
+   */
+  groupName: string
 }
 
 export interface Log {

@@ -1,6 +1,6 @@
 import service from '..'
 import type { PagingParams, Pages, T1 } from '@/utils/typings'
-import type { Group, Friend, Log, IFriendRelationship } from '@/types/friend'
+import type { Group, GetFriend, Log, IFriendRelationship, Friend } from '@/types/friend'
 
 // 获取好友分组
 export function getAllGroupsAPI({
@@ -38,14 +38,27 @@ export function updateGroupAPI(id: number, name: string): Promise<T1> {
   })
 }
 
-// 添加好友
-export function addFriendAPI(userId: number, groupId: number): Promise<T1> {
+// 添加好友(旧接口)
+// export function addFriendAPI(userId: number, groupId: number): Promise<T1> {
+//   return service({
+//     /**
+//      * Bug修复 加上notes=
+//      */
+//     url: `/friends/${userId}/${groupId}?notes=`,
+//     method: 'POST'
+//   })
+// }
+
+// 同意好友申请添加好友（新接口）
+export function addFriendAPI(noticeId: number, groupId: number, notes: string) {
   return service({
-    /**
-     * Bug修复 加上notes=
-     */
-    url: `/friends/${userId}/${groupId}?notes=`,
-    method: 'POST'
+    url: `/friends/agree`,
+    method: 'POST',
+    data: {
+      noticeId,
+      groupId,
+      notes
+    }
   })
 }
 
@@ -129,25 +142,47 @@ export function getUserInfoAPI(userId: number): Promise<Friend> {
   })
 }
 
+// /**
+//  * 发送好友申请(旧接口)
+//  * @param userId 用户id
+//  */
+// export function sendApplicationAPI(userId: number): Promise<Friend[]> {
+//   return service({
+//     method: 'POST',
+//     url: `/notices`,
+//     data: {
+//       userId,
+//       type: 2,
+//       content: null,
+//       itemId: 0
+//     }
+//   })
+// }
+
 /**
- * 发送好友申请
- * @param userId 用户id
+ * 发送好友申请通知接口（新接口）
  */
-export function sendApplicationAPI(userId: number): Promise<Friend[]> {
+export function sendApplicationAPI(
+  userId: number,
+  notes: string,
+  validMessage: string,
+  source: string
+): Promise<Friend[]> {
   return service({
+    url: '/notices/addBuddy',
     method: 'POST',
-    url: `/notices`,
     data: {
       userId,
-      type: 2,
-      content: null,
-      itemId: 0
+      groupId: 0,
+      notes,
+      validMessage,
+      source
     }
   })
 }
 
 /**
- * 分享物品
+ * 分享物品[好像是旧接口 后面可能要改成新的]
  */
 export function shareItemAPI(ItemId: number, userId: number): Promise<Friend[]> {
   return service({

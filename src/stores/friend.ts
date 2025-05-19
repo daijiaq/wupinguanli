@@ -17,7 +17,7 @@ import {
   sendApplicationAPI,
   shareItemAPI
 } from '@/network/apis/friend'
-import type { Group, Friend, GroupsInfo, Log } from '@/types/friend'
+import type { Group, GetFriend, GroupsInfo, Log, Friend } from '@/types/friend'
 import type { T1 } from '@/utils/typings'
 
 export const useGroupStore = defineStore('group', () => {
@@ -68,8 +68,8 @@ export const useGroupStore = defineStore('group', () => {
 
 export const useFriendStore = defineStore('friend', () => {
   // 添加好友
-  async function addFriend(userId: number, groupId: number): Promise<void> {
-    await addFriendAPI(userId, groupId)
+  async function addFriend(noticeId: number, groupId: number, notes: string): Promise<void> {
+    await addFriendAPI(noticeId, groupId, notes)
   }
   //获取好友详情
   const getUserInfoData = async (userId: number) => {
@@ -86,13 +86,41 @@ export const useFriendStore = defineStore('friend', () => {
   })
 
   // 当前页好友
+  // const friend = ref<GetFriend>({
+  //   id: 0,
+  //   notes: '',
+  //   name: '',
+  //   userId: 0,
+  //   avatar: '',
+  //   qrCode: ''
+  //     notes: '',
+  // name: '',
+  // // userId: 0,
+  // avatar: '',
+  // qrCode: '',
+  // email: '',
+  // phone: '',
+  // buddy: false,
+  // groupBaseInfo: {
+  //   groupId: 0,
+  //   groupName: ''
+  // }
+  // })
+
   const friend = ref<Friend>({
     id: 0,
     notes: '',
     name: '',
-    userId: 0,
     avatar: '',
-    qrCode: ''
+    qrCode: '',
+    // userId: 0,
+    email: '',
+    phone: '',
+    buddy: false,
+    groupBaseInfo: {
+      groupId: 0,
+      groupName: ''
+    }
   })
 
   // 临时好友数组
@@ -132,8 +160,9 @@ export const useFriendStore = defineStore('friend', () => {
     return await getFriendLogsAPI(id, content)
   }
 
-  async function sendApplication(id: number) {
-    await sendApplicationAPI(id)
+  // 发送好友申请通知
+  async function sendApplication(id: number, notes: string, validMessage: string, source: string) {
+    await sendApplicationAPI(id, notes, validMessage, source)
   }
 
   async function shareItem(ItemId: number, friendId: number) {

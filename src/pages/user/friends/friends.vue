@@ -152,11 +152,18 @@ const inputBox = ref<string>('')
 // 好友信息
 const searchedFriend = ref<Friend>({
   id: 0,
-  name: '',
   notes: '',
+  name: '',
+  // userId: 0,
   avatar: '',
   qrCode: '',
-  userId: 0
+  email: '',
+  phone: '',
+  buddy: false,
+  groupBaseInfo: {
+    groupId: 0,
+    groupName: ''
+  }
 })
 // 搜索到的好友分组
 let searchedFriendGroup: Group
