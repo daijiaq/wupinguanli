@@ -6,7 +6,7 @@
     ></image>
     <view class="login__welcome">
       <view class="login__welcome__text-content">
-        <view class="login__welcome__text-content__title1">理物</view>
+        <view class="login__welcome__text-content__title1">理物123123123123123123</view>
         <view class="login__welcome__text-content__title2">欢迎你 !</view>
       </view>
       <u-button
