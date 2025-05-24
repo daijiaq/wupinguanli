@@ -118,13 +118,13 @@ export function getFriendLogsAPI(id: number, content: string): Promise<Log[]> {
 }
 
 /**
- * 获取好友信息
+ * 获取好友信息(新接口，包含备注)
  * @param userId 用户id
  */
 export function getUserInfoAPI(userId: number): Promise<Friend> {
   return service({
     method: 'GET',
-    url: `/users/${userId}`
+    url: `/buddy/info?userId=${userId}`
   })
 }
 

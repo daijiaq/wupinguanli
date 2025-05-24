@@ -122,13 +122,13 @@ export const useFriendStore = defineStore('friend', () => {
   // 移动分组后刷新原分组数据
   const needRefresh = ref<boolean>(false)
   const oldGroupId = ref(0)
+  const newGroupId = ref(0)
 
   //
-  const setNeedRefresh = (value: boolean, groupId: number) => {
+  const setNeedRefresh = (value: boolean, groupId: number, newGroup: number) => {
     needRefresh.value = value
-    console.log('调用前', value)
     oldGroupId.value = groupId
-    console.log(oldGroupId.value)
+    newGroupId.value = newGroup
   }
 
   //获取所有好友
@@ -249,6 +249,7 @@ export const useFriendStore = defineStore('friend', () => {
     friendSearchArr,
     needRefresh,
     oldGroupId,
+    newGroupId,
     setNeedRefresh
   }
 })

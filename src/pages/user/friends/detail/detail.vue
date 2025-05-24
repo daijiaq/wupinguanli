@@ -320,7 +320,7 @@ async function confirmMoveFriend() {
       icon: 'none'
     })
     console.log(friendStore.oldGroupId)
-    friendStore.setNeedRefresh(true, friendStore.oldGroupId)
+    friendStore.setNeedRefresh(true, friendStore.oldGroupId, friendStore.group.id)
   } catch {
     uni.showToast({
       title: '移动失败',

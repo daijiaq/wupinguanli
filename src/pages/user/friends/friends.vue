@@ -167,15 +167,18 @@ onShow(async () => {
   if (friendStore.needRefresh) {
     console.log(friendStore.oldGroupId)
     getPageGroupFriend(friendStore.oldGroupId, 1, 10)
-    // 重置旧分组的折叠状态为收起（arrow-right）
+    getPageGroupFriend(friendStore.newGroupId, 1, 10)
+    // 重置旧分组的折叠状态为收起（arrow-right）如果旧分组好友数为0才折叠
     const groupIndex = groupStore.groupsInfo.records.findIndex(
       (g) => g.id === friendStore.oldGroupId
     )
     if (groupIndex !== -1) {
-      showFriendsBox.value[groupIndex] = false
+      // 只有当分组好友数为0时才折叠
+      if (groupStore.groupsInfo.records[groupIndex].groupNum === 0) {
+        showFriendsBox.value[groupIndex] = false
+      }
     }
     friendStore.needRefresh = !friendStore.needRefresh
-    console.log('调用后', friendStore.needRefresh)
   }
 })
 
@@ -242,8 +245,6 @@ const searchFriendByName = async (): Promise<void> => {
 async function refresh() {
   cancel()
   await getAllGroups()
-  // 初始化折叠状态（默认全部收起）
-  showFriendsBox.value = new Array(groupStore.groupsInfo.records.length).fill(false)
 }
 
 const longpress = (groupIndex: number, friendIndex: number) => {
