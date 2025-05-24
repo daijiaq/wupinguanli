@@ -69,16 +69,6 @@ const user = ref<Friend>({
   }
 })
 
-// 用户信息 获取好友接口
-// const userFriend = ref<GetFriend>({
-//   id: 0,
-//   name: '',
-//   notes: '',
-//   avatar: '',
-//   qrCode: '',
-//   userId: 0
-// })
-
 // 搜索用户
 async function searchUserById() {
   const data = await searchUser(inputBox.value)
@@ -101,18 +91,6 @@ async function confirmAddFriend() {
   })
 }
 
-// 此用户是否为好友
-// const isFriend = computed(() => {
-//   // for (let i = 0; i < friendStore.friends.length; i++) {
-//   //   for (let j = 0; j < friendStore.friends[i].friendVO?.length; j++) {
-//   //     if (friendStore.friends[i].friendVO[j].id === userFriend.value.id) return true
-//   //   }
-//   // }
-//   if (user.value.buddy === false) {
-//     return true
-//   }
-//   return false
-// })
 const isFriend = computed(() => user.value.buddy)
 
 // 跳转到详情页

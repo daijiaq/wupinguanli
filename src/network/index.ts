@@ -75,6 +75,14 @@ const service = <T>(options: UniApp.RequestOptions): Promise<T> => {
               icon: 'error'
             })
             break
+          case 302:
+            uni.showModal({
+              title: '提示',
+              content: res.data.msg,
+              showCancel: false,
+              confirmText: '知道了'
+            })
+            break
           default:
             uni.showToast({
               title: '未知错误'

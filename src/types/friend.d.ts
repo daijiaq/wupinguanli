@@ -53,7 +53,7 @@ export interface GetFriend {
   /**
    * 好友状态
    */
-  // checked?: boolean
+  checked?: boolean
 }
 export interface Group {
   /**
@@ -67,8 +67,8 @@ export interface Group {
   /**
    * 朋友数组
    */
-  // friendVO: GetFriend[]
-  friendVO: Friend[]
+  friendVO: GetFriend[]
+  // friendVO: Friend[]
 }
 
 // 根据id搜索陌生人返回的数据类型
@@ -134,4 +134,102 @@ export interface IFriendRelationship {
    * 是否为好友 0为否 1为是
    */
   buddy: number
+}
+
+// 分页获取分组
+export interface PageGroup {
+  /**
+   * 当前所在页
+   */
+  current: number
+  /**
+   * 每页个数
+   */
+  size: number
+  /**
+   * 总页数
+   */
+  pages: number
+  /**
+   * 总数
+   */
+  total: number
+  /**
+   * 分组数组
+   */
+  records: GroupVO[]
+}
+
+export interface GroupVO {
+  /**
+   * 分组id
+   */
+  id: number
+  /**
+   * 分组名
+   */
+  name: string
+  /**
+   * 顺序号
+   */
+  sortedNum: number
+  /**
+   * 分组人数
+   */
+  groupNum: number
+}
+
+// 根据分页分组获取好友/根据名字模糊匹配好友
+export interface getGroupFriendType {
+  /**
+   * 当前所在页
+   */
+  current: number
+  /**
+   * 每页个数
+   */
+  size: number
+  /**
+   * 总页数
+   */
+  pages: number
+  /**
+   * 总数
+   */
+  total: number
+  /**
+   * 分组数组
+   */
+  records: BuddyVO[]
+}
+
+export interface BuddyVO {
+  /**
+   * 好友id
+   */
+  id: number
+  /**
+   * 好友备注
+   */
+  notes: string
+  /**
+   * 好友名字
+   */
+  name: string
+  /**
+   * 好友分组id
+   */
+  groupId: number
+  /**
+   * 好友头像
+   */
+  avatar: string
+  /**
+   * 好友二维码
+   */
+  qrCode: string
+  /**
+   * 好友状态
+   */
+  checked?: boolean
 }

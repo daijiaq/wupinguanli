@@ -11,12 +11,14 @@
               height="120rpx"
               radius="50%"
             ></u-image>
-            <u-badge isDot type="warning"></u-badge>
+            <view class="unReadDot" v-if="systemHasUnreadMsg">
+              <u-badge isDot type="warning"></u-badge>
+            </view>
           </view>
           <view class="message-list__item__info">
             <view class="message-list__item__info__username">系统通知</view>
             <view class="message-list__item__info__time">{{
-              userStore.systemMessageList[0].content
+              userStore.systemMessageList[0]?.content
             }}</view>
           </view>
         </view>
@@ -28,7 +30,9 @@
               height="120rpx"
               radius="50%"
             ></u-image>
-            <u-badge isDot type="warning"></u-badge>
+            <view class="unReadDot" v-if="friendHasUnreadMsg">
+              <u-badge isDot type="warning"></u-badge>
+            </view>
           </view>
           <view class="message-list__item__info">
             <view class="message-list__item__info__username">好友申请</view>
@@ -58,7 +62,9 @@
               height="120rpx"
               radius="50%"
             ></u-image>
-            <u-badge isDot type="warning"></u-badge>
+            <view class="unReadDot" v-if="itemShareUnreadMsg">
+              <u-badge isDot type="warning"></u-badge>
+            </view>
           </view>
           <view class="message-list__item__info">
             <view class="message-list__item__info__username">物品分享</view>
@@ -77,14 +83,20 @@ import { useMessageStore } from '@/stores/message'
 // import type { MessageItem } from '@/types/message'
 import type { FriendMsgDetail, ItemMessageDetail } from '@/types/message'
 import { getFirstMsg } from '@/network/apis/message'
+import { storeToRefs } from 'pinia'
 const userStore = useMessageStore()
 const { fetchSystemMessage, fetchNewMessageList, fetchItemShareList, fetchAllDots } = userStore
+const { friendHasUnreadMsg, systemHasUnreadMsg, itemShareUnreadMsg } = storeToRefs(userStore)
 const friendApplicationMsg = ref('')
 const itemShareMsg = ref('')
 onShow(async () => {
   // 重置页码
   userStore.itemShareList.currentPage = 1
   userStore.currentMessageList.currentPage = 1
+  // 重置每种类型消息
+  userStore.systemMessageList = []
+  friendApplicationMsg.value = ''
+  itemShareMsg.value = ''
   const result = await getFirstMsg()
   const validItems = Array.from(result || []).filter(Boolean)
   // 每种类型第一条数据
@@ -108,10 +120,6 @@ onShow(async () => {
   console.log(userStore.systemMessageList)
   // 获取未读通知显示红点
   await fetchAllDots()
-  // 获取系统通知、好友申请、物品分享
-  // fetchSystemMessage(0, 1)
-  // fetchNewMessageList(2, 1)
-  // fetchItemShareList(3, 1)
 })
 
 // 好友申请栏展示信息
@@ -234,7 +242,7 @@ const chooseMessage = (index: number) => {
     }
   }
 }
-.message-list__item__avatar :deep(.u-badge--warning.data-v-aa9883b1) {
+.unReadDot {
   height: 16rpx !important;
   position: relative !important;
   left: -42rpx !important;

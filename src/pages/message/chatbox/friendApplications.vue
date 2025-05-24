@@ -81,7 +81,6 @@ const newMessageData = ref<FriendMsgDetail[]>([])
 
 //计算日期
 const dataShow = computed(() => {
-  // return Date.now() - Date.parse(newMessageData.value[0]?.datetime) > 86400000 * 3
   return Date.now() - Date.parse(newMessageData.value[0]?.noticeTime) > 86400000 * 3
 })
 
@@ -113,11 +112,7 @@ const addFriend = async (activeIndex: any) => {
   }
   //渲染前端页面
   newMessageData.value[activeIndex].choice = 1
-  //更新后端数据
-  await chooseMessage(
-    newMessageData.value[activeIndex].noticeId,
-    newMessageData.value[activeIndex].choice
-  )
+
   uni.showToast({
     icon: 'success',
     title: '已添加'
@@ -127,6 +122,11 @@ const addFriend = async (activeIndex: any) => {
     newMessageData.value[activeIndex].noticeId,
     0,
     newMessageData.value[activeIndex].relateNotes
+  )
+  // 更新后端数据
+  await chooseMessage(
+    newMessageData.value[activeIndex].noticeId,
+    newMessageData.value[activeIndex].choice
   )
 }
 

@@ -148,28 +148,31 @@
       mode="bottom"
       :show="showGroup"
       @close="showGroup = false"
+      height="auto"
     >
-      <view class="detail__groups">
-        <view
-          v-for="(item, index) in useGroupStore().groupsInfo.groupsData"
-          :key="index"
-          class="detail__groups__item"
-          @click="setGroup(item)"
-        >
-          <u-text
-            :color="item.id === friendStore.group.id ? '#3988ff' : ''"
-            align="center"
-            :text="item.name"
-          ></u-text>
+      <scroll-view scroll-y class="detail__groups" style="max-height: 60vh">
+        <view class="detail__groups">
+          <view
+            v-for="(item, index) in useGroupStore().groupsInfo.records"
+            :key="index"
+            class="detail__groups__item"
+            @click="setGroup(item)"
+          >
+            <u-text
+              :color="item.id === friendStore.group.id ? '#3988ff' : ''"
+              align="center"
+              :text="item.name"
+            ></u-text>
+          </view>
+          <view class="detail__groups__item" @click="setGroup({ id: 0, name: '' })">
+            <u-text
+              :color="friendStore.group.id === 0 ? '#3988ff' : ''"
+              align="center"
+              text="暂不分组"
+            ></u-text>
+          </view>
         </view>
-        <view class="detail__groups__item" @click="setGroup({ id: 0, name: '' })">
-          <u-text
-            :color="friendStore.group.id === 0 ? '#3988ff' : ''"
-            align="center"
-            text="暂不分组"
-          ></u-text>
-        </view>
-      </view>
+      </scroll-view>
     </u-popup>
     <u-modal
       title="确认删除？"
@@ -200,6 +203,7 @@ import type { Log } from '@/types/friend'
 import { useFriendStore, useGroupStore } from '@/stores/friend'
 import { determineWhetherFriend } from '@/network/apis/friend'
 const friendStore = useFriendStore()
+const groupStore = useGroupStore()
 const {
   updateFriendNote,
   moveFriend,
@@ -224,18 +228,20 @@ onLoad(async () => {
     getUserInfoData(props.id)
   } else {
     getUserInfoData(props.id)
-    history.value = await getFriendLogs(friendStore.friend.userId)
-    for (let i = 0; i < friendStore.friends.length; i++) {
-      for (let j = 0; j < friendStore.friends[i].friendVO?.length; j++) {
-        if (friendStore.friends[i].friendVO[j].id === friendStore.friend.id) {
-          friendStore.friend = JSON.parse(JSON.stringify(friendStore.friends[i].friendVO[j]))
-          friendStore.group.id = friendStore.friends[i].id
-          friendStore.group.name = friendStore.friends[i].name
-          return
-        }
-      }
+    history.value = await getFriendLogs(props.id)
+    // 从 groupStore 中查找好友所在的分组
+    const group = groupStore.groupsInfo.records.find(
+      (g) => g.id === friendStore.friend.groupBaseInfo.groupId
+    )
+    if (group) {
+      // 更新当前分组信息
+      friendStore.group.id = group.id
+      friendStore.group.name = group.name
+    } else {
+      // 如果没有找到分组，设置为默认值
+      friendStore.group.id = 0
+      friendStore.group.name = '暂不分组'
     }
-    return false
   }
 })
 
@@ -250,7 +256,7 @@ const jumpPageHistory = () => {
 const isFriend = ref(true)
 // 确认添加好友
 async function confirmAddFriend() {
-  await sendApplication(friendStore.friend.userId)
+  await sendApplication(friendStore.friend.id, friendStore.friend.notes, '', '')
   uni.showToast({
     title: '好友申请发送成功',
     icon: 'none'
@@ -278,7 +284,7 @@ const showDelete = ref(false)
 async function confirmDelete() {
   showDelete.value = false
   try {
-    await DeleteFriends(friendStore.friend.userId)
+    await DeleteFriends(friendStore.friend.id)
     uni.showToast({
       title: '删除成功',
       icon: 'none'
@@ -306,13 +312,15 @@ async function confirmMoveFriend() {
   showMove.value = false
   showGroup.value = false
   try {
-    await moveFriend(groupId, [friendStore.friend.userId])
+    await moveFriend(groupId, [friendStore.friend.id])
     friendStore.group.id = groupId
     friendStore.group.name = groupName
     uni.showToast({
       title: '移动成功',
       icon: 'none'
     })
+    console.log(friendStore.oldGroupId)
+    friendStore.setNeedRefresh(true, friendStore.oldGroupId)
   } catch {
     uni.showToast({
       title: '移动失败',
@@ -329,7 +337,7 @@ const showNotes = ref(false)
 async function confirmUpdateNote() {
   showNotes.value = false
   try {
-    await updateFriendNote(friendStore.friend.userId, notes.value)
+    await updateFriendNote(friendStore.friend.id, notes.value)
     uni.showToast({
       title: '修改成功',
       icon: 'none'
@@ -423,5 +431,8 @@ async function confirmUpdateNote() {
       border-bottom: 1px solid #f3f3f5;
     }
   }
+}
+::v-deep .u-popup__content.data-v-74921bef {
+  margin-top: -260rpx !important;
 }
 </style>

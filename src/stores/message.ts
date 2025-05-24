@@ -67,25 +67,6 @@ export const useMessageStore = defineStore('message', () => {
     currentMessageList.total = data.pages
     currentMessageList.messageList = data.records
   }
-  // const fetchNewMessageList = async (type: number, limit?: number) => {
-  //   const data = await getAllMessages(
-  //     {
-  //       offset: currentMessageList.currentPage,
-  //       limit
-  //     },
-  //     type,
-  //     currentMessageList.content
-  //   )
-  //   console.log(11111)
-  //   console.log(data)
-  //   // 更新 store 数据
-  //   currentMessageList.currentPage++
-  //   currentMessageList.total = data.pages
-  //   currentMessageList.messageList = data.records
-
-  //   // // 重新获取未读通知数
-  //   // await fetchAllDots()
-  // }
 
   // 请求新的物品分享列表（新）
   const fetchItemShareList = async (shareType: number, limit?: number) => {
@@ -101,28 +82,7 @@ export const useMessageStore = defineStore('message', () => {
     itemShareList.currentPage++
     itemShareList.total = data.pages
     itemShareList.messageList = data.records
-
-    // // 重新获取未读通知数
-    // await fetchAllDots()
   }
-  // 请求新的物品分享列表(旧)
-  // const fetchItemShareList = async (type: number, limit?: number) => {
-  //   const data = await getAllMessages(
-  //     {
-  //       offset: itemShareList.currentPage,
-  //       limit
-  //     },
-  //     type,
-  //     itemShareList.content
-  //   )
-  //   // 更新 store 数据
-  //   itemShareList.currentPage++
-  //   itemShareList.total = data.pages
-  //   itemShareList.messageList = data.records
-
-  //   // // 重新获取未读通知数
-  //   // await fetchAllDots()
-  // }
   // 系统通知是否有未读通知
   const systemHasUnreadMsg = ref(false)
   // 好友申请是否有未读通知
@@ -133,24 +93,20 @@ export const useMessageStore = defineStore('message', () => {
   // 判断是否有未读通知
   async function fetchAllDots() {
     // 发送请求，获取未读通知数组
-    // currentMessageList.unreadMsgNum = await getDots()
+    systemHasUnreadMsg.value = false
+    friendHasUnreadMsg.value = false
+    itemShareUnreadMsg.value = false
     const dots = await getDots()
     // 遍历
     for (let i = 0; i < dots.length; i++) {
-      if (dots[0] === 1) {
-        systemHasUnreadMsg.value = true
-      } else if (dots[2] === 1) {
-        friendHasUnreadMsg.value = true
-      } else if (dots[3] === 1) {
-        itemShareUnreadMsg.value = true
+      if (dots[i] === 1) {
+        if (i === 0) systemHasUnreadMsg.value = true
+        else if (i === 2) friendHasUnreadMsg.value = true
+        else if (i === 3) itemShareUnreadMsg.value = true
       }
     }
-    console.log(friendHasUnreadMsg.value, itemShareUnreadMsg.value)
+    console.log(friendHasUnreadMsg.value)
   }
-  // 有未读通知则显示红点
-  //   if (currentMessageList.unreadMsgNum) friendHasUnreadMsg.value = true
-  //   else friendHasUnreadMsg.value = false
-  // }
 
   // 选择通知
   async function selectMessage(noticeId: number, choice: number): Promise<void> {
@@ -173,6 +129,9 @@ export const useMessageStore = defineStore('message', () => {
   }
 
   return {
+    systemHasUnreadMsg,
+    friendHasUnreadMsg,
+    itemShareUnreadMsg,
     currentMessageList,
     systemMessageList,
     systemMessage,

@@ -15,31 +15,42 @@ import {
   getUserInfoAPI,
   getFriendLogsAPI,
   sendApplicationAPI,
-  shareItemAPI
+  shareItemAPI,
+  getGroupFriend
 } from '@/network/apis/friend'
-import type { Group, GetFriend, GroupsInfo, Log, Friend } from '@/types/friend'
+import type {
+  Group,
+  GetFriend,
+  GroupsInfo,
+  Log,
+  Friend,
+  PageGroup,
+  getGroupFriendType,
+  BuddyVO
+} from '@/types/friend'
 import type { T1 } from '@/utils/typings'
 
 export const useGroupStore = defineStore('group', () => {
   // 分组信息
-  const groupsInfo = reactive<GroupsInfo>({
+  const groupsInfo = reactive<PageGroup>({
     current: 0,
     total: 100,
     pages: 0,
     size: 0,
-    groupsData: []
+    records: []
   })
 
   // 获取所有分组
   async function getAllGroups(): Promise<void> {
-    groupsInfo.groupsData = []
+    groupsInfo.records = []
     do {
       const data = await getAllGroupsAPI({
-        offset: groupsInfo.groupsData.length / 100 + 1
+        offset: groupsInfo.records.length / 10 + 1
       })
-      groupsInfo.groupsData.push(...data.records)
+      groupsInfo.records.push(...data.records)
       groupsInfo.total = data.total
-    } while (groupsInfo.groupsData.length < groupsInfo.total)
+      console.log(data)
+    } while (groupsInfo.records.length < groupsInfo.total)
   }
 
   // 添加分组
@@ -85,28 +96,7 @@ export const useFriendStore = defineStore('friend', () => {
     name: ''
   })
 
-  // 当前页好友
-  // const friend = ref<GetFriend>({
-  //   id: 0,
-  //   notes: '',
-  //   name: '',
-  //   userId: 0,
-  //   avatar: '',
-  //   qrCode: ''
-  //     notes: '',
-  // name: '',
-  // // userId: 0,
-  // avatar: '',
-  // qrCode: '',
-  // email: '',
-  // phone: '',
-  // buddy: false,
-  // groupBaseInfo: {
-  //   groupId: 0,
-  //   groupName: ''
-  // }
-  // })
-
+  // 根据id搜索陌生人返回的数据类型
   const friend = ref<Friend>({
     id: 0,
     notes: '',
@@ -123,8 +113,23 @@ export const useFriendStore = defineStore('friend', () => {
     }
   })
 
+  // 根据id搜索陌生人 数组
+  const friendSearchArr = ref<Friend[]>([])
+
   // 临时好友数组
-  const tempFriends = ref<Friend[]>([])
+  const tempFriends = ref<BuddyVO[]>([])
+
+  // 移动分组后刷新原分组数据
+  const needRefresh = ref<boolean>(false)
+  const oldGroupId = ref(0)
+
+  //
+  const setNeedRefresh = (value: boolean, groupId: number) => {
+    needRefresh.value = value
+    console.log('调用前', value)
+    oldGroupId.value = groupId
+    console.log(oldGroupId.value)
+  }
 
   //获取所有好友
   async function getAllFriends(): Promise<void> {
@@ -172,6 +177,54 @@ export const useFriendStore = defineStore('friend', () => {
   // 批量移动分组好友id数组
   const moveIds: number[] = []
 
+  //分页分组获取好友
+  const groupFriendInfo = reactive<getGroupFriendType>({
+    current: 0,
+    total: 100,
+    pages: 0,
+    size: 0,
+    records: []
+  })
+
+  // 存储每个分组的好友列表
+  const groupFriendsMap = reactive<Record<number, getGroupFriendType>>({})
+
+  // 初始化分组数据
+  const initGroupFriendInfo = (groupId: number) => {
+    if (!groupFriendsMap[groupId]) {
+      groupFriendsMap[groupId] = {
+        current: 0,
+        total: 0,
+        pages: 0,
+        size: 0,
+        records: [] // 每个分组独立存储
+      }
+    }
+  }
+
+  // 分页分组获取好友 好友信息
+  const GroupFriend = ref<BuddyVO>({
+    id: 0,
+    notes: '',
+    name: '',
+    avatar: '',
+    qrCode: '',
+    groupId: 0,
+    checked: false
+  })
+
+  // 根据分页分组获取好友
+  async function getPageGroupFriend(groupId: number, offset: number, limit: number) {
+    initGroupFriendInfo(groupId) // 确保分组数据已初始化
+    const currentGroup = groupFriendsMap[groupId]
+    // 清空当前分组的数据（避免重复加载）
+    currentGroup.records = []
+    do {
+      const data = await getGroupFriend(groupId, offset, limit)
+      currentGroup.records.push(...data.records) // 仅更新当前分组的数据
+      currentGroup.total = data.total
+    } while (currentGroup.records.length < currentGroup.total)
+  }
   return {
     addFriend,
     getAllFriends,
@@ -188,6 +241,14 @@ export const useFriendStore = defineStore('friend', () => {
     getUserInfoData,
     getFriendLogs,
     sendApplication,
-    shareItem
+    shareItem,
+    getPageGroupFriend,
+    groupFriendInfo,
+    groupFriendsMap,
+    GroupFriend,
+    friendSearchArr,
+    needRefresh,
+    oldGroupId,
+    setNeedRefresh
   }
 })
