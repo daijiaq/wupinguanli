@@ -39,13 +39,13 @@
         <text v-if="latestMessageList.length === 0 && frontMessageList.length === 0"
           >暂无物品分享</text
         >
-        <view v-for="item in latestMessageList" :key="item.id">
+        <view v-for="item in latestMessageList" :key="item.noticeId">
           <item :item="item" :isShare="true" :userId="userId" />
         </view>
         <view class="chatbox__search-list-item__time" v-if="frontMessageList.length !== 0">
           <u-text text="三天前"></u-text>
         </view>
-        <view v-for="item in frontMessageList" :key="item.id">
+        <view v-for="item in frontMessageList" :key="item.noticeId">
           <item :item="item" :isShare="true" :userId="userId" />
         </view>
       </scroll-view>
@@ -59,14 +59,16 @@ import { onLoad } from '@dcloudio/uni-app'
 import { ref, reactive, watch } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { useMessageStore } from '@/stores/message'
-import type { MessageItem } from '@/types/message'
+// import type { MessageItem } from '@/types/message'
+import type { ItemMessageDetail } from '@/types/message'
 import item from '@/components/MessageList/MessageItem/MessageItem.vue'
 import skeleton from '@/components/MessageList/MessageSkeleton/MessageSkeleton.vue'
 
 // 当前聊天信息
 let isLoad = ref(true)
 const messageStore = useMessageStore()
-const { currentMessageList } = storeToRefs(messageStore)
+// const { currentMessageList } = storeToRefs(messageStore)
+const { itemShareList } = storeToRefs(messageStore)
 
 // 获取用户信息
 const user = useUserStore()
@@ -82,10 +84,10 @@ onLoad(async () => {
   // 展开骨架屏
   isLoad.value = true
   // 页数置零
-  currentMessageList.value.currentPage = 1
+  itemShareList.value.currentPage = 1
   console.log(isLoad.value)
   // 获取最新信息
-  await messageStore.fetchNewMessageList(3)
+  await messageStore.fetchItemShareList(0, 10)
   // 隐藏骨架屏
   isLoad.value = false
 })
@@ -93,12 +95,12 @@ onLoad(async () => {
 // 搜索框信息
 const inputBox = ref('')
 const isSearch = ref(false)
-let frontMessageList = reactive<MessageItem[]>([])
-let latestMessageList = reactive<MessageItem[]>([])
+let frontMessageList = reactive<ItemMessageDetail[]>([])
+let latestMessageList = reactive<ItemMessageDetail[]>([])
 
 // 时间判断(将信息区分为三天前、近三天)
 watch(
-  () => currentMessageList.value.messageList[0].id,
+  () => itemShareList.value.messageList[0].noticeId,
   () => {
     // 将原数组的清空，再进行新数据的添加，不能整个替换
     // 三天前
@@ -107,15 +109,15 @@ watch(
       latestMessageList.length = 0
     }
     frontMessageList.push(
-      ...currentMessageList.value.messageList.filter(
-        (product) => Date.now() - Date.parse(product.datetime) >= 86400000 * 3
+      ...itemShareList.value.messageList.filter(
+        (product) => Date.now() - Date.parse(product.noticeTime) >= 86400000 * 3
       )
     )
 
     // 近三天
     latestMessageList.push(
-      ...currentMessageList.value.messageList.filter(
-        (product) => Date.now() - Date.parse(product.datetime) < 86400000 * 3
+      ...itemShareList.value.messageList.filter(
+        (product) => Date.now() - Date.parse(product.noticeTime) < 86400000 * 3
       )
     )
 
@@ -125,8 +127,8 @@ watch(
 
 // 滚动到底部发送请求获取更多数据
 const getMoreMessage = async () => {
-  if (currentMessageList.value.currentPage <= currentMessageList.value.total) {
-    await messageStore.fetchNewMessageList(3)
+  if (itemShareList.value.currentPage <= itemShareList.value.total) {
+    await messageStore.fetchItemShareList(0, 10)
   }
 }
 
@@ -138,13 +140,13 @@ const submitSearch = async () => {
   // )
   // console.log(currentMessageList.value.messageList)
   isSearch.value = true
-  currentMessageList.value.currentPage = 1
-  currentMessageList.value.content = inputBox.value
+  itemShareList.value.currentPage = 1
+  itemShareList.value.content = inputBox.value
   inputBox.value = ''
   uni.showLoading({
     title: '搜索中'
   })
-  await messageStore.fetchNewMessageList(3)
+  await messageStore.fetchItemShareList(0, 10)
   uni.showToast({
     title: '搜索成功'
   })

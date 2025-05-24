@@ -4,7 +4,7 @@
     <view class="groups__item" v-show="!showNew">
       <Tag
         @deleteTag="setId(item.id)"
-        v-for="(item, index) in groupStore.groupsInfo.groupsData"
+        v-for="(item, index) in groupStore.groupsInfo.records"
         :key="index"
         :tag="item"
         @focus="focus"
@@ -86,7 +86,7 @@ const { moveFriend } = friendStore
 friendStore.tempFriends.length = 0
 
 // 获取分组
-if (groupStore.groupsInfo.groupsData.length === 0) getAllGroups()
+if (groupStore.groupsInfo.records.length === 0) getAllGroups()
 
 // 显示新建分组
 const showNew = ref(false)
@@ -143,7 +143,7 @@ async function confirmChangeName() {
 async function submit() {
   let ids: number[] = []
   for (let i = 0; i < friendStore.tempFriends.length; i++) {
-    ids.push(friendStore.tempFriends[i].userId)
+    ids.push(friendStore.tempFriends[i].id)
   }
   const newGroup = await createGroup(name.value)
   await moveFriend(newGroup.id, ids)
@@ -166,7 +166,7 @@ const cancelChangeName = () => {
 }
 // 刷新
 async function refresh() {
-  groupStore.groupsInfo.groupsData.length = 0
+  groupStore.groupsInfo.records.length = 0
   await getAllGroups()
 }
 // 删除好友

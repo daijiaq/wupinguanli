@@ -37,21 +37,28 @@
 
 <script setup lang="ts">
 import { reactive } from 'vue'
-import type { Group, Friend } from '@/types/friend'
+import type { Group, Friend, BuddyVO } from '@/types/friend'
 import { useFriendStore } from '@/stores/friend'
+import { onShow } from '@dcloudio/uni-app'
 const friendStore = useFriendStore()
 
-// 深拷贝未被分组的好友
-const copiedFriends: Group = JSON.parse(
-  JSON.stringify(friendStore.friends.filter((item: Group) => item.id === 0))
-)[0]
+const fetchUngroupedFriends = async () => {
+  await friendStore.getPageGroupFriend(94, 1, 10)
+  if (friendStore.groupFriendsMap[94]) {
+    friends.friendVO = friendStore.groupFriendsMap[94].records
+  }
+}
+const friends = reactive({
+  friendVO: [] as BuddyVO[] // 存储未分组好友
+})
 
-// 添加响应性
-const friends = reactive(copiedFriends)
+onShow(() => {
+  fetchUngroupedFriends()
+})
 
 // 确认并返回
 const confirm = () => {
-  friendStore.tempFriends = friends.friendVO.filter((item: Friend) => item.checked)
+  friendStore.tempFriends = friends.friendVO.filter((item: BuddyVO) => item.checked)
   uni.navigateBack()
 }
 </script>

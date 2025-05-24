@@ -2,6 +2,7 @@
 import { useMessageStore } from '@/stores/message'
 import { onLoad } from '@dcloudio/uni-app'
 import { formatDate } from '@/utils/util'
+import { computed } from 'vue'
 const userStore = useMessageStore()
 const { fetchSystemMessage, fetchMoreSystemMessage } = userStore
 
@@ -16,6 +17,23 @@ const loadMore = async () => {
 
 onLoad(async () => {
   await fetchSystemMessage(0)
+})
+
+const typeText = computed(() => {
+  return (type: number) => {
+    switch (type) {
+      case 0:
+        return '全部通知'
+      case 1:
+        return '普通通知'
+      case 2:
+        return '反馈通知'
+      case 3:
+        return '建议通知'
+      default:
+        return '未知类型'
+    }
+  }
 })
 </script>
 <template>
@@ -36,7 +54,8 @@ onLoad(async () => {
           </view>
           <view class="feedback__content__detail__result">
             <template>
-              {{ item.typeName }} &nbsp;&nbsp; <text>{{ item.content }} </text>
+              {{ typeText(item.type) }} &nbsp;&nbsp;
+              <text class="feedback__content__detail__content">{{ item.content }} </text>
             </template>
           </view>
         </view>
@@ -94,6 +113,11 @@ onLoad(async () => {
 }
 .scroll-view {
   height: 1500rpx;
+}
+.feedback__content__detail__content {
+  word-wrap: break-word;
+  word-break: break-all;
+  white-space: normal;
 }
 </style>
 <style lang="scss">

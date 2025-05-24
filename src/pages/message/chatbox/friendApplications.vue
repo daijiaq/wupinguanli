@@ -31,8 +31,8 @@
         <view class="friend__content">
           <navigator
             v-for="(item, index) in newMessageData"
-            :key="item.id"
-            :url="`/pages/user/friends/detail/detail?id=${item.friend?.userId}&isFriend=${
+            :key="item.noticeId"
+            :url="`/pages/user/friends/detail/detail?id=${item.relateId}&isFriend=${
               item.choice === 1
             }`"
             open-type="navigate"
@@ -41,7 +41,7 @@
           >
             <view class="friend__content__item__pic">
               <u-image
-                :src="item.friend?.avatar"
+                :src="item.relateAvatar"
                 mode="aspectFill"
                 width="120rpx"
                 height="120rpx"
@@ -49,7 +49,7 @@
               />
             </view>
             <view class="friend__content__item__text">
-              <text>{{ item.friend?.name }}</text>
+              <text>{{ item.relateName }}</text>
             </view>
             <view
               class="friend__content__item__state"
@@ -68,16 +68,20 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
-import type { FriendMessageDetail, MessageItem } from '@/types/message'
+// import type { FriendMessageDetail, MessageItem } from '@/types/message'
+import type { FriendMsgDetail } from '@/types/message'
+
 import { storeToRefs } from 'pinia'
 import { useMessageStore } from '@/stores/message'
-import { chooseMessage } from '@/network/apis/message'
+import { chooseMessage, getFriend } from '@/network/apis/message'
 import { useFriendStore } from '@/stores/friend'
 const messageStore = useMessageStore()
-const newMessageData = ref<MessageItem[]>([])
+// const newMessageData = ref<MessageItem[]>([])
+const newMessageData = ref<FriendMsgDetail[]>([])
+
 //计算日期
 const dataShow = computed(() => {
-  return Date.now() - Date.parse(newMessageData.value[0]?.datetime) > 86400000 * 3
+  return Date.now() - Date.parse(newMessageData.value[0]?.noticeTime) > 86400000 * 3
 })
 
 const { currentMessageList } = storeToRefs(messageStore)
@@ -90,7 +94,7 @@ const submitSearch = async () => {
   uni.showLoading({
     title: '搜索中'
   })
-  await messageStore.fetchNewMessageList(2)
+  await messageStore.fetchNewMessageList(10)
   newMessageData.value = messageStore.currentMessageList.messageList
   uni.showToast({
     title: '搜索成功'
@@ -100,28 +104,37 @@ const submitSearch = async () => {
 //添加请求
 const addFriend = async (activeIndex: any) => {
   //改变用户通知状态
-  if (newMessageData.value[activeIndex].choice !== 1) {
-    //渲染前端页面
-    newMessageData.value[activeIndex].choice = 1
-    //更新后端数据
-    await chooseMessage(
-      newMessageData.value[activeIndex].id,
-      newMessageData.value[activeIndex].choice
-    )
-    uni.showToast({
-      icon: 'success',
-      title: '已添加'
-    })
+  if (
+    newMessageData.value[activeIndex].choice === 1 ||
+    newMessageData.value[activeIndex].label === 0
+  ) {
+    return
   }
+  //渲染前端页面
+  newMessageData.value[activeIndex].choice = 1
+
+  uni.showToast({
+    icon: 'success',
+    title: '已添加'
+  })
   //更新后端数据
-  await useFriendStore().addFriend(newMessageData.value[activeIndex].friend.userId, 0)
+  await useFriendStore().addFriend(
+    newMessageData.value[activeIndex].noticeId,
+    0,
+    newMessageData.value[activeIndex].relateNotes
+  )
+  // 更新后端数据
+  await chooseMessage(
+    newMessageData.value[activeIndex].noticeId,
+    newMessageData.value[activeIndex].choice
+  )
 }
 
 //下拉刷新
 const onScrollTolower = async () => {
   //发送网络请求
   if (messageStore.currentMessageList.currentPage <= messageStore.currentMessageList.total) {
-    await messageStore.fetchNewMessageList(2)
+    await messageStore.fetchNewMessageList(10)
     newMessageData.value.push(...messageStore.currentMessageList.messageList)
   }
 }
@@ -129,7 +142,7 @@ const onScrollTolower = async () => {
 //发送网络请求
 onLoad(async () => {
   currentMessageList.value.currentPage = 1
-  await messageStore.fetchNewMessageList(2)
+  await messageStore.fetchNewMessageList(10)
   newMessageData.value = messageStore.currentMessageList.messageList
 })
 </script>

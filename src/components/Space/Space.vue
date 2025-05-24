@@ -268,14 +268,14 @@ onPullDownRefresh(async () => {
 })
 
 // 触底加载更多
-onReachBottom(async () => {
-  if (!isNoMore.value) {
-    loadMoreStatus.value = 'loading'
-    await getFirstFloorRooms()
-  } else {
-    loadMoreStatus.value = 'nomore'
-  }
-})
+// onReachBottom(async () => {
+//   if (!isNoMore.value) {
+//     loadMoreStatus.value = 'loading'
+//     await getFirstFloorRooms()
+//   } else {
+//     loadMoreStatus.value = 'nomore'
+//   }
+// })
 
 // 验证手势密码
 async function confirmGesture(password: string) {

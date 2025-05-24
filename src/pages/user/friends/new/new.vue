@@ -44,7 +44,7 @@ import { ref, computed } from 'vue'
 import { useFriendStore } from '@/stores/friend'
 
 // 引入类型
-import type { Friend } from '@/types/friend'
+import type { Friend, GetFriend } from '@/types/friend'
 
 // 引入store
 const friendStore = useFriendStore()
@@ -52,14 +52,21 @@ const { sendApplication, searchUser } = friendStore
 
 // 输入框
 const inputBox = ref()
-// 用户信息
+// 用户信息 根据id搜索陌生人
 const user = ref<Friend>({
   id: 0,
-  name: '',
   notes: '',
+  name: '',
+  // userId: 0,
   avatar: '',
   qrCode: '',
-  userId: 0
+  email: '',
+  phone: '',
+  buddy: false,
+  groupBaseInfo: {
+    groupId: 0,
+    groupName: ''
+  }
 })
 
 // 搜索用户
@@ -77,28 +84,20 @@ const showAdd = ref(false)
 async function confirmAddFriend() {
   showGroup.value = false
   showAdd.value = false
-  await sendApplication(user.value.userId)
+  await sendApplication(user.value.id, user.value.notes, '', '')
   uni.showToast({
     title: '发送申请成功',
     icon: 'none'
   })
 }
 
-// 此用户是否为好友
-const isFriend = computed(() => {
-  for (let i = 0; i < friendStore.friends.length; i++) {
-    for (let j = 0; j < friendStore.friends[i].friendVO?.length; j++) {
-      if (friendStore.friends[i].friendVO[j].id === user.value.id) return true
-    }
-  }
-  return false
-})
+const isFriend = computed(() => user.value.buddy)
 
 // 跳转到详情页
 const jumpPageDetail = () => {
   friendStore.friend = user.value
   uni.navigateTo({
-    url: `/pages/user/friends/detail/detail?isFriend=${isFriend.value}&id=${user.value.userId}`
+    url: `/pages/user/friends/detail/detail?isFriend=${isFriend.value}&id=${user.value.id}`
   })
 }
 </script>
