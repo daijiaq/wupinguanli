@@ -87,6 +87,7 @@ onLoad(async () => {
   itemShareList.value.currentPage = 1
   console.log(isLoad.value)
   // 获取最新信息
+  itemShareList.value.content = ''
   await messageStore.fetchItemShareList(0, 10)
   // 隐藏骨架屏
   isLoad.value = false
@@ -100,7 +101,7 @@ let latestMessageList = reactive<ItemMessageDetail[]>([])
 
 // 时间判断(将信息区分为三天前、近三天)
 watch(
-  () => itemShareList.value.messageList[0].noticeId,
+  () => itemShareList.value.messageList,
   () => {
     // 将原数组的清空，再进行新数据的添加，不能整个替换
     // 三天前
@@ -120,7 +121,7 @@ watch(
         (product) => Date.now() - Date.parse(product.noticeTime) < 86400000 * 3
       )
     )
-
+    console.log(latestMessageList, frontMessageList)
     isSearch.value = false
   }
 )

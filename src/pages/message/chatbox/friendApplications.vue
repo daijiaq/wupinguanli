@@ -142,6 +142,7 @@ const onScrollTolower = async () => {
 //发送网络请求
 onLoad(async () => {
   currentMessageList.value.currentPage = 1
+  currentMessageList.value.content = ''
   await messageStore.fetchNewMessageList(10)
   newMessageData.value = messageStore.currentMessageList.messageList
 })
