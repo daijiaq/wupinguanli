@@ -151,9 +151,8 @@
               :ids="[formStore.itemData.id]"
               :titlePadding="'10rpx 10rpx'"
               :tagPadding="'0 20rpx'"
-              v-show="pathFloor >= subIndex"
               :parent="subIndex ? spacesBox[subIndex - 1].id : 0"
-              :id="spacesBox[subIndex].id"
+              :id="item.id"
               :subordinateSpaces="[item]"
               :key="subIndex"
               :floor="subIndex + 1"
@@ -233,7 +232,7 @@
 </template>
 
 <script setup lang="ts">
-import { onShareAppMessage, onLoad } from '@dcloudio/uni-app'
+import { onLoad } from '@dcloudio/uni-app'
 import { ref, onMounted } from 'vue'
 
 // 引入类型
@@ -344,18 +343,19 @@ const showSpace = ref(false)
 const spacesBox = ref<Path[]>([])
 // 当前层数
 const pathFloor = ref<number>(0)
-// 初始化当前路径
-for (let i = 0; i < pathsInfo.length; i++) {
-  spacesBox.value[i] = { fatherId: 0, id: 0, name: '', layer: 0 }
-}
-for (let i = 0; i < formStore.itemData.path?.length; i++) {
-  pathFloor.value++
-  spacesBox.value[formStore.itemData.path.length - 1 - i] = {
-    fatherId: i ? formStore.itemData.path[i - 1].id : 0,
-    id: formStore.itemData.path[i].id,
-    name: formStore.itemData.path[i].name,
+
+if (formStore.itemData.path && formStore.itemData.path.length) {
+  const reversedPath = [...formStore.itemData.path].reverse()
+  spacesBox.value = reversedPath.map((p, i) => ({
+    fatherId: i ? reversedPath[i - 1].id : 0,
+    id: p.id,
+    name: p.name,
     layer: i
-  }
+  }))
+  pathFloor.value = formStore.itemData.path.length
+} else {
+  spacesBox.value = []
+  pathFloor.value = 0
 }
 
 if (!formStore.itemData.comment) formStore.itemData.comment = ''
@@ -553,5 +553,13 @@ const jumpPageShare = () => {
 }
 ::veep .u-text data-v-5fec1d8b {
   margin-top: 25rpx !important;
+}
+
+.form__information__space-path {
+  margin: 10rpx 0 10rpx 0;
+  color: #5297ff;
+  font-size: 24rpx;
+  display: flex;
+  align-items: center;
 }
 </style>

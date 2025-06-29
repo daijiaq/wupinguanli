@@ -129,7 +129,8 @@ export function updateRoomAPI(
       labels,
       images,
       figures,
-      password
+      password,
+      hide: 0
     }
   })
 }
