@@ -184,6 +184,7 @@
           :size="'140rpx'"
           v-model:photoList="formStore.itemData.figures"
           :disabled="true"
+          class="form__information__photo"
         />
         <u-textarea
           maxlength="200"
@@ -553,5 +554,9 @@ const jumpPageShare = () => {
 }
 ::veep .u-text data-v-5fec1d8b {
   margin-top: 25rpx !important;
+}
+::veep .form__information__photo {
+  display: flex;
+  justify-content: flex-start;
 }
 </style>
