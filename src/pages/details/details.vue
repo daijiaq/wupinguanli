@@ -183,6 +183,7 @@
           :size="'140rpx'"
           v-model:photoList="formStore.itemData.figures"
           :disabled="true"
+          class="form__information__photo"
         />
         <u-textarea
           maxlength="200"
