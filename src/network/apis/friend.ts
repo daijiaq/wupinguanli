@@ -1,13 +1,18 @@
 import service from '..'
 import type { PagingParams, Pages, T1 } from '@/utils/typings'
-import type { Group, Friend, Log, IFriendRelationship } from '@/types/friend'
+import type {
+  Group,
+  GetFriend,
+  Log,
+  IFriendRelationship,
+  Friend,
+  PageGroup,
+  getGroupFriendType
+} from '@/types/friend'
 
 // 获取好友分组
-export function getAllGroupsAPI({
-  offset,
-  limit = 10
-}: PagingParams): Promise<Pages<{ id: number; name: string }>> {
-  return service<Pages<{ id: number; name: string }>>({
+export function getAllGroupsAPI({ offset, limit = 10 }: PagingParams): Promise<PageGroup> {
+  return service({
     url: `/groups?offset=${offset}&limit=${limit}`,
     method: 'GET'
   })
@@ -38,32 +43,26 @@ export function updateGroupAPI(id: number, name: string): Promise<T1> {
   })
 }
 
-// 添加好友
-export function addFriendAPI(userId: number, groupId: number): Promise<T1> {
+// 同意好友申请添加好友（新接口）
+export function addFriendAPI(noticeId: number, groupId: number, notes: string) {
   return service({
-    /**
-     * Bug修复 加上notes=
-     */
-    url: `/friends/${userId}/${groupId}?notes=`,
-    method: 'POST'
+    url: `/friends/agree`,
+    method: 'POST',
+    data: {
+      noticeId,
+      groupId,
+      notes
+    }
   })
 }
 
-// 获取所有好友
+// 获取所有好友(这个接口就是刚进好友页面一次性拉取所有分组和分组里面的好友 这个接口不用了)
 export function getAllFriendsAPI(): Promise<Group[]> {
   return service({
     url: `/friends`,
     method: 'GET'
   })
 }
-
-//旧接口 搜索用户
-// export function searchUserAPI(id: number): Promise<Friend> {
-//   return service({
-//     url: `/friends/search/${id}`,
-//     method: 'GET'
-//   })
-// }
 
 // 新接口搜索用户
 export function searchUserAPI(id: number): Promise<Friend> {
@@ -119,35 +118,40 @@ export function getFriendLogsAPI(id: number, content: string): Promise<Log[]> {
 }
 
 /**
- * 获取好友信息
+ * 获取好友信息(新接口，包含备注)
  * @param userId 用户id
  */
 export function getUserInfoAPI(userId: number): Promise<Friend> {
   return service({
     method: 'GET',
-    url: `/users/${userId}`
+    url: `/buddy/info?userId=${userId}`
   })
 }
 
 /**
- * 发送好友申请
- * @param userId 用户id
+ * 发送好友申请通知接口（新接口）
  */
-export function sendApplicationAPI(userId: number): Promise<Friend[]> {
+export function sendApplicationAPI(
+  userId: number,
+  notes: string,
+  validMessage: string,
+  source: string
+): Promise<Friend[]> {
   return service({
+    url: '/notices/addBuddy',
     method: 'POST',
-    url: `/notices`,
     data: {
       userId,
-      type: 2,
-      content: null,
-      itemId: 0
+      groupId: 0,
+      notes,
+      validMessage,
+      source
     }
   })
 }
 
 /**
- * 分享物品
+ * 分享物品[好像是旧接口 后面可能要改成新的]
  */
 export function shareItemAPI(ItemId: number, userId: number): Promise<Friend[]> {
   return service({
@@ -170,5 +174,31 @@ export function determineWhetherFriend(userId: number): Promise<IFriendRelations
   return service({
     method: 'GET',
     url: `/friends/${userId}`
+  })
+}
+
+/**
+ * 根据分组分页获取好友接口
+ */
+export function getGroupFriend(
+  groupId: number,
+  offset = 1,
+  limit = 3
+): Promise<getGroupFriendType> {
+  return service({
+    method: 'GET',
+    url: `/friends/group?groupId=${groupId}&offset=${offset}&limit=${limit}`
+  })
+}
+
+// 根据名字模糊匹配好友
+export function searchFriendsByName(
+  buddyName: string,
+  offset = 1,
+  limit = 10
+): Promise<getGroupFriendType> {
+  return service({
+    method: 'GET',
+    url: `/friends/searchByName?buddyName=${buddyName}&offset=${offset}&limit=${limit}`
   })
 }

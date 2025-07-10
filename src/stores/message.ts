@@ -1,7 +1,14 @@
 import { defineStore } from 'pinia'
 import { ref, reactive } from 'vue'
-import { getAllMessages, getDots, chooseMessage, getSystemMessage } from '@/network/apis/message'
-import type { MessageList, SystemMessage } from '@/types/message'
+import {
+  // getAllMessages,
+  getDots,
+  chooseMessage,
+  getSystemMessage,
+  getFriend,
+  getShareItem
+} from '@/network/apis/message'
+import type { MessageList, SystemMessage, ItemMessageList } from '@/types/message'
 import type { Pages } from '@/utils/typings'
 
 export const useMessageStore = defineStore('message', () => {
@@ -9,17 +16,17 @@ export const useMessageStore = defineStore('message', () => {
   const currentMessageList: MessageList = reactive({
     currentPage: 1,
     total: 10,
-    type: 2,
+    // type: 2,
     content: '',
     unreadMsgNum: [],
     messageList: []
   })
 
   // 分享物品列表
-  const itemShareList: MessageList = reactive({
+  const itemShareList: ItemMessageList = reactive({
     currentPage: 1,
     total: 10,
-    type: 2,
+    // type: 2,
     content: '',
     unreadMsgNum: [],
     messageList: []
@@ -36,64 +43,69 @@ export const useMessageStore = defineStore('message', () => {
   // 系统消息列表
   const systemMessageList = ref<SystemMessage[]>([
     {
-      adminName: '',
-      browse: 0,
+      // adminName: '',
+      // browse: 0,
       content: '',
       noticeId: 0,
       publishTime: '',
       title: '',
-      typeId: 0,
-      typeName: ''
+      // typeId: 0,
+      type: 0
     }
   ])
-  // 请求新的好友申请列表
-  const fetchNewMessageList = async (type: number, limit?: number) => {
-    const data = await getAllMessages(
+  // 请求新的好友申请列表（新）
+  const fetchNewMessageList = async (limit?: number) => {
+    const data = await getFriend(
       {
         offset: currentMessageList.currentPage,
         limit
       },
-      type,
       currentMessageList.content
     )
     // 更新 store 数据
     currentMessageList.currentPage++
     currentMessageList.total = data.pages
     currentMessageList.messageList = data.records
-
-    // // 重新获取未读通知数
-    // await fetchAllDots()
   }
 
-  // 请求新的物品分享列表
-  const fetchItemShareList = async (type: number, limit?: number) => {
-    const data = await getAllMessages(
+  // 请求新的物品分享列表（新）
+  const fetchItemShareList = async (shareType: number, limit?: number) => {
+    const data = await getShareItem(
       {
         offset: itemShareList.currentPage,
         limit
       },
-      type,
-      itemShareList.content
+      itemShareList.content,
+      shareType
     )
     // 更新 store 数据
     itemShareList.currentPage++
     itemShareList.total = data.pages
     itemShareList.messageList = data.records
-
-    // // 重新获取未读通知数
-    // await fetchAllDots()
   }
-  // 是否有未读通知
-  const hasUnreadMsg = ref(false)
+  // 系统通知是否有未读通知
+  const systemHasUnreadMsg = ref(false)
+  // 好友申请是否有未读通知
+  const friendHasUnreadMsg = ref(false)
+  // 物品分享是否有未读通知
+  const itemShareUnreadMsg = ref(false)
 
   // 判断是否有未读通知
   async function fetchAllDots() {
     // 发送请求，获取未读通知数组
-    currentMessageList.unreadMsgNum = await getDots()
-
-    // 有未读通知则显示红点
-    if (currentMessageList.unreadMsgNum) hasUnreadMsg.value = true
-    else hasUnreadMsg.value = false
+    systemHasUnreadMsg.value = false
+    friendHasUnreadMsg.value = false
+    itemShareUnreadMsg.value = false
+    const dots = await getDots()
+    // 遍历
+    for (let i = 0; i < dots.length; i++) {
+      if (dots[i] === 1) {
+        if (i === 0) systemHasUnreadMsg.value = true
+        else if (i === 2) friendHasUnreadMsg.value = true
+        else if (i === 3) itemShareUnreadMsg.value = true
+      }
+    }
+    console.log(friendHasUnreadMsg.value)
   }
 
   // 选择通知
@@ -117,6 +129,9 @@ export const useMessageStore = defineStore('message', () => {
   }
 
   return {
+    systemHasUnreadMsg,
+    friendHasUnreadMsg,
+    itemShareUnreadMsg,
     currentMessageList,
     systemMessageList,
     systemMessage,

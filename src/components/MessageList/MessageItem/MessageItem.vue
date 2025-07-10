@@ -3,7 +3,7 @@
     <view class="chatbox__search-list-item__content__img">
       <image
         :src="
-          product.item.cover || 'https://www.szlab.xyz/item/image/2025/03/08/dZbddacZcokZmsomf.png'
+          product.itemImage || 'https://www.szlab.xyz/item/image/2025/03/08/dZbddacZcokZmsomf.png'
         "
         lazy-load
         :showError="false"
@@ -11,25 +11,25 @@
       ></image>
     </view>
     <view class="chatbox__search-list-item__content__info-name">
-      <u-text :text="product.item.name"></u-text>
-      <u-icon name="lock" size="16" v-if="product.item.privacy === 1"></u-icon>
+      <u-text :text="product.itemName"></u-text>
+      <u-icon name="lock" size="16" v-if="product.privacy === 1"></u-icon>
     </view>
     <view class="chatbox__search-list-item__content__info-owner">
       <u-text text="→" size="18" v-if="product.label === 0 && isShare === true"></u-text>
       <u-avatar
         :src="
-          product.friend.avatar ||
+          product.relateAvatar ||
           'https://www.szlab.xyz/item/image/2025/03/08/cZZedZZcZZcaryknfnomf.png'
         "
         size="21"
         style="margin: 6px"
       ></u-avatar>
       <view class="chatbox__search-list-item__content__info-owner__username">
-        <u-text :text="product.friend.name" size="12" lineHeight="12"></u-text>
+        <u-text :text="product.relateName" size="12" lineHeight="12"></u-text>
       </view>
     </view>
     <view
-      v-if="isShare === false"
+      v-if="isShare === true"
       class="chatbox__search-list-item__content__button"
       :class="{ agreement: info === '同意' }"
       @click.stop="agreement"
@@ -55,7 +55,8 @@
 </template>
 
 <script setup lang="ts">
-import type { MessageItem } from '@/types/message'
+// import type { MessageItem } from '@/types/message'
+import type { ItemMessageDetail } from '@/types/message'
 import { ref, reactive } from 'vue'
 import { useFormStore } from '@/stores/form'
 import { useSpaceStore } from '@/stores/space'
@@ -69,7 +70,7 @@ const { selectMessage } = messageStore
 
 const props = defineProps<{
   // 通知中分页对象数据
-  item: MessageItem
+  item: ItemMessageDetail
   // 是否为物品分享界面
   isShare: boolean
   // 用户自身的userId
@@ -90,10 +91,10 @@ async function confirmGesture(password: string) {
   popup.value = false
   if (product.label === 1) {
     // 别人发给我的消息，别人的物品，传别人的userId
-    await getShareItemDetail(2, product.item.id, product.friend.userId, password)
+    await getShareItemDetail(2, product.itemId, product.relateId, password)
   } else {
     // 自己发给别人，传自己的userId
-    await getShareItemDetail(2, product.item.id, props.userId, password)
+    await getShareItemDetail(2, product.itemId, props.userId, password)
   }
   uni.navigateTo({
     url: `/pages/details/details?isShareItem=${isShareItem}`
@@ -104,10 +105,10 @@ async function confirmNumber(password: string) {
   popup.value = false
   if (product.label === 1) {
     // 别人发给我的消息，别人的物品，传别人的userId
-    await getShareItemDetail(2, product.item.id, product.friend.userId, password)
+    await getShareItemDetail(2, product.itemId, product.relateId, password)
   } else {
     // 自己发给别人，传自己的userId
-    await getShareItemDetail(2, product.item.id, props.userId, password)
+    await getShareItemDetail(2, product.itemId, props.userId, password)
   }
   uni.navigateTo({
     url: `/pages/details/details?isShareItem=${isShareItem}`
@@ -116,15 +117,15 @@ async function confirmNumber(password: string) {
 // 跳转到详情页
 const jumpDetail = async () => {
   // 是物品分享界面才可以执行跳转逻辑
-  if (product.item.privacy === 1) {
+  if (product.privacy === 1) {
     popup.value = true
   } else {
     if (product.label === 1) {
       // 别人发给我的消息，别人的物品，传别人的userId
-      await getShareItemDetail(2, product.item.id, product.friend.userId, '')
+      await getShareItemDetail(2, product.itemId, product.relateId, '')
     } else {
       // 自己发给别人，传自己的userId
-      await getShareItemDetail(2, product.item.id, props.userId, '')
+      await getShareItemDetail(2, product.itemId, props.userId, '')
     }
     uni.navigateTo({
       url: `/pages/details/details?isShareItem=${isShareItem}`
@@ -172,8 +173,8 @@ if (product.label === 0) {
 // 点击同意申请的按钮
 const agreement = async () => {
   if (info.value === '同意') {
-    await selectMessage(product.id, 1)
-    await addManagement(product.friend.userId, product.item.id)
+    await selectMessage(product.noticeId, 1)
+    await addManagement(product.relateId, product.itemId)
     info.value = '已同意'
     uni.showToast({
       title: '已同意'
@@ -182,7 +183,7 @@ const agreement = async () => {
 }
 // 点击撤销的按钮
 const withdraw = async () => {
-  await selectMessage(product.id, 2)
+  await selectMessage(product.noticeId, 2)
   info.value = '已撤销'
   uni.showToast({
     title: '已撤销申请'
