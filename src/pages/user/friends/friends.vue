@@ -146,7 +146,6 @@ import { searchFriendsByName } from '@/network/apis/friend'
 // 引入store
 const friendStore = useFriendStore()
 const {
-  getAllFriends,
   batchDeleteFriends,
   getPageGroupFriend,
   groupFriendInfo,

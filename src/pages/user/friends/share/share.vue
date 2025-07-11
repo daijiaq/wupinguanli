@@ -38,20 +38,20 @@
       </view>
     </view>
     <view
-      v-for="(group, groupIndex) in friendStore.friends"
+      v-for="(group, groupIndex) in groupStore.groupsInfo.records"
       :key="groupIndex"
       class="friends__group"
     >
       <u-text
-        @click="showFriendsBox[groupIndex] = !showFriendsBox[groupIndex]"
+        @click="getDetailFriend(group.id, groupIndex)"
         :suffixIcon="showFriendsBox[groupIndex] ? 'arrow-down' : 'arrow-right'"
-        :text="`${group.name}&nbsp;&nbsp;`"
+        :text="`${group.name}&nbsp;&nbsp;(${group.groupNum})`"
         size="35rpx"
         bold
       ></u-text>
       <view v-show="showFriendsBox[groupIndex]">
         <view
-          v-for="(friend, friendIndex) in group.friendVO"
+          v-for="(friend, friendIndex) in groupFriendsMap[group.id]?.records || []"
           @click="share(friend.userId)"
           :key="friendIndex"
           class="friends__group__item"
@@ -99,14 +99,14 @@ import type { Friend } from '@/types/friend'
 
 // 引入store
 const friendStore = useFriendStore()
-const { getAllFriends, shareItem } = friendStore
+const { shareItem, groupFriendsMap, getPageGroupFriend } = friendStore
 const groupStore = useGroupStore()
 const { getAllGroups } = groupStore
 const formStore = useFormStore()
 const userStore = useUserStore()
 onLoad(async () => {
   try {
-    await getAllFriends()
+    // await getAllFriends()
     getAllGroups()
   } catch (err) {
     uni.showToast({
@@ -118,8 +118,8 @@ onLoad(async () => {
 
 onPullDownRefresh(async () => {
   try {
-    if (!friendStore.friends[0]) await getAllFriends()
-    if (!groupStore.groupsInfo.groupsData[0]) getAllGroups()
+    // if (!friendStore.friends[0]) await getAllFriends()
+    if (!groupStore.groupsInfo.records[0]) getAllGroups()
   } catch (err) {
     uni.showToast({
       title: '获取好友列表失败, 请下拉刷新重试',
@@ -198,6 +198,12 @@ async function confirmShare() {
       title: '分享失败',
       icon: 'none'
     })
+  }
+}
+const getDetailFriend = async (groupId: number, groupIndex: number) => {
+  showFriendsBox.value[groupIndex] = !showFriendsBox.value[groupIndex]
+  if (showFriendsBox.value[groupIndex]) {
+    await getPageGroupFriend(groupId, 1, 10)
   }
 }
 </script>

@@ -57,12 +57,12 @@ export function addFriendAPI(noticeId: number, groupId: number, notes: string) {
 }
 
 // 获取所有好友(这个接口就是刚进好友页面一次性拉取所有分组和分组里面的好友 这个接口不用了)
-export function getAllFriendsAPI(): Promise<Group[]> {
-  return service({
-    url: `/friends`,
-    method: 'GET'
-  })
-}
+// export function getAllFriendsAPI(): Promise<Group[]> {
+//   return service({
+//     url: `/friends`,
+//     method: 'GET'
+//   })
+// }
 
 // 新接口搜索用户
 export function searchUserAPI(id: number): Promise<Friend> {
