@@ -27,11 +27,11 @@
     </view>
     <view v-if="searchedFriend.id" class="friends__new">
       <u-avatar
-        @click="share(searchedFriend.userId)"
+        @click="share(searchedFriend.id)"
         size="75rpx"
         :src="searchedFriend.avatar"
       ></u-avatar>
-      <view @click="share(searchedFriend.userId)" class="friends__new__information">
+      <view @click="share(searchedFriend.id)" class="friends__new__information">
         <u-text color="#353535" :text="searchedFriend.name"></u-text>
         <u-line color="rgba(255,255,255,0)" margin="5rpx 0"></u-line>
         <u-text color="#a4a4a4" size="20rpx" :text="`id: ${searchedFriend.id}`"></u-text>
@@ -52,7 +52,7 @@
       <view v-show="showFriendsBox[groupIndex]">
         <view
           v-for="(friend, friendIndex) in groupFriendsMap[group.id]?.records || []"
-          @click="share(friend.userId)"
+          @click="share(friend.id)"
           :key="friendIndex"
           class="friends__group__item"
         >
