@@ -48,6 +48,7 @@ import { useFormStore } from '@/stores/form'
 import { onReachBottom } from '@dcloudio/uni-app'
 import { storeToRefs } from 'pinia'
 import { ref, computed, toRefs, inject, watch } from 'vue'
+import type { Ref } from 'vue'
 import type { ItemList } from '@/types/search'
 const searchStore = useSearchStore()
 const { currentSearchList, currentScreenData, currentSearchInputData } = storeToRefs(searchStore)
@@ -63,7 +64,7 @@ const FormStore = useFormStore()
 const { getDetail } = FormStore
 // 是否是删除页面
 const isDeleted = inject<boolean>('isDetele', false)
-const isHistory = inject<boolean>('isHistory', false)
+const isHistory = inject<Ref<boolean>>('isHistory', ref(false))
 
 const props = defineProps<{
   isLoading: boolean
@@ -87,6 +88,14 @@ const popup = ref(false)
 const tempID = ref(0)
 const tempType = ref(0)
 async function setID(id: number, type: number, privacy: number): Promise<void> {
+  if (isHistory.value) {
+    uni.showToast({
+      title: '无法查看记录详情',
+      icon: 'none',
+      duration: 2000
+    })
+    return
+  }
   if (privacy) {
     tempID.value = id
     tempType.value = type
@@ -157,7 +166,7 @@ async function loadMoreItem() {
     } else if (currentSearchInputData.value.offset) {
       isDeleted ? await searchItemByInput(1) : await searchItemByInput(0)
     } else {
-      isHistory
+      isHistory.value
         ? fetchHistoryItem('')
         : isDeleted
         ? await fetchNewSearchList(1)
@@ -175,7 +184,7 @@ async function loadMoreItem() {
 const checkboxOperate = ref(false)
 
 const showOperate = (index: number) => {
-  if (!isHistory) {
+  if (!isHistory.value) {
     // 如果处在历史记录界面，则长按页面不起效果
     checkboxOperate.value = true
     currentSearchList.value.itemList[index].isChecked = true
@@ -188,6 +197,16 @@ const chooseItem = (item: ItemList) => {
   if (checkboxOperate.value) {
     item.isChecked = !item.isChecked
   } else {
+    console.log('isHistory inject:', isHistory.value)
+    // 如果是历史记录页面，禁止跳转详情页
+    if (isHistory.value) {
+      uni.showToast({
+        title: '无法查看记录详情',
+        icon: 'none',
+        duration: 2000
+      })
+      return
+    }
     // 非多选状态下跳转到详情页
     getDetail(item.type, item.id, '')
     uni.navigateTo({

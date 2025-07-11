@@ -262,7 +262,7 @@ export interface AddMessage {
    */
   userId: number
   /**
-   * 通知类型
+   * 通知类型(0系统1管理2好友3分享)
    */
   type: number
   /**
@@ -270,9 +270,17 @@ export interface AddMessage {
    */
   itemId: number
   /**
-   * 内容
+   * 通知内容
    */
   content: string
+  /**
+   * 被分享的好友id，无则留空
+   */
+  buddyId: number
+  /**
+   * 通知来源
+   */
+  source: string
 }
 
 // 响应的通知列表

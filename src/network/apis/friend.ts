@@ -153,15 +153,23 @@ export function sendApplicationAPI(
 /**
  * 分享物品[好像是旧接口 后面可能要改成新的]
  */
-export function shareItemAPI(ItemId: number, userId: number): Promise<Friend[]> {
+export function shareItemAPI(
+  ItemId: number,
+  userId: number,
+  content: string,
+  source = '',
+  buddyId?: number
+): Promise<Friend[]> {
   return service({
     method: 'POST',
     url: `/notices`,
     data: {
       userId,
       type: 3,
-      content: null,
-      itemId: ItemId
+      content,
+      itemId: ItemId,
+      source,
+      buddyId
     }
   })
 }
