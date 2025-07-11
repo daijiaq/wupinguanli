@@ -3,13 +3,27 @@
     <u-navbar bgColor="#f6f6f6" title="个人主页" :autoBack="true" />
     <view class="detail__item">
       <u-avatar size="132rpx" :src="friendStore.friend.avatar"></u-avatar>
-      <view class="detail__item__information">
-        <u-text color="#353535" size="30rpx" :text="friendStore.friend.name"></u-text>
+      <view class="detail__item__info">
+        <view class="detail__item__row">
+          <view class="detail__item__row__name">
+            <u-text
+              color="#353535"
+              size="30rpx"
+              :text="friendStore.friend.notes ? friendStore.friend.notes : friendStore.friend.name"
+            ></u-text>
+          </view>
+          <u-icon
+            @click="showCode = true"
+            size="36rpx"
+            name="grid"
+            class="detail__item__qrCode"
+          ></u-icon>
+        </view>
         <u-line color="rgba(255,255,255,0)" margin="10rpx 0"></u-line>
-        <u-text color="#a4a4a4" size="25rpx" :text="`id: ${friendStore.friend.id}`"></u-text>
-      </view>
-      <view class="detail__item__qrCode">
-        <u-icon @click="showCode = true" size="36rpx" name="grid"></u-icon>
+        <view class="detail__item__row detail__item__row--sub">
+          <u-text color="#a4a4a4" size="25rpx" :text="`昵称: ${friendStore.friend.name}`"></u-text>
+          <u-text color="#a4a4a4" size="25rpx" :text="`id: ${friendStore.friend.id}`"></u-text>
+        </view>
       </view>
     </view>
     <view class="detail__part">
@@ -361,17 +375,40 @@ async function confirmUpdateNote() {
 
   &__item {
     display: flex;
+    align-items: center;
     width: 650rpx;
     margin: 0 auto;
-    align-items: center;
 
-    &__information {
+    &__info {
       margin-left: 30rpx;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
-    &__qrCode {
-      height: 88rpx;
-      margin-left: 10rpx;
+    &__row {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      gap: 10rpx;
+      &__name {
+        flex-shrink: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-right: 16rpx;
+        .u-text {
+          display: inline-block;
+          max-width: unset;
+          flex: 1;
+          margin-right: 10rpx;
+          white-space: nowrap;
+        }
+      }
+      &__qrCode {
+        gap: 8rpx;
+      }
     }
   }
 

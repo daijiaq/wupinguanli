@@ -90,6 +90,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useFriendStore, useGroupStore } from '@/stores/friend'
+import { useUserStore } from '@/stores/user'
 import { useFormStore } from '@/stores/form'
 import { onLoad, onPullDownRefresh } from '@dcloudio/uni-app'
 
@@ -102,7 +103,7 @@ const { getAllFriends, shareItem } = friendStore
 const groupStore = useGroupStore()
 const { getAllGroups } = groupStore
 const formStore = useFormStore()
-
+const userStore = useUserStore()
 onLoad(async () => {
   try {
     await getAllFriends()
@@ -179,7 +180,12 @@ const share = (friendId: number) => {
 async function confirmShare() {
   showShare.value = false
   try {
-    await shareItem(formStore.itemData.id, shareId)
+    await userStore.fetchUserInfo()
+    await shareItem(
+      formStore.itemData.id,
+      shareId,
+      `${userStore.userInfo.name}向您分享了${formStore.itemData.name}`
+    )
     uni.showToast({
       title: '分享成功',
       icon: 'none'
