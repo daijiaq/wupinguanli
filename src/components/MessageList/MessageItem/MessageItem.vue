@@ -29,7 +29,7 @@
       </view>
     </view>
     <view
-      v-if="isShare === true"
+      v-if="isShare === false"
       class="chatbox__search-list-item__content__button"
       :class="{ agreement: info === '同意' }"
       @click.stop="agreement"
