@@ -15,7 +15,7 @@
       </view>
       <u-tabs :list="passwordTypeList" @click="tabClick" :scrollable="false"></u-tabs>
       <!-- 数字密码 -->
-      <view v-if="isNumber" class="password-popup__number">
+      <view v-if="isNumber" class="password-popup__number" @click="handleNumberClick">
         <NumberPassword
           ref="numberPasswordBox"
           @inputVerificationChange="inputVerificationChange"
@@ -221,7 +221,16 @@ const inputVerificationChange = (inputValues: string) => {
     numberPassword.value = inputValues
     props.isValidate ? validateNumberPassword() : setNumberPassword()
     numberPasswordBox.value.cleanVal()
+    // 清空后重新设置焦点，确保下次输入时键盘能正常弹出
+    setTimeout(() => {
+      isFocus.value = true
+    }, 200)
   }
+}
+
+// 点击数字密码区域，重新设置焦点
+const handleNumberClick = () => {
+  isFocus.value = true
 }
 
 // 关闭弹出框

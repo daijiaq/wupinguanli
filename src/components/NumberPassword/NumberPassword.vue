@@ -1,5 +1,5 @@
 <template>
-  <view class="acqui_verification_code">
+  <view class="acqui_verification_code" @click="handleContainerClick">
     <view class="verification_code_continor">
       <view
         v-for="(item, index) in latticeNum"
@@ -7,7 +7,7 @@
         class="verification_code_item"
         :class="{ verification_code_item_active: isItemActive(index) }"
         :style="latticeSty(index)"
-        @click="focusInput"
+        @click.stop="focusInput"
       >
         <template v-if="inputValues[index]">
           <view v-if="ciphertextSty == 1" class="point"></view>
@@ -85,17 +85,31 @@ export default {
   data() {
     return {
       inputValues: '', //输入的值,
-      blurShowLocal: true
+      blurShowLocal: true,
+      isInputFocused: false // 追踪输入框是否聚焦
     }
   },
   // 监控 show，显示时自动获取焦点
   computed: {
     isFocusLocal() {
-      return this.isFocus
+      return this.isFocus && this.isInputFocused
     }
   },
   mounted() {
     this.blurShowLocal = this.blurShow
+    // 组件挂载后立即聚焦
+    this.$nextTick(() => {
+      this.focusInput()
+    })
+  },
+  watch: {
+    isFocus(newVal) {
+      if (newVal) {
+        this.$nextTick(() => {
+          this.focusInput()
+        })
+      }
+    }
   },
   methods: {
     latticeSty(index: any) {
@@ -115,12 +129,23 @@ export default {
           (this.inputValues.length === this.latticeNum && index === this.latticeNum - 1))
       )
     },
+    // 处理容器点击事件
+    handleContainerClick() {
+      this.focusInput()
+    },
     // 点击密码框时重新聚焦
     focusInput() {
       this.$nextTick(() => {
         const input = this.$refs.hiddenInput as HTMLInputElement
-        if (input && input.focus) {
+        if (input) {
+          this.isInputFocused = true
           input.focus()
+          // 确保焦点设置成功，如果失败则重试
+          setTimeout(() => {
+            if (input && document.activeElement !== input) {
+              input.focus()
+            }
+          }, 100)
         }
       })
     },
@@ -149,16 +174,15 @@ export default {
       this.inputValues = ''
       // 清空后重新聚焦
       this.$nextTick(() => {
-        const input = this.$refs.hiddenInput as HTMLInputElement
-        if (input && input.focus) {
-          input.focus()
-        }
+        this.focusInput()
       })
     },
     blur() {
+      this.isInputFocused = false
       !this.blurShow ? (this.blurShowLocal = false) : ''
     },
     focus() {
+      this.isInputFocused = true
       !this.blurShow ? (this.blurShowLocal = true) : ''
     }
   }
