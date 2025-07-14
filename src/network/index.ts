@@ -41,7 +41,7 @@ const service = <T>(options: UniApp.RequestOptions): Promise<T> => {
               title: res.data.msg,
               icon: 'none'
             })
-            reject(res.data.data)
+            reject({ code: res.data.code, msg: res.data.msg, data: res.data.data })
             break
           case 101:
             uni.showToast({
@@ -56,24 +56,28 @@ const service = <T>(options: UniApp.RequestOptions): Promise<T> => {
             }, 1500)
             uni.removeStorageSync('token')
             uni.removeStorageSync('uuid')
+            reject({ code: res.data.code, msg: '您还未登录', data: res.data.data })
             break
           case 400:
             uni.showToast({
               title: '客户端异常',
               icon: 'error'
             })
+            reject({ code: res.data.code, msg: '客户端异常', data: res.data.data })
             break
           case 404:
             uni.showToast({
               title: '界面不存在',
               icon: 'error'
             })
+            reject({ code: res.data.code, msg: '界面不存在', data: res.data.data })
             break
           case 500:
             uni.showToast({
               title: '服务端异常',
               icon: 'error'
             })
+            reject({ code: res.data.code, msg: '服务端异常', data: res.data.data })
             break
           case 302:
             uni.showModal({
@@ -82,11 +86,13 @@ const service = <T>(options: UniApp.RequestOptions): Promise<T> => {
               showCancel: false,
               confirmText: '知道了'
             })
+            reject({ code: res.data.code, msg: res.data.msg, data: res.data.data })
             break
           default:
             uni.showToast({
-              title: '未知错误'
+              title: res.data.msg || '未知错误'
             })
+            reject({ code: res.data.code, msg: res.data.msg || '未知错误', data: res.data.data })
             break
         }
       })
