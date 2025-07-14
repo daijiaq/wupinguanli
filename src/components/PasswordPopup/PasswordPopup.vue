@@ -15,7 +15,7 @@
       </view>
       <u-tabs :list="passwordTypeList" @click="tabClick" :scrollable="false"></u-tabs>
       <!-- 数字密码 -->
-      <view v-if="isNumber" class="password-popup__number">
+      <view v-if="isNumber" class="password-popup__number" @click="handleNumberClick">
         <NumberPassword
           ref="numberPasswordBox"
           @inputVerificationChange="inputVerificationChange"
@@ -86,9 +86,6 @@ const passwordTypeList = ref([
 
 // 监听 popup 的 show 变化，更新子组件的 focus 状态
 const isFocus = ref(false)
-onUpdated(() => {
-  isFocus.value = props.popup
-})
 
 // 手势密码错误提示
 const lineError = ref(false)
@@ -99,8 +96,13 @@ watch(
   (newVal) => {
     if (newVal) {
       isClosePopup.value = false
+      // 延迟设置焦点，确保DOM渲染完成
+      setTimeout(() => {
+        isFocus.value = true
+      }, 100)
     } else {
       isClosePopup.value = true
+      isFocus.value = false
     }
     isShow.value = newVal
   }
@@ -111,10 +113,15 @@ const tabClick = (item: any) => {
   if (item.index) {
     isGesture.value = true
     isNumber.value = false
+    isFocus.value = false
   } else {
     // 向手势弹窗组件传递信息，解锁屏幕滚动
     isGesture.value = false
     isNumber.value = true
+    // 切换到数字密码时重新设置焦点
+    setTimeout(() => {
+      isFocus.value = true
+    }, 100)
   }
 }
 
@@ -214,7 +221,16 @@ const inputVerificationChange = (inputValues: string) => {
     numberPassword.value = inputValues
     props.isValidate ? validateNumberPassword() : setNumberPassword()
     numberPasswordBox.value.cleanVal()
+    // 清空后重新设置焦点，确保下次输入时键盘能正常弹出
+    setTimeout(() => {
+      isFocus.value = true
+    }, 200)
   }
+}
+
+// 点击数字密码区域，重新设置焦点
+const handleNumberClick = () => {
+  isFocus.value = true
 }
 
 // 关闭弹出框
