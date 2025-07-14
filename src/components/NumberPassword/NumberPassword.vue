@@ -1,13 +1,11 @@
 <template>
-  <view class="acqui_verification_code" @click="handleContainerClick">
+  <view class="acqui_verification_code">
     <view class="verification_code_continor">
       <view
         v-for="(item, index) in latticeNum"
         :key="index"
         class="verification_code_item"
-        :class="{ verification_code_item_active: isItemActive(index) }"
         :style="latticeSty(index)"
-        @click.stop="focusInputAtIndex(index)"
       >
         <template v-if="inputValues[index]">
           <view v-if="ciphertextSty == 1" class="point"></view>
@@ -15,13 +13,10 @@
             {{ ciphertextSty == 2 ? '*' : inputValues[index] }}
           </template>
         </template>
-        <!-- 显示光标 -->
-        <view v-if="shouldShowCursor(index)" class="cursor"></view>
       </view>
     </view>
     <div class="input-info">
       <input
-        ref="hiddenInput"
         :type="inputType"
         v-model="inputValues"
         :focus="isFocusLocal"
@@ -87,94 +82,28 @@ export default {
   data() {
     return {
       inputValues: '', //输入的值,
-      blurShowLocal: true,
-      isInputFocused: false, // 追踪输入框是否聚焦
-      currentFocusIndex: 0 // 当前焦点所在的索引
+      blurShowLocal: true
     }
   },
   // 监控 show，显示时自动获取焦点
   computed: {
     isFocusLocal() {
-      return this.isFocus && this.isInputFocused
+      return this.isFocus
     }
   },
   mounted() {
     this.blurShowLocal = this.blurShow
-    // 组件挂载后立即聚焦
-    this.$nextTick(() => {
-      this.focusInput()
-    })
-  },
-  watch: {
-    isFocus(newVal) {
-      if (newVal) {
-        this.$nextTick(() => {
-          this.focusInput()
-        })
-      }
-    },
-    inputValues(newVal) {
-      // 当输入值改变时，更新焦点位置到下一个空位
-      this.currentFocusIndex = Math.min(newVal.length, this.latticeNum - 1)
-    }
   },
   methods: {
     latticeSty(index: any) {
-      let str = `width:${this.latticeSize}rpx;height:${this.latticeSize}rpx;`
-      if (this.isItemActive(index)) {
-        str += this.borderCheckStyle
-      } else {
-        str += this.borderStyle
-      }
+      let str =
+        this.blurShowLocal &&
+        (this.inputValues.length === index ||
+          (this.inputValues.length === this.latticeNum && index === this.latticeNum - 1))
+          ? this.borderCheckStyle
+          : this.borderStyle
+      str += `;width:${this.latticeSize}rpx;height:${this.latticeSize}rpx`
       return str
-    },
-    // 判断当前项是否活跃
-    isItemActive(index: any) {
-      return this.blurShowLocal && this.isInputFocused && this.currentFocusIndex === index
-    },
-    // 判断是否显示光标
-    shouldShowCursor(index: any) {
-      return (
-        this.isInputFocused &&
-        this.currentFocusIndex === index &&
-        !this.inputValues[index] &&
-        this.blurShowLocal
-      )
-    },
-    // 处理容器点击事件
-    handleContainerClick() {
-      // 点击容器时，焦点定位到第一个空位
-      const emptyIndex = this.inputValues.length
-      this.currentFocusIndex = Math.min(emptyIndex, this.latticeNum - 1)
-      this.focusInput()
-    },
-    // 点击特定位置的密码框
-    focusInputAtIndex(index: number) {
-      // 如果点击的是已填充的位置，则定位到下一个空位
-      if (this.inputValues[index]) {
-        const emptyIndex = this.inputValues.length
-        this.currentFocusIndex = Math.min(emptyIndex, this.latticeNum - 1)
-      } else {
-        // 如果点击的是空位，则直接定位到该位置
-        this.currentFocusIndex = index
-      }
-      this.focusInput()
-    },
-    // 聚焦输入框
-    focusInput() {
-      this.$nextTick(() => {
-        const input = this.$refs.hiddenInput as HTMLInputElement
-        if (input) {
-          this.isInputFocused = true
-          input.focus()
-          // 确保焦点设置成功，如果失败则重试
-          setTimeout(() => {
-            if (input && document.activeElement !== input) {
-              input.focus()
-            }
-          }, 100)
-        }
-      })
     },
     // 获取输入框的值
     getValue() {
@@ -199,18 +128,11 @@ export default {
      */
     cleanVal() {
       this.inputValues = ''
-      this.currentFocusIndex = 0
-      // 清空后重新聚焦
-      this.$nextTick(() => {
-        this.focusInput()
-      })
     },
     blur() {
-      this.isInputFocused = false
       !this.blurShow ? (this.blurShowLocal = false) : ''
     },
     focus() {
-      this.isInputFocused = true
       !this.blurShow ? (this.blurShowLocal = true) : ''
     }
   }
@@ -225,8 +147,6 @@ export default {
     display: flex;
     justify-content: center;
     text-align: center;
-    align-items: center;
-    gap: 20rpx; /* 使用gap替代margin-left，更好的兼容性 */
 
     .verification_code_item {
       width: 60rpx;
@@ -234,66 +154,33 @@ export default {
       display: flex;
       align-items: center;
       justify-content: center;
-      border: 2rpx solid #e0e0e0;
-      border-radius: 8rpx;
-      background-color: #fff;
-      transition: all 0.3s ease;
-      cursor: pointer;
-      position: relative;
-
-      &.verification_code_item_active {
-        border-color: #8cbaff;
-        box-shadow: 0 0 8rpx rgba(140, 186, 255, 0.3);
-      }
+      display: flex;
     }
 
+    .verification_code_item:not(:first-child) {
+      margin-left: 20rpx;
+    }
     .point {
       width: 15rpx;
       height: 15rpx;
       background-color: #333;
-      border-radius: 50%;
-    }
-
-    .cursor {
-      position: absolute;
-      width: 2rpx;
-      height: 40rpx;
-      background-color: #8cbaff;
-      animation: blink 1s infinite;
-    }
-
-    @keyframes blink {
-      0%,
-      50% {
-        opacity: 1;
-      }
-      51%,
-      100% {
-        opacity: 0;
-      }
+      border-radius: 200px;
     }
   }
 
   .input-info {
-    position: absolute;
-    top: 0;
-    left: 0;
     width: 100%;
     height: 100%;
+    z-index: 8;
+    display: flex;
+    justify-content: center;
     overflow: hidden;
-    pointer-events: none;
 
     &__main {
       position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 1px;
+      width: 80%;
       height: 100%;
-      opacity: 0;
-      pointer-events: auto;
-      z-index: 999;
-      /* 确保输入框不完全移出视野，保持可聚焦 */
+      left: -100%;
     }
   }
 }

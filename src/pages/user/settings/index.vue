@@ -26,12 +26,26 @@
         ></u-switch>
         <u-divider line-color="#d9d9d9"></u-divider>
       </view> -->
-      <!-- <view class="settings__item">
+      <view class="settings__item">
+        <view class="settings__item__left">
+          <u-text text="直接删除物品不放入回收站" size="15"></u-text>
+        </view>
+        <u-switch :activeValue="1" :inactiveValue="0"></u-switch>
+        <u-divider line-color="#d9d9d9"></u-divider>
+      </view>
+      <view class="settings__item">
+        <view class="settings__item__left">
+          <u-text text="wifi下自动更新" size="15"></u-text>
+        </view>
+        <u-switch :activeValue="1" :inactiveValue="0"></u-switch>
+        <u-divider line-color="#d9d9d9"></u-divider>
+      </view>
+      <view class="settings__item">
         <view class="settings__item__left">
           <u-text text="设置私密物品不可见" size="15"></u-text>
         </view>
         <u-switch
-          v-model="settingsData.privacyDisplay"
+          v-model="settingsData.privacyItemInvisible"
           :activeValue="1"
           :inactiveValue="0"
           @change="setPrivacyDisplay"
@@ -39,17 +53,17 @@
         <view
           class="settings__item__change-pwd"
           @click="changePrivacyDisplay"
-          :style="{ color: settingsData.privacyDisplay ? '#3988ff' : '#d9d9d9' }"
+          :style="{ color: settingsData.privacyItemInvisible ? '#3988ff' : '#d9d9d9' }"
           >修改密码</view
         >
         <u-divider line-color="#d9d9d9"></u-divider>
-      </view> -->
+      </view>
       <view class="settings__item">
         <view class="settings__item__left">
           <u-text text="私密物品使用通用密码" size="15"></u-text>
         </view>
         <u-switch
-          v-model="settingsData.unifiedPassword"
+          v-model="settingsData.unifiedPasswordUsed"
           :activeValue="1"
           :inactiveValue="0"
           @change="setUnifiedPassword"
@@ -57,7 +71,25 @@
         <view
           class="settings__item__change-pwd"
           @click="changeUnifiedPassword"
-          :style="{ color: settingsData.unifiedPassword ? '#3988ff' : '#d9d9d9' }"
+          :style="{ color: settingsData.unifiedPasswordUsed ? '#3988ff' : '#d9d9d9' }"
+          >修改密码</view
+        >
+        <u-divider line-color="#d9d9d9"></u-divider>
+      </view>
+      <view class="settings__item">
+        <view class="settings__item__left">
+          <u-text text="开启隐藏空间" size="15"></u-text>
+        </view>
+        <u-switch
+          v-model="settingsData.privacyDisplay"
+          :activeValue="1"
+          :inactiveValue="0"
+          @change="setPrivacyDisplayRoom"
+        ></u-switch>
+        <view
+          class="settings__item__change-pwd"
+          @click="changePrivacyDisplayRoom"
+          :style="{ color: settingsData.privacyDisplay ? '#3988ff' : '#d9d9d9' }"
           >修改密码</view
         >
         <u-divider line-color="#d9d9d9"></u-divider>
@@ -68,6 +100,13 @@
         </view>
         <u-divider line-color="#d9d9d9"></u-divider>
         <u-icon name="arrow-right" color="#0F0F0F"></u-icon>
+      </view>
+      <view class="settings__item">
+        <view class="settings__item__left">
+          <u-text text="版本信息" size="15"></u-text>
+        </view>
+        <u-switch :activeValue="1" :inactiveValue="0"></u-switch>
+        <u-divider line-color="#d9d9d9"></u-divider>
       </view>
     </view>
     <PasswordPopup
@@ -108,29 +147,34 @@ onShow(async () => {
   await initSettings()
   // 初始化
   settingsData.allowManagement = settingsInfo.value.allowManagement
+  settingsData.privacyItemInvisible = settingsInfo.value.privacyItemInvisible
+  settingsData.unifiedPasswordUsed = settingsInfo.value.unifiedPasswordUsed
   settingsData.privacyDisplay = settingsInfo.value.privacyDisplay
-  settingsData.unifiedPassword = settingsInfo.value.unifiedPassword
 })
 
 // 设置数据
 const settingsData = reactive({
   allowManagement: settingsInfo.value.allowManagement,
-  privacyDisplay: settingsInfo.value.privacyDisplay,
-  unifiedPassword: settingsInfo.value.unifiedPassword
+  privacyItemInvisible: settingsInfo.value.privacyItemInvisible,
+  unifiedPasswordUsed: settingsInfo.value.unifiedPasswordUsed,
+  privacyDisplay: settingsInfo.value.privacyDisplay
 })
 
 //密码弹窗
 const popup = ref(false)
 const clearPopup = ref(false)
 const changePasswordPopup = ref(false)
-const tempType = ref<0 | 1>(0)
+// 0隐私物品使用的通用密码 1开启隐藏空间密码,2设置私密物品不可见密码
+const tempType = ref<0 | 1 | 2>(0)
 
 // 监听设置密码弹窗
 watch(
   () => popup.value,
   () => {
-    if (!popup.value && !settingsInfo.value.privacyDisplay) settingsData.privacyDisplay = 0
-    if (!popup.value && !settingsInfo.value.unifiedPassword) settingsData.unifiedPassword = 0
+    if (!popup.value && !settingsInfo.value.privacyItemInvisible)
+      settingsData.privacyItemInvisible = 0
+    if (!popup.value && !settingsInfo.value.unifiedPasswordUsed)
+      settingsData.unifiedPasswordUsed = 0
   }
 )
 
@@ -138,35 +182,39 @@ watch(
 watch(
   () => clearPopup.value,
   () => {
-    if (!clearPopup.value && settingsInfo.value.privacyDisplay) settingsData.privacyDisplay = 1
-    if (!clearPopup.value && settingsInfo.value.unifiedPassword) settingsData.unifiedPassword = 1
+    if (!clearPopup.value && settingsInfo.value.privacyItemInvisible)
+      settingsData.privacyItemInvisible = 1
+    if (!clearPopup.value && settingsInfo.value.unifiedPasswordUsed)
+      settingsData.unifiedPasswordUsed = 1
   }
 )
 
 // 设置设置私密物品不可见
 const setPrivacyDisplay = () => {
   // 开启密码
-  if (settingsData.privacyDisplay) {
+  if (settingsData.privacyItemInvisible) {
+    updateSettingsStore(settingsData.allowManagement, settingsData.privacyItemInvisible)
     popup.value = true
-    tempType.value = 1
+    tempType.value = 2
   } else {
+    updateSettingsStore(settingsData.allowManagement, settingsData.privacyItemInvisible)
     // 清空密码
-    tempType.value = 1
+    tempType.value = 2
     clearPopup.value = true
   }
 }
 
 // 修改私密物品不可见密码
 const changePrivacyDisplay = () => {
-  if (settingsData.privacyDisplay) {
+  if (settingsData.privacyItemInvisible) {
     changePasswordPopup.value = true
-    tempType.value = 1
+    tempType.value = 2
   }
 }
 
 // 设置私密物品使用通用密码
 const setUnifiedPassword = () => {
-  if (settingsData.unifiedPassword) {
+  if (settingsData.unifiedPasswordUsed) {
     popup.value = true
     tempType.value = 0
   } else {
@@ -175,9 +223,28 @@ const setUnifiedPassword = () => {
   }
 }
 
+// 设置隐藏空间密码
+const setPrivacyDisplayRoom = () => {
+  if (settingsData.privacyDisplay) {
+    popup.value = true
+    tempType.value = 1
+  } else {
+    tempType.value = 1
+    clearPopup.value = true
+  }
+}
+
+// 修改隐藏空间密码
+const changePrivacyDisplayRoom = () => {
+  if (settingsData.privacyDisplay) {
+    changePasswordPopup.value = true
+    tempType.value = 1
+  }
+}
+
 // 修改私密物品使用通用密码
 const changeUnifiedPassword = () => {
-  if (settingsData.unifiedPassword) {
+  if (settingsData.unifiedPasswordUsed) {
     changePasswordPopup.value = true
     tempType.value = 0
   }
@@ -202,8 +269,8 @@ async function confirmGesture(password: string) {
     title: '设置成功',
     icon: 'success'
   })
-  if (tempType.value) settingsData.privacyDisplay = 1
-  else settingsData.unifiedPassword = 1
+  if (tempType.value) settingsData.privacyItemInvisible = 1
+  else settingsData.unifiedPasswordUsed = 1
 }
 
 // 开启数字密码
@@ -215,8 +282,8 @@ async function confirmNumber(password: string) {
     title: '设置成功',
     icon: 'success'
   })
-  if (tempType.value) settingsData.privacyDisplay = 1
-  else settingsData.unifiedPassword = 1
+  if (tempType.value) settingsData.privacyItemInvisible = 1
+  else settingsData.unifiedPasswordUsed = 1
 }
 
 // 修改密码
@@ -228,7 +295,7 @@ const confirmChangePassword = async (password: string) => {
       title: '验证成功，请设置新密码',
       icon: 'none'
     })
-    if (settingsData.privacyDisplay) {
+    if (settingsData.privacyItemInvisible) {
       setPrivacyDisplay()
     } else {
       setUnifiedPassword()
@@ -250,7 +317,7 @@ const goToAccount = () => {
 
 // 界面隐藏时更新设置
 onHide(() => {
-  updateSettingsStore(settingsData.allowManagement)
+  updateSettingsStore(settingsData.allowManagement, settingsData.privacyItemInvisible)
 })
 </script>
 
