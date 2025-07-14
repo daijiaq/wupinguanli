@@ -85,9 +85,10 @@
 <script setup lang="ts">
 import { ref, reactive, watch, inject } from 'vue'
 import type { ItemList, ItemPath, ExtendItemListPath } from '@/types/search'
+import type { Ref } from 'vue'
 
 // 是否为历史搜索页
-const isHistory = inject<boolean>('isHistory', false)
+const isHistory = inject<Ref<boolean>>('isHistory', ref(false))
 
 const props = defineProps<{
   // 当前物品
@@ -123,7 +124,8 @@ watch(
 watch(props.itemData, (val) => {
   val.cover
     ? (searchItemData.cover = val.cover)
-    : (searchItemData.cover = 'https://www.szlab.xyz/item/image/2025/03/08/ZeeZdZdcdbcdeZtksBsdlomf.png')
+    : (searchItemData.cover =
+        'https://www.szlab.xyz/item/image/2025/03/08/ZeeZdZdcdbcdeZtksBsdlomf.png')
   ;({
     id: searchItemData.id,
     name: searchItemData.name,
@@ -166,7 +168,9 @@ const searchItemData = reactive<ExtendItemListPath>({
   name: props.itemData.name,
   type: props.itemData.type,
   privacy: props.itemData.privacy,
-  cover: props.itemData.cover ? props.itemData.cover : 'https://www.szlab.xyz/item/image/2025/03/08/ZeeZdZdcdbcdeZtksBsdlomf.png',
+  cover: props.itemData.cover
+    ? props.itemData.cover
+    : 'https://www.szlab.xyz/item/image/2025/03/08/ZeeZdZdcdbcdeZtksBsdlomf.png',
   isChecked: props.itemData.isChecked,
   log: props.itemData.log,
   path: props.itemData.path ? formatPath(props.itemData.path) : ''
@@ -189,14 +193,17 @@ const onClick = (id: number, type: number, privacy: number) => {
 .search-list-item {
   width: 100vw;
   padding: 30rpx 30rpx 0 55rpx;
-  height: 168rpx;
+  min-height: 168rpx;
+  align-items: flex-start;
 
   &__content {
     position: relative;
     display: flex;
     width: 86%;
-    height: 100%;
+    // height: 100%;
     border-bottom: 1px solid #dae1ff;
+    align-items: flex-start;
+    padding-bottom: 23rpx;
 
     &__img-wrapper {
       position: relative;
@@ -226,7 +233,9 @@ const onClick = (id: number, type: number, privacy: number) => {
       display: flex;
       flex-direction: column;
       width: 100%;
-      height: 135rpx;
+      // height: 135rpx;
+      flex: 1;
+      // justify-content: center;
 
       &__info {
         display: flex;
@@ -237,7 +246,8 @@ const onClick = (id: number, type: number, privacy: number) => {
         &__text {
           max-width: 250rpx;
           overflow: hidden;
-          text-overflow: ellipsis;
+          word-break: break-all;
+          // text-overflow: ellipsis;
           margin-right: 26rpx;
           font-size: 32rpx;
           color: $uni-text-color;
@@ -271,27 +281,36 @@ const onClick = (id: number, type: number, privacy: number) => {
       }
 
       &__detail {
-        position: absolute;
-        bottom: 0;
+        // position: absolute;
+        // bottom: 0;
+        position: relative;
+        margin-top: 20rpx;
+        width: 100%;
 
         &__history {
           display: flex;
           align-items: flex-start;
           max-width: 420rpx;
-          height: 40rpx;
+          // height: 40rpx;
           margin-bottom: 35rpx;
         }
 
         &__date {
           position: absolute;
-          top: 70rpx;
-          left: 250rpx;
-          width: 300rpx;
+          right: 0;
+          bottom: -6rpx;
+          // top: 70rpx;
+          // left: 250rpx;
+          margin-top: 10rpx;
+          // width: 300rpx;
           font-size: 22rpx;
           color: #979797;
         }
       }
     }
   }
+}
+::v-deep .search-list-item__content__info-wrapper__info__text.data-v-03d4d86c {
+  max-width: 100%;
 }
 </style>

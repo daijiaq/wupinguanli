@@ -36,7 +36,8 @@ const { currentSearchList } = storeToRefs(searchStore)
 const { fetchHistoryItem } = searchStore
 
 // 表示当前为历史记录页
-provide('isHistory', true)
+const isHistory = ref(true)
+provide('isHistory', isHistory)
 
 // 搜索框获取焦点之后取消多选状态
 const cancelMultiple = ref(false)
@@ -102,5 +103,11 @@ onShow(() => {
 <style lang="scss" scoped>
 .history {
   overflow-x: hidden;
+}
+::v-deep .search-input.data-v-53960f6d {
+  width: 90vw;
+}
+::v-deep .search-input__content.data-v-53960f6d {
+  width: 90vw;
 }
 </style>

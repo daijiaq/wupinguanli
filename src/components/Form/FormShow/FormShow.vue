@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 const props = defineProps<{
   // 是否显示
   show: boolean
@@ -30,18 +30,30 @@ const props = defineProps<{
   // 链接
   url?: string
 }>()
-const tempShow = ref(props.show)
+// const tempShow = ref(props.show)
 const emits = defineEmits<{
   //更新是否显示布尔值
   (e: 'update:show', show: boolean): void
   (e: 'click'): void
 }>()
-watch(
-  () => tempShow.value,
-  () => {
-    emits('update:show', tempShow.value)
-  }
-)
+// 新增父级show变化的监听
+// watch(
+//   () => props.show,
+//   (newVal) => {
+//     tempShow.value = newVal
+//   }
+// )
+// watch(
+//   () => tempShow.value,
+//   () => {
+//     emits('update:show', tempShow.value)
+//   }
+// )
+
+const tempShow = computed({
+  get: () => props.show,
+  set: (value: boolean) => emits('update:show', value)
+})
 //跳转页面
 const toPlus = (): void => {
   if (props.url)

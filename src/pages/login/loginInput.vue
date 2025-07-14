@@ -30,6 +30,7 @@
             background-color: #f7f8f9;
             letter-spacing: 2rpx;
           "
+          @focus="onPasswordFocus"
         ></u-input>
       </u-form-item>
     </u-form>
@@ -164,6 +165,8 @@ userIdArr.value = JSON.parse(uni.getStorageSync('userId') || '[]')
 //     }
 //   })
 // }
+// 密码输入框聚焦时关闭 loading
+const loginFailed = ref(false)
 const loginSubmit = () => {
   loginFormRef.value.validate().then(async () => {
     try {
@@ -194,12 +197,36 @@ const loginSubmit = () => {
           url: '/pages/home/home'
         })
       }, 1500)
-    } catch {
+    } catch (error) {
+      let msg = '未知错误'
+      if (error) {
+        if (typeof error === 'string') {
+          msg = error
+        } else if (typeof error === 'object') {
+          if (error.msg) msg = error.msg
+          else if (error.message) msg = error.message
+          else msg = JSON.stringify(error)
+        }
+      }
+      uni.showToast({
+        title: msg,
+        icon: 'none',
+        position: 'top'
+      })
       auth.toLogin = true
       auth.logined = false
-      isLoading.value = false
+      // 不立刻关闭 loading
+      loginFailed.value = true
     }
   })
+}
+
+// 密码输入框聚焦时关闭 loading
+const onPasswordFocus = () => {
+  if (loginFailed.value) {
+    isLoading.value = false
+    loginFailed.value = false
+  }
 }
 </script>
 

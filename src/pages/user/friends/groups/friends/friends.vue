@@ -38,30 +38,37 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
 import type { Group, Friend, BuddyVO } from '@/types/friend'
-import { useFriendStore } from '@/stores/friend'
+import { useFriendStore, useGroupStore } from '@/stores/friend'
 import { onShow } from '@dcloudio/uni-app'
 const friendStore = useFriendStore()
-
+const groupStore = useGroupStore()
+const fetchUngroupedFriends = async (unGroupId: number) => {
+  await friendStore.getPageGroupFriend(unGroupId, 1, 10)
+  if (friendStore.groupFriendsMap[unGroupId]) {
+    friends.friendVO = friendStore.groupFriendsMap[unGroupId].records
+  }
+}
 const friends = reactive({
   friendVO: [] as BuddyVO[] // 存储未分组好友
 })
 
-const fetchUngroupedFriends = async () => {
-  await friendStore.getPageGroupFriend(94, 1, 10)
-  await friendStore.getPageGroupFriend(0, 1, 10)
+// const fetchUngroupedFriends = async () => {
+//   await friendStore.getPageGroupFriend(94, 1, 10)
+//   await friendStore.getPageGroupFriend(0, 1, 10)
 
-  const records94 = friendStore.groupFriendsMap[94].records || []
+//   const records94 = friendStore.groupFriendsMap[94].records || []
 
-  const records0 = friendStore.groupFriendsMap[0].records || []
+//   const records0 = friendStore.groupFriendsMap[0].records || []
 
-  friends.friendVO = [...records94, ...records0]
-  // if (friendStore.groupFriendsMap[94]) {
-  //   friends.friendVO = friendStore.groupFriendsMap[94].records
-  // }
-}
+//   friends.friendVO = [...records94, ...records0]
+//   // if (friendStore.groupFriendsMap[94]) {
+//   //   friends.friendVO = friendStore.groupFriendsMap[94].records
+//   // }
+// }
 
 onShow(() => {
-  fetchUngroupedFriends()
+  const unGroupId = groupStore.groupsInfo.records[0].id // 获取未分组的ID
+  fetchUngroupedFriends(unGroupId)
 })
 
 // 确认并返回

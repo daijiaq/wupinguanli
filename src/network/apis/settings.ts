@@ -10,15 +10,15 @@ export function getAllSettings(): Promise<Settings> {
 }
 
 // 更改设置
-export function updateSettings(allowManagement: 0 | 1): Promise<null> {
+export function updateSettings(allowManagement: 0 | 1, privacyItemInvisible: 0 | 1): Promise<null> {
   return service({
-    url: `/settings?type=${allowManagement}&open=0&wifi=0&recycleBin=0&privacyItemInvisible=0`,
+    url: `/settings?type=${allowManagement}&open=0&wifi=0&recycleBin=0&privacyItemInvisible=${privacyItemInvisible}`,
     method: 'PUT'
   })
 }
 
 // 设置密码
-export function setPassword(password: string, type: 0 | 1): Promise<null> {
+export function setPassword(password: string, type: 0 | 1 | 2): Promise<null> {
   return service({
     url: `/settings/on/${type}?password=${password}`,
     method: 'PUT'
@@ -26,7 +26,7 @@ export function setPassword(password: string, type: 0 | 1): Promise<null> {
 }
 
 // 清空设置密码
-export function clearPassword(type: 0 | 1): Promise<null> {
+export function clearPassword(type: 0 | 1 | 2): Promise<null> {
   return service({
     url: `/settings/off/${type}`,
     method: 'PUT'
@@ -34,7 +34,7 @@ export function clearPassword(type: 0 | 1): Promise<null> {
 }
 
 // 验证设置密码
-export function validatePassword(password: string, type: 0 | 1): Promise<null> {
+export function validatePassword(password: string, type: 0 | 1 | 2): Promise<null> {
   return service({
     url: `/settings/valid/${type}?password=${password}`
   })
@@ -78,7 +78,7 @@ export function changeToken(
   identify = 0
 ): Promise<LoginResponse> {
   return service({
-    url: `/users/login/userId?loginId=${loginId}&password=${password}&identify=0`,
+    url: `/users/login/userId?loginId=${loginId}&password=${password}&identify=${identify}`,
     method: 'PUT'
   })
 }

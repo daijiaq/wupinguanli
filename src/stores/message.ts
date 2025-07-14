@@ -97,14 +97,10 @@ export const useMessageStore = defineStore('message', () => {
     friendHasUnreadMsg.value = false
     itemShareUnreadMsg.value = false
     const dots = await getDots()
-    // 遍历
-    for (let i = 0; i < dots.length; i++) {
-      if (dots[i] === 1) {
-        if (i === 0) systemHasUnreadMsg.value = true
-        else if (i === 2) friendHasUnreadMsg.value = true
-        else if (i === 3) itemShareUnreadMsg.value = true
-      }
-    }
+    systemHasUnreadMsg.value = dots[0] !== 0
+    friendHasUnreadMsg.value = dots[2] !== 0
+    itemShareUnreadMsg.value = dots[3] !== 0
+
     console.log(friendHasUnreadMsg.value)
   }
 

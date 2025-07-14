@@ -13,7 +13,7 @@
           :maxlength="maxLength"
           :disabled="disabled"
           :disabledColor="'#fff'"
-          :type="type"
+          :type="getInputType"
           v-model="tempInput"
           @blur="changeInput"
         />
@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 const props = withDefaults(
   defineProps<{
     // 是否显示输入框
@@ -68,6 +68,15 @@ const props = withDefaults(
     span: 10
   }
 )
+
+// 计算输入框类型，金额字段使用digit类型以支持小数点
+const getInputType = computed(() => {
+  if (props.name === '金额' && props.type === 'number') {
+    return 'digit'
+  }
+  return props.type
+})
+
 //输入内容
 const tempInput = ref(props.input)
 const emits = defineEmits<{

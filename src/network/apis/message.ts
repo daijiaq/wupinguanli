@@ -46,7 +46,14 @@ export function getShareItem(
 }
 
 // 添加通知
-export function addMessage({ userId, type, itemId, content }: AddMessage): Promise<null> {
+export function addMessage({
+  userId,
+  type,
+  itemId,
+  content,
+  buddyId,
+  source
+}: AddMessage): Promise<null> {
   return service({
     url: `/notices`,
     method: 'POST',
@@ -54,7 +61,9 @@ export function addMessage({ userId, type, itemId, content }: AddMessage): Promi
       userId,
       type,
       itemId,
-      content
+      content,
+      source,
+      buddyId
     }
   })
 }
