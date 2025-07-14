@@ -1,3 +1,137 @@
+# 理物丨物品收纳管理流转
+
+## 主要功能
+- **空间/物品管理**：支持空间（如房间、柜子）与物品的分层级管理，可新建、编辑、删除、批量移动。
+- **标签与筛选**：为物品添加标签，支持多条件筛选和搜索。
+- **物品流转与历史**：记录物品的流转、修改、删除等历史。
+- **协同管理**：支持多用户共同管理物品。
+- **隐私保护**：支持隐私物品设置、统一密码、手势/数字密码验证。
+- **二维码**：为物品生成二维码，便于扫码查找。
+- **消息与通知**：集成消息中心，支持系统消息、好友申请、物品分享等。
+- **好友与分组**：支持好友管理、分组、分享物品。
+- **多端适配**：支持微信小程序、H5、App等多端。
+
+## 技术栈
+- [uni-app](https://uniapp.dcloud.io/)（跨端开发框架）
+- [Vue 3](https://v3.cn.vuejs.org/)
+- [Pinia](https://pinia.vuejs.org/)（状态管理）
+- [TypeScript](https://www.typescriptlang.org/)
+- [uview-plus](https://www.uviewui.com/)（UI组件库）
+- [Vite](https://vitejs.dev/)（构建工具）
+- [ESLint](https://eslint.org/)、[Prettier](https://prettier.io/)（代码规范）
+
+## 安装与启动
+
+### 环境要求
+- Node.js >= 18.12.1
+- npm >= 8.19.2
+
+### 安装依赖
+```bash
+npm install
+```
+
+### 启动开发环境
+- 微信小程序：
+```bash
+npm run dev:mp-weixin
+```
+
+> 也可使用 HBuilderX 打开项目根目录进行可视化开发和调试。
+
+### 构建发布
+- 微信小程序构建：
+```bash
+npm run build:mp-weixin
+```
+
+## 目录结构
+```
+├── src/
+│   ├── App.vue                # 入口组件
+│   ├── main.ts                # 入口文件
+│   ├── components/            # 通用组件
+│   ├── network/               # API 请求
+│   ├── pages/                 # 页面目录
+│   ├── stores/                # Pinia 状态管理
+│   ├── types/                 # TypeScript 类型定义
+│   ├── utils/                 # 工具函数
+│   ├── static/                # 静态资源
+│   └── uni.scss               # 全局样式
+├── package.json
+├── vite.config.ts
+├── tsconfig.json
+├── project.config.json        # 小程序配置
+├── project.private.config.json
+├── index.html
+└── readme.md
+```
+
+---
+
+## 目录结构详细说明
+
+### src/components
+**描述**：存放全局可复用的 Vue 组件。每个子文件夹为一个独立组件，便于维护和复用。
+- `Form/`：表单相关组件（如输入框、日期、标签、图片上传等）。
+- `Space/`：空间/物品展示相关组件。
+- `MessageList/`：消息列表及消息项组件。
+- `PasswordPopup/`、`GesturePassword/`、`NumberPassword/`：密码输入与验证相关组件。
+- `Tag/`、`SortButton/`、`SearchInput/` 等：标签、排序、搜索等通用功能组件。
+
+#### 代码逻辑详细解释（以 FormInput.vue 为例）
+- **功能**：通用表单输入组件，支持文本、数字、金额等多种类型，支持禁用、最大长度、单位显示等。
+- **props**：
+  - `display`：是否显示输入框（否则显示只读内容）。
+  - `unitName`：单位名称（如“元”）。
+  - `input`：输入内容，支持双向绑定。
+  - `maxLength`：最大输入长度。
+  - `disabled`：是否禁用输入。
+  - `placeHolder`：占位符。
+  - `name`：字段名。
+  - `type`：输入类型（text/number/digit等）。
+  - `span`：输入框所占列宽。
+- **逻辑**：
+  - 通过 `v-model` 实现输入内容的双向绑定。
+  - `getInputType` 计算属性：若字段为“金额”且类型为 number，则输入类型为 digit（支持小数点）。
+  - `changeInput` 方法：输入框失焦时，触发 `update:input` 和 `onLossFocus` 事件，便于父组件同步数据。
+  - 支持插槽，可在字段名后自定义图标。
+  - 若 `display` 为 false 且禁用，显示只读内容并可点击复制链接。
+- **样式**：简单的底部间距，支持自定义扩展。
+
+### src/pages
+**描述**：存放所有页面视图，每个子文件夹对应一个页面或页面分组。
+- `home/`：首页及空间管理相关页面。
+- `login/`：登录相关页面。
+- `user/`：用户中心、设置、反馈、历史等页面。
+- `message/`：消息中心及聊天相关页面。
+- `new/`、`edit/`、`search/`、`square/` 等：新建、编辑、搜索、广场等功能页面。
+
+### src/network
+**描述**：API 请求相关代码。
+- `index.ts`：请求封装与拦截器。
+- `apis/`：按业务模块拆分的 API 文件（如 user.ts、form.ts、space.ts 等）。
+
+### src/stores
+**描述**：Pinia 状态管理，按业务模块拆分（如 user、form、space、message、settings、tag、friend、search 等）。
+
+### src/types
+**描述**：TypeScript 类型定义，按业务模块拆分，便于类型安全和 IDE 智能提示。
+
+### src/utils
+**描述**：工具函数与通用类型定义（如 SDK 封装、通用工具、类型辅助等）。
+
+### src/static
+**描述**：静态资源文件夹，包含图片、字体、iconfont 等，按功能或模块分类存放。
+
+### 其他文件
+- `App.vue`、`main.ts`：应用入口。
+- `uni.scss`：全局样式。
+- `manifest.json`、`pages.json`、`project.config.json`：uni-app 配置文件。
+- `package.json`、`vite.config.ts`、`tsconfig.json`：依赖、构建、类型配置。
+
+---
+
 # 开发规范
 
 ## 代码质量和风格
@@ -89,4 +223,3 @@
   - npm 8.19.2 以上
   - 推荐淘宝镜像源
   - 建议 vscode 开启 eslint、prettier 插件
-  - 
