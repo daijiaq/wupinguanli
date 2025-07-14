@@ -6,7 +6,6 @@ import {
   deleteGroupAPI,
   updateGroupAPI,
   addFriendAPI,
-  getAllFriendsAPI,
   searchUserAPI,
   moveFriendAPI,
   updateFriendNoteAPI,
@@ -131,10 +130,10 @@ export const useFriendStore = defineStore('friend', () => {
     newGroupId.value = newGroup
   }
 
-  //获取所有好友
-  async function getAllFriends(): Promise<void> {
-    friends.value = await getAllFriendsAPI()
-  }
+  //获取所有好友(变更为分组获取好友)
+  // async function getAllFriends(): Promise<void> {
+  //   friends.value = await getAllFriendsAPI()
+  // }
 
   // 搜索用户
   async function searchUser(id: number): Promise<Friend> {
@@ -170,8 +169,14 @@ export const useFriendStore = defineStore('friend', () => {
     await sendApplicationAPI(id, notes, validMessage, source)
   }
 
-  async function shareItem(ItemId: number, friendId: number) {
-    await shareItemAPI(ItemId, friendId)
+  async function shareItem(
+    ItemId: number,
+    userId: number,
+    content: string,
+    source = '',
+    buddyId?: number
+  ) {
+    await shareItemAPI(ItemId, userId, content, source, buddyId)
   }
 
   // 批量移动分组好友id数组
@@ -227,7 +232,6 @@ export const useFriendStore = defineStore('friend', () => {
   }
   return {
     addFriend,
-    getAllFriends,
     friends,
     searchUser,
     moveIds,

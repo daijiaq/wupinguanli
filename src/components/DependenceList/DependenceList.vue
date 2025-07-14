@@ -22,6 +22,7 @@
 
 <script setup lang="ts">
 import { useSearchStore } from '@/stores/search'
+import { useFormStore } from '@/stores/form'
 import { onReachBottom } from '@dcloudio/uni-app'
 import { storeToRefs } from 'pinia'
 import { ref, computed, toRefs } from 'vue'
@@ -30,6 +31,8 @@ import type { ItemList } from '@/types/search'
 const searchStore = useSearchStore()
 const { currentSearchList, currentScreenData, currentSearchInputData } = storeToRefs(searchStore)
 const { fetchNewSearchList, fetchScreenSearchList, searchItemByInput } = searchStore
+
+const formStore = useFormStore()
 
 const props = defineProps<{
   isLoading: boolean
@@ -71,8 +74,39 @@ async function loadMoreItem() {
 
 // 点击
 const chooseItem = (item: ItemList) => {
+  // 检查物品是否已经关联
+  const isAlreadyRelated = checkIfItemAlreadyRelated(item.id)
+
+  if (isAlreadyRelated) {
+    // 弹窗提示用户此物品已经关联
+    uni.showModal({
+      title: '提示',
+      content: '此空间/物品已关联，无法重复关联',
+      showCancel: false,
+      confirmText: '确定'
+    })
+    return
+  }
+
   // 点击选中
   item.isChecked = !item.isChecked
+}
+
+// 检查物品是否已经关联
+const checkIfItemAlreadyRelated = (itemId: number): boolean => {
+  // 判断当前是编辑模式还是新建模式
+  // 如果tempItemData有id且不为0，说明是编辑模式
+  const isEditMode = formStore.tempItemData && formStore.tempItemData.id !== 0
+
+  if (isEditMode) {
+    // 编辑模式：只检查tempItemData.items
+    const tempItems = formStore.tempItemData?.items || []
+    return tempItems.some((item) => item.id === itemId)
+  } else {
+    // 新建模式：只检查form.items
+    const formItems = formStore.form?.items || []
+    return formItems.some((item) => item.id === itemId)
+  }
 }
 
 // 触底加载更多

@@ -78,7 +78,7 @@ export function changeToken(
   identify = 0
 ): Promise<LoginResponse> {
   return service({
-    url: `/users/login/userId?loginId=${loginId}&password=${password}&identify=0`,
+    url: `/users/login/userId?loginId=${loginId}&password=${password}&identify=${identify}`,
     method: 'PUT'
   })
 }

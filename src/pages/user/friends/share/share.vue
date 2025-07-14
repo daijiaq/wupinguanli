@@ -27,32 +27,32 @@
     </view>
     <view v-if="searchedFriend.id" class="friends__new">
       <u-avatar
-        @click="share(searchedFriend.userId)"
+        @click="share(searchedFriend.id)"
         size="75rpx"
         :src="searchedFriend.avatar"
       ></u-avatar>
-      <view @click="share(searchedFriend.userId)" class="friends__new__information">
+      <view @click="share(searchedFriend.id)" class="friends__new__information">
         <u-text color="#353535" :text="searchedFriend.name"></u-text>
         <u-line color="rgba(255,255,255,0)" margin="5rpx 0"></u-line>
         <u-text color="#a4a4a4" size="20rpx" :text="`id: ${searchedFriend.id}`"></u-text>
       </view>
     </view>
     <view
-      v-for="(group, groupIndex) in friendStore.friends"
+      v-for="(group, groupIndex) in groupStore.groupsInfo.records"
       :key="groupIndex"
       class="friends__group"
     >
       <u-text
-        @click="showFriendsBox[groupIndex] = !showFriendsBox[groupIndex]"
+        @click="getDetailFriend(group.id, groupIndex)"
         :suffixIcon="showFriendsBox[groupIndex] ? 'arrow-down' : 'arrow-right'"
-        :text="`${group.name}&nbsp;&nbsp;`"
+        :text="`${group.name}&nbsp;&nbsp;(${group.groupNum})`"
         size="35rpx"
         bold
       ></u-text>
       <view v-show="showFriendsBox[groupIndex]">
         <view
-          v-for="(friend, friendIndex) in group.friendVO"
-          @click="share(friend.userId)"
+          v-for="(friend, friendIndex) in groupFriendsMap[group.id]?.records || []"
+          @click="share(friend.id)"
           :key="friendIndex"
           class="friends__group__item"
         >
@@ -90,6 +90,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useFriendStore, useGroupStore } from '@/stores/friend'
+import { useUserStore } from '@/stores/user'
 import { useFormStore } from '@/stores/form'
 import { onLoad, onPullDownRefresh } from '@dcloudio/uni-app'
 
@@ -98,14 +99,14 @@ import type { Friend } from '@/types/friend'
 
 // 引入store
 const friendStore = useFriendStore()
-const { getAllFriends, shareItem } = friendStore
+const { shareItem, groupFriendsMap, getPageGroupFriend } = friendStore
 const groupStore = useGroupStore()
 const { getAllGroups } = groupStore
 const formStore = useFormStore()
-
+const userStore = useUserStore()
 onLoad(async () => {
   try {
-    await getAllFriends()
+    // await getAllFriends()
     getAllGroups()
   } catch (err) {
     uni.showToast({
@@ -117,8 +118,8 @@ onLoad(async () => {
 
 onPullDownRefresh(async () => {
   try {
-    if (!friendStore.friends[0]) await getAllFriends()
-    if (!groupStore.groupsInfo.groupsData[0]) getAllGroups()
+    // if (!friendStore.friends[0]) await getAllFriends()
+    if (!groupStore.groupsInfo.records[0]) getAllGroups()
   } catch (err) {
     uni.showToast({
       title: '获取好友列表失败, 请下拉刷新重试',
@@ -179,7 +180,12 @@ const share = (friendId: number) => {
 async function confirmShare() {
   showShare.value = false
   try {
-    await shareItem(formStore.itemData.id, shareId)
+    await userStore.fetchUserInfo()
+    await shareItem(
+      formStore.itemData.id,
+      shareId,
+      `${userStore.userInfo.name}向您分享了${formStore.itemData.name}`
+    )
     uni.showToast({
       title: '分享成功',
       icon: 'none'
@@ -192,6 +198,12 @@ async function confirmShare() {
       title: '分享失败',
       icon: 'none'
     })
+  }
+}
+const getDetailFriend = async (groupId: number, groupIndex: number) => {
+  showFriendsBox.value[groupIndex] = !showFriendsBox.value[groupIndex]
+  if (showFriendsBox.value[groupIndex]) {
+    await getPageGroupFriend(groupId, 1, 10)
   }
 }
 </script>
