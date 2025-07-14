@@ -181,29 +181,71 @@
             </view>
           </view>
         </view>
+        <!-- 从属空间 -->
         <FormShow
+          ref="formShowRef"
           v-if="formStore.tempItemData.type"
+          v-model:temp-show="parentTempShow"
           v-model:show="showSpace"
           @click="openSpace"
           :name="'从属空间'"
           :show-jump="false"
         />
-        <view class="form__information__subordinateSpace" v-if="showSpace">
-          <view class="space__subordinateSpace__floor">
-            <SubordinateSpaceItem
-              v-for="(item, subIndex) in spacesBox"
-              :ids="[formStore.tempItemData.id]"
-              :titlePadding="'10rpx 10rpx'"
-              :tagPadding="'0 20rpx'"
-              v-show="pathFloor >= subIndex"
-              :parent="subIndex ? spacesBox[subIndex - 1].id : 0"
-              :id="spacesBox[subIndex].id"
-              :subordinateSpaces="[item]"
-              :key="subIndex"
-              :floor="subIndex + 1"
-              :currentFloor="currentFloor"
-            />
-          </view>
+        <!-- 从属空间 -->
+        <view class="space__information__subordinateSpace" v-if="showSpace">
+          <u-popup :safeAreaInsetBottom="false" round="20rpx" mode="bottom" :show="showSpace">
+            <view class="space__subordinateSpace">
+              <view class="space__subordinateSpace__title">
+                <u-text bold size="40rpx" :text="'从属空间'" />
+              </view>
+              <view class="space__subordinateSpace__confirm">
+                <u-text
+                  @click="handleCancel"
+                  color="#82b4fe"
+                  lines="1"
+                  size="20rpx"
+                  :text="'取消'"
+                />
+                <u-line margin="15rpx 20rpx" color="#efeff2" length="50%" direction="col"></u-line>
+                <u-text
+                  @click="handleConfirm"
+                  color="#82b4fe"
+                  lines="1"
+                  size="20rpx"
+                  :text="'确认'"
+                />
+              </view>
+            </view>
+            <view class="space__subordinateSpace__currentSpace">
+              <view class="space__subordinateSpace__currentSpace__icon">
+                <u-icon size="27rpx" name="play-right-fill" color="#3988ff"></u-icon>
+              </view>
+              <text
+                style="font-weight: 600"
+                v-for="(item, index) in spacesBox.slice(0, pathFloor)"
+                :key="index"
+              >
+                {{ item.name }}
+                <text v-if="index < pathFloor - 1"> >&nbsp; </text>
+              </text>
+            </view>
+            <view v-show="showSpace" v-if="!pathsLoading" class="space__subordinateSpace__floor">
+              <SubordinateSpaceItem
+                v-for="(item, subIndex) in pathsInfo"
+                :ids="[formStore.tempItemData.id]"
+                :titlePadding="'10rpx 10rpx'"
+                :tagPadding="'0 20rpx'"
+                v-show="pathFloor >= subIndex"
+                @radioClick="radioClick"
+                :parent="subIndex ? spacesBox[subIndex - 1].id : 0"
+                :id="spacesBox[subIndex].id"
+                :subordinateSpaces="item"
+                :key="subIndex"
+                :floor="subIndex + 1"
+                :currentFloor="currentFloor"
+              />
+            </view>
+          </u-popup>
         </view>
         <!-- <FormShow
           @click="addAdministrator = true"
@@ -315,7 +357,7 @@
         </view>
       </view>
     </u-popup>
-    <u-popup :safeAreaInsetBottom="false" round="20rpx" mode="bottom" :show="changeSpace">
+    <!-- <u-popup :safeAreaInsetBottom="false" round="20rpx" mode="bottom" :show="changeSpace">
       <view class="form__popup">
         <view class="form__popup__title">
           <u-text bold size="35rpx" :text="'从属空间'" />
@@ -348,18 +390,22 @@
           />
         </view>
       </view>
-    </u-popup>
+    </u-popup> -->
   </view>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
+import type { BriefData } from '@/types/space'
 import { onShow } from '@dcloudio/uni-app'
+import { storeToRefs } from 'pinia'
 
 // 引入store
 import { useTagStore } from '@/stores/tag'
 import { useSpaceStore } from '@/stores/space'
 import { useFormStore } from '@/stores/form'
+const { getRoomItems, batchMove, getAllPaths } = useSpaceStore()
+const { spacesInfo } = storeToRefs(useSpaceStore())
 
 // 引入类型
 import type { ItemForm, RoomForm, Image } from '@/types/form'
@@ -584,6 +630,14 @@ const jumpPageAssociate = () => {
   })
 }
 
+// 是否加载失败
+const isError = ref(false)
+//路径加载
+const pathsLoading = ref(true)
+//空间数据
+const spacesData = ref<BriefData[]>([])
+//是否为空
+const isEmpty = ref(false)
 // 显示从属空间
 const showSpace = ref(false)
 // 修改从属空间
@@ -594,20 +648,32 @@ let tempSpaces = <Path[]>[]
 let tempPathFloor = 0
 // 当前路径
 const spacesBox = ref<Path[]>([])
+//保存初始路径
+const initialPath = ref<Path[]>([])
+//选择的物品数组
+const checkbox = ref<boolean[]>([])
 // 当前层数
 const pathFloor = ref<number>(0)
+//修改后的路径
+let finalpath = ref<Path[]>([])
 // 初始化当前路径
 spacesBox.value = new Array(pathsInfo.length).fill({ fatherId: 0, id: 0, name: '', layer: 0 })
-// 根据反转数组初始化
-for (let i = 0; i < formStore.tempItemData.path?.length; i++) {
-  pathFloor.value++
-  spacesBox.value[formStore.tempItemData.path.length - 1 - i] = {
-    fatherId: i ? formStore.tempItemData.path[i - 1].id : 0,
-    id: formStore.tempItemData.path[i].id,
-    name: formStore.tempItemData.path[i].name,
-    layer: i
-  }
-}
+// // 根据反转数组初始化
+// for (let i = 0; i < formStore.tempItemData.path?.length; i++) {
+//   console.log(formStore.tempItemData.path.length)
+//   pathFloor.value++
+//   spacesBox.value[formStore.tempItemData.path.length - 1 - i] = {
+//     fatherId: i ? formStore.tempItemData.path[i - 1].id : 0,
+//     id: formStore.tempItemData.path[i].id,
+//     name: formStore.tempItemData.path[i].name,
+//     layer: i
+//   }
+// }
+
+onShow(async () => {
+  //获取路径并初始化路径
+  await refresh(true)
+})
 
 //从属空间标签点击事件
 const radioClick = (index: number, floor: number): void => {
@@ -615,7 +681,7 @@ const radioClick = (index: number, floor: number): void => {
   if (spacesBox.value[floor - 1].id === pathsInfo[floor - 1][index].id) {
     //修改当前楼层
     pathFloor.value = floor - 1
-    //清空当前点击索引之后的已选择空间id缓存
+    // //清空当前点击索引之后的已选择空间id缓存
     for (let i = floor - 1; i < spacesBox.value.length; i++) {
       if (!spacesBox.value[i]) break
       spacesBox.value[i] = { fatherId: 0, id: 0, name: '', layer: 0 }
@@ -628,25 +694,103 @@ const radioClick = (index: number, floor: number): void => {
     //将当前id存入已选择id缓存中
     spacesBox.value[floor - 1] = pathsInfo[floor - 1][index]
     //清空当前点击索引之后的已选择空间id缓存
-    for (let i = floor; i < spacesBox.value.length; i++) {
+    for (let i = floor; i < spacesBox.value.length - 1; i++) {
       if (!spacesBox.value[i]) break
       spacesBox.value[i] = { fatherId: 0, id: 0, name: '', layer: 0 }
     }
+  }
+  console.log('s ', spacesBox.value)
+  console.log('i ', initialPath.value)
+}
+
+// 获取数据
+const refresh = async (refreshPath = false) => {
+  try {
+    // 请求错误状态初始化
+    isError.value = false
+    // 空间请求参数初始化
+    spacesInfo.value.current = 0
+    spacesInfo.value.total = 0
+    spacesInfo.value.spaceData = []
+    // 路径是否正在加载
+    pathsLoading.value = true
+    // 路径为空时请求数据或请求路径参数为true时重新获取路径
+    if (!useSpace.pathsInfo[0][0] || refreshPath) await getAllPaths()
+    // 初始化路径容器
+    for (let i = 0; i < useSpace.pathsInfo.length; i++) {
+      spacesBox.value[i] = { fatherId: 0, id: 0, name: '', layer: 0 }
+    }
+    // 写入当前路径
+    for (let i = 0; i < formStore.currentFloor - 1; i++) {
+      pathFloor.value++
+      spacesBox.value[i] = {
+        fatherId: i ? spacesBox.value[i - 1].id : 0,
+        id: useSpace.spaces[i].id,
+        name: useSpace.spaces[i].name,
+        layer: i
+      }
+    }
+    // initialPath.value = spacesBox.value
+    initialPath.value = JSON.parse(JSON.stringify(spacesBox.value))
+    console.log(initialPath.value)
+    console.log(spacesBox)
+    console.log(111)
+    // 路径获取完毕后渲染
+    pathsLoading.value = false
+    // 获取当前空间数据
+    await getRoomItems(currentId)
+    spacesData.value = spacesInfo.value.spaceData
+    // 修改正在请求状态
+    isLoading.value = false
+    // 请求完后判断是否为空
+    isEmpty.value = !spacesData.value.length
+  } catch {
+    isError.value = true
   }
 }
 
 // 打开弹窗
 const openSpace = (): void => {
-  changeSpace.value = true
-  for (let i = 0; i < spacesBox.value.length; i++) {
-    tempSpaces[i] = spacesBox.value[i]
+  showSpace.value = true
+  formStore.ids = []
+  for (let i = 0; i < checkbox.value.length; i++) {
+    if (checkbox.value[i]) {
+      formStore.ids.push(spacesData.value[i].id)
+    }
   }
-  tempPathFloor = pathFloor.value
+  console.log(11)
+}
+
+const formShowRef = ref(null)
+const parentTempShow = ref(false)
+//取消按钮
+const handleCancel = (): void => {
+  showSpace.value = false
+  spacesBox.value = initialPath.value
+  parentTempShow.value = false
+}
+
+//确认按钮
+const handleConfirm = async () => {
+  showSpace.value = false
+  spacesBox.value.pop()
+  await batchMove(
+    spacesBox.value[spacesBox.value.length - 1].id,
+    [formStore.itemData.id],
+    spacesBox.value
+  )
+  const path = []
+  for (let i = 0; i < pathFloor.value; i++) {
+    path.push({
+      id: spacesBox.value[i].id,
+      name: spacesBox.value[i].name
+    })
+  }
 }
 
 // 关闭弹窗
 const cancelSpace = (): void => {
-  changeSpace.value = false
+  showSpace.value = false
   spacesBox.value = tempSpaces
   pathFloor.value = tempPathFloor
 }
@@ -655,7 +799,6 @@ if (!formStore.tempItemData.comment) formStore.tempItemData.comment = ''
 
 //显示历史记录
 const showHistory = ref(false)
-
 ;(async function () {
   //获取物品日志
   getItemLogs(formStore.tempItemData.id)
@@ -697,7 +840,11 @@ const successCallback = (): void => {
     duration: 2000
   })
   isLoading.value = false
+  const reversedPath = [...finalpath.value].reverse()
+  finalpath.value = reversedPath
+  // formStore.tempItemData.path = finalpath.value
   formStore.itemData = JSON.parse(JSON.stringify(formStore.tempItemData))
+  formStore.itemData.path = reversedPath
   setTimeout(() => {
     uni.navigateBack()
   }, 1000)
@@ -722,12 +869,16 @@ const submitForm = (): void => {
         const figures = await concatImages(formStore.tempItemData.figures, 1)
         if (formStore.tempItemData.type) {
           const path = []
+          console.log(pathFloor)
           for (let i = 0; i < pathFloor.value; i++) {
             path.push({
               id: spacesBox.value[i].id,
               name: spacesBox.value[i].name
             })
           }
+          finalpath.value = JSON.parse(JSON.stringify(path))
+          console.log('1', path)
+          console.log('2', finalpath)
           const tempForm = <ItemForm>{
             privacy: privacy.value ? 1 : 0,
             type: radioValue.value === '空间' ? 1 : 2,
@@ -748,6 +899,7 @@ const submitForm = (): void => {
           }
           if (!changed || !PIN.value) delete tempForm.password
           await updateItem(currentId, formStore.tempItemData.id, tempForm)
+          console.log(path)
           successCallback()
         } else {
           const tempForm = <RoomForm>{
@@ -769,6 +921,7 @@ const submitForm = (): void => {
           if (!changed || !PIN.value) delete tempForm.password
           await updateRoom(formStore.tempItemData.id, tempForm)
           successCallback()
+          console.log(formStore.itemData)
         }
       } catch {
         isLoading.value = false
@@ -926,6 +1079,199 @@ const submitForm = (): void => {
   &__submit {
     margin: 0 auto;
     width: 200rpx;
+  }
+}
+
+.space {
+  padding-top: 100px;
+
+  &__bg {
+    position: absolute;
+    width: 100vw;
+    height: 87vh;
+    background-color: #f5f5f5;
+    z-index: -1;
+  }
+
+  &__header {
+    position: fixed;
+    width: 100vw;
+    min-height: 100rpx;
+    padding-top: 23rpx;
+    background: #f5f5f5;
+    z-index: 999;
+
+    &__icon-wrapper {
+      position: absolute;
+      right: 30rpx;
+      display: flex;
+      flex-direction: row-reverse;
+
+      &__icon {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 70rpx;
+        height: 70rpx;
+        border-radius: 10rpx;
+        background-color: #7d7191;
+        margin-right: 20rpx;
+      }
+    }
+
+    &__spaces {
+      background-color: #5a5c60;
+      width: 600rpx;
+      height: 5rpx;
+      margin: 100rpx auto;
+      position: relative;
+
+      &__wrapper {
+        position: absolute;
+        top: -8rpx;
+        left: -40rpx;
+        display: flex;
+        justify-content: flex-start;
+        max-width: 600rpx;
+        overflow-x: auto;
+
+        &-unit {
+          width: 100rpx;
+          margin-right: 22rpx;
+
+          &-circle {
+            background-color: #979797;
+            width: 20rpx;
+            height: 20rpx;
+            margin: 0 auto;
+            border-radius: 10rpx;
+          }
+
+          &-line {
+            width: 5rpx;
+            background-color: #b8babe;
+            height: 35rpx;
+            margin: 0 auto;
+          }
+
+          &-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            text-align: center;
+            line-height: 50rpx;
+            width: 100rpx;
+            height: 50rpx;
+            font-size: 25rpx;
+            border-radius: 10rpx;
+            background-color: #fcfcfc;
+            color: #565656;
+            box-shadow: 0 5px 5px #e1e7f0;
+            font-weight: 800;
+          }
+        }
+      }
+    }
+  }
+
+  &__error {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 999;
+    font-size: 18px;
+    background-color: #fff;
+  }
+
+  &__hello {
+    width: 600rpx;
+    margin: 0 auto;
+    margin-top: 100rpx;
+  }
+
+  &__operate {
+    box-sizing: border-box;
+    display: flex;
+    position: fixed;
+    bottom: 50rpx;
+    border-radius: 20rpx;
+    left: 75rpx;
+    width: 600rpx;
+    height: 170rpx;
+    padding: 30rpx 50rpx 0 50rpx;
+    justify-content: space-around;
+    background-color: #f8f8f8;
+  }
+
+  &__empty {
+    box-sizing: border-box;
+    padding: 35rpx;
+    font-size: 30rpx;
+    color: #979797;
+    background-color: #bcd8ff;
+    position: relative;
+    margin: 0 auto;
+    width: 650rpx;
+    height: 200rpx;
+    border-radius: 30rpx;
+
+    &-chair {
+      width: 250rpx;
+      height: 250rpx;
+      position: absolute;
+      right: 50rpx;
+      bottom: 0;
+    }
+
+    &-plant {
+      width: 100rpx;
+      height: 100rpx;
+      position: absolute;
+      bottom: 0;
+      right: 0;
+    }
+  }
+
+  &__tabs {
+    padding-top: 80rpx;
+    width: 650rpx;
+    margin: 0 auto;
+  }
+
+  &__subordinateSpace {
+    padding: 30rpx;
+    padding-bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+
+    &__title {
+      width: 550rpx;
+    }
+
+    &__confirm {
+      width: 140rpx;
+      display: flex;
+    }
+
+    &__currentSpace {
+      padding: 10rpx 30rpx;
+      display: flex;
+      flex-wrap: wrap;
+
+      &__icon {
+        margin-top: 9rpx;
+        margin-right: 10rpx;
+      }
+    }
+
+    &__floor {
+      max-height: 190px;
+      overflow-y: auto;
+    }
   }
 }
 </style>

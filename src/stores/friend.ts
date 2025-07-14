@@ -171,12 +171,12 @@ export const useFriendStore = defineStore('friend', () => {
 
   async function shareItem(
     ItemId: number,
-    friendId: number,
+    userId: number,
     content: string,
     source = '',
     buddyId?: number
   ) {
-    await shareItemAPI(ItemId, friendId, content, source, buddyId)
+    await shareItemAPI(ItemId, userId, content, source, buddyId)
   }
 
   // 批量移动分组好友id数组

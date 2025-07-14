@@ -233,7 +233,7 @@
 </template>
 
 <script setup lang="ts">
-import { onLoad } from '@dcloudio/uni-app'
+import { onLoad, onShow } from '@dcloudio/uni-app'
 import { ref, onMounted } from 'vue'
 
 // 引入类型
@@ -274,6 +274,12 @@ onLoad(async (options: any) => {
   } else {
     isDeleted.value = false
   }
+})
+
+onShow(() => {
+  updateSpace()
+  console.log('~', 111)
+  console.log(formStore.itemData)
 })
 
 // onShareAppMessage(() => {
@@ -344,19 +350,22 @@ const showSpace = ref(false)
 const spacesBox = ref<Path[]>([])
 // 当前层数
 const pathFloor = ref<number>(0)
-
-if (formStore.itemData.path && formStore.itemData.path.length) {
-  const reversedPath = [...formStore.itemData.path].reverse()
-  spacesBox.value = reversedPath.map((p, i) => ({
-    fatherId: i ? reversedPath[i - 1].id : 0,
-    id: p.id,
-    name: p.name,
-    layer: i
-  }))
-  pathFloor.value = formStore.itemData.path.length
-} else {
-  spacesBox.value = []
-  pathFloor.value = 0
+console.log('@', formStore.itemData)
+const updateSpace = () => {
+  if (formStore.itemData.path && formStore.itemData.path.length) {
+    const reversedPath = [...formStore.itemData.path].reverse()
+    spacesBox.value = reversedPath.map((p, i) => ({
+      fatherId: i ? reversedPath[i - 1].id : 0,
+      id: p.id,
+      name: p.name,
+      layer: i
+    }))
+    pathFloor.value = formStore.itemData.path.length
+    console.log(spacesBox.value)
+  } else {
+    spacesBox.value = []
+    pathFloor.value = 0
+  }
 }
 
 if (!formStore.itemData.comment) formStore.itemData.comment = ''
@@ -414,6 +423,10 @@ const jumpPageShare = () => {
   uni.navigateTo({
     url: `/pages/user/friends/share/share`
   })
+}
+
+function onshow(p0: () => void) {
+  throw new Error('Function not implemented.')
 }
 </script>
 
