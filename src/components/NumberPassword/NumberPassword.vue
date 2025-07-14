@@ -166,51 +166,53 @@ export default {
 
   .verification_code_continor {
     display: flex;
-    justify-content: center;
-    text-align: center;
+    justify-content: space-between;
+    width: 100%;
 
     .verification_code_item {
-      width: 60rpx;
-      height: 60rpx;
+      flex: 1;
+      min-width: 0;
+      position: relative;
+      max-width: 60px;
+      margin: 0 1%;
+
+      /* 内容样式 */
       display: flex;
       align-items: center;
       justify-content: center;
-      display: flex;
-    }
+      font-size: 36rpx;
 
-    .verification_code_item:not(:first-child) {
-      margin-left: 20rpx;
-    }
-    .point {
-      width: 15rpx;
-      height: 15rpx;
-      background-color: #333;
-      border-radius: 200px;
-    }
+      /* 密文样式 */
+      .point {
+        width: 16rpx;
+        height: 16rpx;
+        background-color: #333;
+        border-radius: 50%;
+      }
 
-    /* 平板专属适配 */
-    @media (min-width: 1024px) {
-      max-width: 50rpx;
-      max-height: 55rpx;
-      font-size: 32rpx;
-      margin: 0 0.8%;
+      /* 平板专属适配 */
+      @media (min-width: 1024px) {
+        max-width: 50rpx;
+        max-height: 55rpx;
+        font-size: 32rpx;
+        margin: 0 0.8%;
+      }
     }
   }
-}
 
-.input-info {
-  width: 100%;
-  height: 100%;
-  z-index: 8;
-  display: flex;
-  justify-content: center;
-  overflow: hidden;
-
-  &__main {
+  .input-info {
     position: absolute;
-    width: 80%;
+    top: 0;
+    left: 5%;
+    width: calc(100% - 10%);
     height: 100%;
-    left: -100%;
+    opacity: 0;
+    z-index: 10;
+
+    &__main {
+      width: 100%;
+      height: 100%;
+    }
   }
 }
 </style>
