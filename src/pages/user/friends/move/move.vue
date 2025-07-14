@@ -7,11 +7,7 @@
       titleStyle="font-weight:bold"
       autoBack
     ></u-navbar>
-    <view
-      class="groups__item"
-      v-for="(item, index) in groupStore.groupsInfo.groupsData"
-      :key="index"
-    >
+    <view class="groups__item" v-for="(item, index) in records" :key="index">
       <u-text @click="setGroup(item.id, item.name)" size="32rpx" :text="item.name"></u-text>
     </view>
     <u-modal
@@ -32,6 +28,8 @@ import { useGroupStore, useFriendStore } from '@/stores/friend'
 const groupStore = useGroupStore()
 const friendStore = useFriendStore()
 const { moveFriend } = friendStore
+const { groupsInfo } = groupStore
+const { records } = groupsInfo
 const showMove = ref(false)
 const groupName = ref('')
 let groupID = 0

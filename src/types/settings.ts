@@ -6,11 +6,19 @@ export interface Settings {
   /**
    * 是否隐藏隐私物品(0关1开)
    */
-  privacyDisplay: 0 | 1
+  privacyItemInvisible: 0 | 1
   /**
-   * 是否设置统一隐私密码(0关1开)
+   * 私密物品不可见是否设置过密码(0无1有)
    */
-  unifiedPassword: 0 | 1
+  privacyPassword: 0 | 1
+  /**
+   * 隐私物品通用密码是否开启（0关1开）
+   */
+  unifiedPasswordUsed: 0 | 1
+  /**
+   * 是否开启隐藏空间(0关1开)
+   */
+  privacyDisplay: 0 | 1
 }
 
 export interface AccountsInfo {
