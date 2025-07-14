@@ -42,15 +42,23 @@ import { useFriendStore } from '@/stores/friend'
 import { onShow } from '@dcloudio/uni-app'
 const friendStore = useFriendStore()
 
-const fetchUngroupedFriends = async () => {
-  await friendStore.getPageGroupFriend(94, 1, 10)
-  if (friendStore.groupFriendsMap[94]) {
-    friends.friendVO = friendStore.groupFriendsMap[94].records
-  }
-}
 const friends = reactive({
   friendVO: [] as BuddyVO[] // 存储未分组好友
 })
+
+const fetchUngroupedFriends = async () => {
+  await friendStore.getPageGroupFriend(94, 1, 10)
+  await friendStore.getPageGroupFriend(0, 1, 10)
+
+  const records94 = friendStore.groupFriendsMap[94].records || []
+
+  const records0 = friendStore.groupFriendsMap[0].records || []
+
+  friends.friendVO = [...records94, ...records0]
+  // if (friendStore.groupFriendsMap[94]) {
+  //   friends.friendVO = friendStore.groupFriendsMap[94].records
+  // }
+}
 
 onShow(() => {
   fetchUngroupedFriends()

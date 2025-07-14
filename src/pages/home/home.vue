@@ -109,7 +109,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { onShow, onReachBottom, onPullDownRefresh, onLoad } from '@dcloudio/uni-app'
 import { storeToRefs } from 'pinia'
 
@@ -275,6 +275,8 @@ async function tryJumpPageDetail(id: number, type: number, privacy: number) {
   if (privacy) {
     tempItemId = id
     tempType = type
+    popup.value = false
+    await nextTick()
     popup.value = true
   } else {
     await getDetail(type, id, '')

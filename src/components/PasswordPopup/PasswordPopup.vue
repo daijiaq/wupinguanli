@@ -37,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onUpdated } from 'vue'
+import { ref, watch, onUpdated, nextTick } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 const props = defineProps<{
   // 是否弹出
@@ -86,9 +86,9 @@ const passwordTypeList = ref([
 
 // 监听 popup 的 show 变化，更新子组件的 focus 状态
 const isFocus = ref(false)
-onUpdated(() => {
-  isFocus.value = props.popup
-})
+// onUpdated(() => {
+//   isFocus.value = props.popup
+// })
 
 // 手势密码错误提示
 const lineError = ref(false)
@@ -97,12 +97,17 @@ const lineError = ref(false)
 watch(
   () => props.popup,
   (newVal) => {
-    if (newVal) {
-      isClosePopup.value = false
-    } else {
-      isClosePopup.value = true
-    }
+    isClosePopup.value = !newVal
     isShow.value = newVal
+
+    if (newVal) {
+      isFocus.value = false
+      nextTick(() => {
+        isFocus.value = true
+      })
+    } else {
+      isFocus.value = false
+    }
   }
 )
 

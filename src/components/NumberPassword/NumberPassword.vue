@@ -1,6 +1,6 @@
 <template>
   <view class="acqui_verification_code">
-    <view class="verification_code_continor">
+    <view class="verification_code_continor" @click="handleContainerClick">
       <view
         v-for="(item, index) in latticeNum"
         :key="index"
@@ -25,6 +25,7 @@
         @blur="blur"
         @focus="focus"
         class="input-info__main"
+        adjust-position="false"
       />
     </div>
   </view>
@@ -81,14 +82,24 @@ export default {
   },
   data() {
     return {
-      inputValues: '', //输入的值,
-      blurShowLocal: true
+      inputValues: '',
+      blurShowLocal: true,
+      isFocusInternal: false,
+      isFocusing: false
+    }
+  },
+  watch: {
+    isFocus(val: boolean) {
+      this.isFocusInternal = false
+      wx.nextTick(() => {
+        this.isFocusInternal = val
+      })
     }
   },
   // 监控 show，显示时自动获取焦点
   computed: {
     isFocusLocal() {
-      return this.isFocus
+      return this.isFocusInternal
     }
   },
   mounted() {
@@ -134,6 +145,16 @@ export default {
     },
     focus() {
       !this.blurShow ? (this.blurShowLocal = true) : ''
+    },
+    handleContainerClick() {
+      if (typeof wx !== 'undefined' && wx.nextTick) {
+        wx.nextTick(() => {
+          this.isFocusInternal = false // 先取消焦点
+          wx.nextTick(() => {
+            this.isFocusInternal = true // 再重新聚焦
+          })
+        })
+      }
     }
   }
 }

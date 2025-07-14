@@ -164,13 +164,13 @@
               :text="item.name"
             ></u-text>
           </view>
-          <view class="detail__groups__item" @click="setGroup({ id: 0, name: '' })">
+          <!-- <view class="detail__groups__item" @click="setGroup({ id: 0, name: '' })">
             <u-text
               :color="friendStore.group.id === 0 ? '#3988ff' : ''"
               align="center"
               text="暂不分组"
             ></u-text>
-          </view>
+          </view> -->
         </view>
       </scroll-view>
     </u-popup>
@@ -184,7 +184,7 @@
     >
     </u-modal>
     <u-modal
-      :title="`确认${groupId === 0 ? '暂不分组' : `移动到${groupName}分组`}?`"
+      :title="`确认移动到${groupName}分组`"
       @cancel="showMove = false"
       @confirm="confirmMoveFriend"
       :showCancelButton="true"
@@ -210,8 +210,11 @@ const {
   sendApplication,
   getUserInfoData,
   DeleteFriends,
-  getFriendLogs
+  getFriendLogs,
+  friend
 } = friendStore
+const { groupsInfo } = groupStore
+const { records } = groupsInfo
 //接受参数
 const props = defineProps<{
   id: number
@@ -229,18 +232,13 @@ onLoad(async () => {
   } else {
     getUserInfoData(props.id)
     history.value = await getFriendLogs(props.id)
+    console.log('groupBaseInfo 类型：', typeof friend.groupBaseInfo.groupId)
     // 从 groupStore 中查找好友所在的分组
-    const group = groupStore.groupsInfo.records.find(
-      (g) => g.id === friendStore.friend.groupBaseInfo.groupId
-    )
+    const group = records.find((g) => g.id === friend.groupBaseInfo.groupId)
     if (group) {
       // 更新当前分组信息
       friendStore.group.id = group.id
       friendStore.group.name = group.name
-    } else {
-      // 如果没有找到分组，设置为默认值
-      friendStore.group.id = 0
-      friendStore.group.name = '暂不分组'
     }
   }
 })
