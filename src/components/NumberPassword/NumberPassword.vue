@@ -187,22 +187,30 @@ export default {
       background-color: #333;
       border-radius: 200px;
     }
-  }
 
-  .input-info {
-    width: 100%;
-    height: 100%;
-    z-index: 8;
-    display: flex;
-    justify-content: center;
-    overflow: hidden;
-
-    &__main {
-      position: absolute;
-      width: 80%;
-      height: 100%;
-      left: -100%;
+    /* 平板专属适配 */
+    @media (min-width: 1024px) {
+      max-width: 50rpx;
+      max-height: 55rpx;
+      font-size: 32rpx;
+      margin: 0 0.8%;
     }
+  }
+}
+
+.input-info {
+  width: 100%;
+  height: 100%;
+  z-index: 8;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+
+  &__main {
+    position: absolute;
+    width: 80%;
+    height: 100%;
+    left: -100%;
   }
 }
 </style>
