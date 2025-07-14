@@ -23,6 +23,7 @@
 <script setup lang="ts">
 // 如果有 token，则重定向到首页
 uni.getStorage({
+  //检查本地是否存在token
   key: 'token',
   success: function () {
     uni.switchTab({
@@ -33,6 +34,7 @@ uni.getStorage({
 
 const jumpToInput = () => {
   uni.redirectTo({
+    //redirectTo 关闭当前页面，跳转到应用内的某个页面，但是无法通过返回按钮回到当前页面
     url: '/pages/login/loginInput'
   })
 }
