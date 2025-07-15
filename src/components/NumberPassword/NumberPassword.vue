@@ -104,6 +104,12 @@ export default {
   },
   mounted() {
     this.blurShowLocal = this.blurShow
+    // 初始化时设置焦点
+    if (this.isFocus) {
+      this.$nextTick(() => {
+        this.isFocusInternal = true
+      })
+    }
   },
   methods: {
     latticeSty(index: any) {
@@ -202,16 +208,26 @@ export default {
 
   .input-info {
     position: absolute;
-    top: 0;
-    left: 5%;
-    width: calc(100% - 10%);
-    height: 100%;
+    top: -9999px;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
     opacity: 0;
     z-index: 10;
+    overflow: hidden;
 
     &__main {
       width: 100%;
       height: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: transparent;
+      caret-color: transparent;
+      text-shadow: none;
+      -webkit-text-fill-color: transparent;
+      font-size: 0;
+      line-height: 0;
     }
   }
 }
