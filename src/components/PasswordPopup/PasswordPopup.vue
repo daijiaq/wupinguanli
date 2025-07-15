@@ -20,6 +20,7 @@
           ref="numberPasswordBox"
           @inputVerificationChange="inputVerificationChange"
           :isFocus="isFocus"
+          :ciphertextSty="1"
         />
       </view>
       <!-- 手势密码 -->
