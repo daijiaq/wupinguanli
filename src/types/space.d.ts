@@ -91,6 +91,7 @@ export interface DetailData extends T1 {
    * 经度
    */
   longitude: number
+  hide: 0 | 1
 }
 
 // 简短空间数据

@@ -86,6 +86,7 @@ export interface RoomForm extends Form {
    * 经度
    */
   longitude: number
+  hide: 0 | 1
 }
 
 // 物品表单
@@ -109,6 +110,7 @@ export interface ItemForm extends Form {
   /**
    * 关联物品
    */
+  hide: 0 | 1
   items: RelateItem[]
 }
 

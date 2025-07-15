@@ -19,6 +19,14 @@ export interface Settings {
    * 是否开启隐藏空间(0关1开)
    */
   privacyDisplay: 0 | 1
+  /**
+   * 隐藏空间是否设置过密码(0无1有)
+   */
+  displayPassword: 0 | 1
+  /**
+   * 通用密码是否设置过(0无1有)
+   */
+  unifiedPassword: 0 | 1
 }
 
 export interface AccountsInfo {

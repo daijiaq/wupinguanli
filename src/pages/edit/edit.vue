@@ -156,6 +156,30 @@
           </template>
         </FormInput>
         <u-toast ref="toast"></u-toast>
+        <u-row
+          customStyle="margin-bottom: 10px"
+          v-if="settingsInfo.displayPassword === 1 ? true : false"
+        >
+          <u-col span="10.5">
+            <u-text color="#353535" :bold="true" text="开启隐藏空间" />
+          </u-col>
+          <u-col span="1.5">
+            <u-switch
+              :disabled="false"
+              v-model="localPrivacyRoom"
+              @change="handlePrivacyRoomChange"
+              size="20"
+              :activeValue="true"
+            />
+          </u-col>
+        </u-row>
+        <PasswordPopup
+          :popup="popupRoom"
+          :isValidate="settingsInfo.displayPassword === 1"
+          @close="popupRoom = false"
+          @confirmGesture="confirmGestureRoom"
+          @confirmNumber="confirmNumberRoom"
+        />
       </view>
       <view v-if="formStore.tempItemData.type" class="form__information">
         <FormShow
@@ -421,12 +445,21 @@ import FormMultiple from '@/components/Form/FormMultiple/FormMultiple.vue'
 import FormHistory from '@/components/Form/FormHistory/FormHistory.vue'
 import SubordinateSpaceItem from '@/components/Space/SubordinateSpaceItem/SubordinateSpaceItem.vue'
 
+import { useSettingsStore } from '@/stores/settings'
+import { validatePassword } from '@/network/apis/settings'
+const settingsStore = useSettingsStore()
+// const { settingsInfo, privacyRoom } = storeToRefs(settingsStore)
+const { settingsInfo } = storeToRefs(settingsStore)
+const { getPrivacyDisplayPassword } = settingsStore
+
 const tagStore = useTagStore()
 const { getAllTags } = tagStore
 const formStore = useFormStore()
 const { upload, getItemLogs, currentFloor, currentId, updateRoom, updateItem } = formStore
 const useSpace = useSpaceStore()
 const { pathsInfo } = useSpace
+
+const privacyRoom = ref(formStore.itemData.hide === 1 ? true : false)
 
 onMounted(() => {
   // 开启分享功能
@@ -458,7 +491,70 @@ onShow(() => {
       tagBox.value[index] = true
     }
   })
+  // 是否显示开启隐藏空间
+  getPrivacyDisplayPassword()
+  console.log(formStore.itemData.hide)
 })
+
+// 隐藏空间密码弹窗
+const popupRoom = ref(false)
+
+// 本地的隐藏空间状态
+const localPrivacyRoom = ref(privacyRoom.value)
+
+// 处理隐藏空间开关变化
+const handlePrivacyRoomChange = (newValue: boolean) => {
+  if (newValue) {
+    // 开启隐藏空间需要验证密码
+    popupRoom.value = true
+  } else {
+    // 关闭隐藏空间直接设置
+    localPrivacyRoom.value = false
+    privacyRoom.value = false
+  }
+}
+
+const confirmGestureRoom = async (password: string) => {
+  try {
+    await validatePassword(password, 1)
+    uni.showToast({
+      title: '验证成功',
+      icon: 'none'
+    })
+    localPrivacyRoom.value = true
+    privacyRoom.value = true
+    popupRoom.value = false
+  } catch {
+    uni.showToast({
+      title: '密码错误',
+      icon: 'none'
+    })
+    localPrivacyRoom.value = false
+    privacyRoom.value = false
+    popupRoom.value = false
+  }
+}
+
+const confirmNumberRoom = async (password: string) => {
+  try {
+    await validatePassword(password, 1)
+    uni.showToast({
+      title: '验证成功',
+      icon: 'none'
+    })
+    localPrivacyRoom.value = true
+    privacyRoom.value = true
+    popupRoom.value = false
+  } catch {
+    uni.showToast({
+      title: '密码错误',
+      icon: 'none'
+    })
+    localPrivacyRoom.value = false
+    privacyRoom.value = false
+    popupRoom.value = false
+  }
+}
 
 //表单数据
 formStore.tempItemData = JSON.parse(JSON.stringify(formStore.itemData))
@@ -524,7 +620,7 @@ const confirmNumber = (password: string) => {
   PIN.value = password
 }
 watch(
-  () => privacy.value,
+  () => [privacy.value, privacyRoom.value],
   () => {
     changed = true
     if (privacy.value) popup.value = true
@@ -879,6 +975,7 @@ const submitForm = (): void => {
           finalpath.value = JSON.parse(JSON.stringify(path))
           console.log('1', path)
           console.log('2', finalpath)
+          formStore.tempItemData.hide = localPrivacyRoom.value ? 1 : 0
           const tempForm = <ItemForm>{
             privacy: privacy.value ? 1 : 0,
             type: radioValue.value === '空间' ? 1 : 2,
@@ -895,13 +992,15 @@ const submitForm = (): void => {
             images: images,
             figures: figures,
             password: PIN.value,
-            items: formStore.tempItemData.items
+            items: formStore.tempItemData.items,
+            hide: formStore.tempItemData.hide
           }
           if (!changed || !PIN.value) delete tempForm.password
           await updateItem(currentId, formStore.tempItemData.id, tempForm)
           console.log(path)
           successCallback()
         } else {
+          formStore.tempItemData.hide = localPrivacyRoom.value ? 1 : 0
           const tempForm = <RoomForm>{
             privacy: privacy.value ? 1 : 0,
             type: 0,
@@ -916,7 +1015,8 @@ const submitForm = (): void => {
             images: images,
             figures: figures,
             labels: formStore.tempItemData.labels,
-            password: PIN.value
+            password: PIN.value,
+            hide: formStore.tempItemData.hide
           }
           if (!changed || !PIN.value) delete tempForm.password
           await updateRoom(formStore.tempItemData.id, tempForm)
