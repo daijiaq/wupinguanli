@@ -111,6 +111,7 @@
     </view>
     <PasswordPopup
       :popup="popup"
+      :isValidate="isValidate"
       @close="popup = false"
       @confirmGesture="confirmGesture"
       @confirmNumber="confirmNumber"
@@ -143,6 +144,20 @@ const settings = useSettingsStore()
 const { settingsInfo } = storeToRefs(settings)
 const { initSettings, setPasswordStore, updateSettingsStore, clearPasswordStore } = settings
 
+const isValidate = ref(false)
+
+// 根据密码类型判断是验证模式还是设置模式
+const getIsValidate = (type: 0 | 1 | 2): boolean => {
+  if (type === 0) {
+    return settingsInfo.value.unifiedPassword === 1
+  } else if (type === 1) {
+    return settingsInfo.value.displayPassword === 1
+  } else if (type === 2) {
+    return settingsInfo.value.privacyPassword === 1
+  }
+  return false
+}
+
 onShow(async () => {
   await initSettings()
   // 初始化
@@ -167,14 +182,19 @@ const changePasswordPopup = ref(false)
 // 0隐私物品使用的通用密码 1开启隐藏空间密码,2设置私密物品不可见密码
 const tempType = ref<0 | 1 | 2>(0)
 
-// 监听设置密码弹窗
+// 监听设置密码弹窗 - 只在设置模式下处理回滚
 watch(
   () => popup.value,
   () => {
-    if (!popup.value && !settingsInfo.value.privacyItemInvisible)
-      settingsData.privacyItemInvisible = 0
-    if (!popup.value && !settingsInfo.value.unifiedPasswordUsed)
-      settingsData.unifiedPasswordUsed = 0
+    if (!popup.value && !isValidate.value) {
+      // 只在设置模式下，且没有设置成功时才回滚
+      if (!settingsInfo.value.privacyItemInvisible && tempType.value === 2)
+        settingsData.privacyItemInvisible = 0
+      if (!settingsInfo.value.unifiedPasswordUsed && tempType.value === 0)
+        settingsData.unifiedPasswordUsed = 0
+      if (!settingsInfo.value.privacyDisplay && tempType.value === 1)
+        settingsData.privacyDisplay = 0
+    }
   }
 )
 
@@ -186,6 +206,7 @@ watch(
       settingsData.privacyItemInvisible = 1
     if (!clearPopup.value && settingsInfo.value.unifiedPasswordUsed)
       settingsData.unifiedPasswordUsed = 1
+    if (!clearPopup.value && settingsInfo.value.privacyDisplay) settingsData.privacyDisplay = 1
   }
 )
 
@@ -194,8 +215,9 @@ const setPrivacyDisplay = () => {
   // 开启密码
   if (settingsData.privacyItemInvisible) {
     updateSettingsStore(settingsData.allowManagement, settingsData.privacyItemInvisible)
-    popup.value = true
     tempType.value = 2
+    isValidate.value = getIsValidate(2)
+    popup.value = true
   } else {
     updateSettingsStore(settingsData.allowManagement, settingsData.privacyItemInvisible)
     // 清空密码
@@ -215,8 +237,9 @@ const changePrivacyDisplay = () => {
 // 设置私密物品使用通用密码
 const setUnifiedPassword = () => {
   if (settingsData.unifiedPasswordUsed) {
-    popup.value = true
     tempType.value = 0
+    isValidate.value = getIsValidate(0)
+    popup.value = true
   } else {
     tempType.value = 0
     clearPopup.value = true
@@ -226,8 +249,9 @@ const setUnifiedPassword = () => {
 // 设置隐藏空间密码
 const setPrivacyDisplayRoom = () => {
   if (settingsData.privacyDisplay) {
-    popup.value = true
     tempType.value = 1
+    isValidate.value = getIsValidate(1)
+    popup.value = true
   } else {
     tempType.value = 1
     clearPopup.value = true
@@ -264,26 +288,89 @@ const confirmClearPassword = async (password: string) => {
 // 开启手势密码
 async function confirmGesture(password: string) {
   popup.value = false
-  await setPasswordStore(password, tempType.value)
-  uni.showToast({
-    title: '设置成功',
-    icon: 'success'
-  })
-  if (tempType.value) settingsData.privacyItemInvisible = 1
-  else settingsData.unifiedPasswordUsed = 1
+
+  if (isValidate.value) {
+    // 验证模式：只验证密码，不设置新密码
+    try {
+      await validatePassword(password, tempType.value)
+      uni.showToast({
+        title: '验证成功',
+        icon: 'success'
+      })
+      await setPasswordStore(password, tempType.value)
+    } catch {
+      uni.showToast({
+        title: '密码错误',
+        icon: 'error'
+      })
+      // 密码错误时回滚开关状态
+      if (tempType.value === 0) {
+        settingsData.unifiedPasswordUsed = 0
+      } else if (tempType.value === 1) {
+        settingsData.privacyDisplay = 0
+      } else if (tempType.value === 2) {
+        settingsData.privacyItemInvisible = 0
+      }
+    }
+  } else {
+    // 设置模式：设置新密码
+    await setPasswordStore(password, tempType.value)
+    uni.showToast({
+      title: '设置成功',
+      icon: 'success'
+    })
+    if (tempType.value === 0) {
+      settingsData.unifiedPasswordUsed = 1
+    } else if (tempType.value === 1) {
+      settingsData.privacyDisplay = 1
+    } else if (tempType.value === 2) {
+      settingsData.privacyItemInvisible = 1
+    }
+  }
 }
 
 // 开启数字密码
 async function confirmNumber(password: string) {
   popup.value = false
-  if (tempType.value) await setPasswordStore(password, tempType.value)
-  else await setPasswordStore(password, tempType.value)
-  uni.showToast({
-    title: '设置成功',
-    icon: 'success'
-  })
-  if (tempType.value) settingsData.privacyItemInvisible = 1
-  else settingsData.unifiedPasswordUsed = 1
+
+  if (isValidate.value) {
+    // 验证模式：只验证密码，不设置新密码
+    try {
+      await validatePassword(password, tempType.value)
+      uni.showToast({
+        title: '验证成功',
+        icon: 'success'
+      })
+      await setPasswordStore(password, tempType.value)
+    } catch {
+      uni.showToast({
+        title: '密码错误',
+        icon: 'error'
+      })
+      // 密码错误时回滚开关状态
+      if (tempType.value === 0) {
+        settingsData.unifiedPasswordUsed = 0
+      } else if (tempType.value === 1) {
+        settingsData.privacyDisplay = 0
+      } else if (tempType.value === 2) {
+        settingsData.privacyItemInvisible = 0
+      }
+    }
+  } else {
+    // 设置模式：设置新密码
+    await setPasswordStore(password, tempType.value)
+    uni.showToast({
+      title: '设置成功',
+      icon: 'success'
+    })
+    if (tempType.value === 0) {
+      settingsData.unifiedPasswordUsed = 1
+    } else if (tempType.value === 1) {
+      settingsData.privacyDisplay = 1
+    } else if (tempType.value === 2) {
+      settingsData.privacyItemInvisible = 1
+    }
+  }
 }
 
 // 修改密码

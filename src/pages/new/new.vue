@@ -131,6 +131,30 @@
           </template>
         </FormInput>
         <u-toast ref="toast"></u-toast>
+        <u-row
+          customStyle="margin-bottom: 10px"
+          v-if="settingsInfo.displayPassword === 1 ? true : false"
+        >
+          <u-col span="10.5">
+            <u-text color="#353535" :bold="true" text="开启隐藏空间" />
+          </u-col>
+          <u-col span="1.5">
+            <u-switch
+              :disabled="false"
+              v-model="localPrivacyRoom"
+              @change="handlePrivacyRoomChange"
+              size="20"
+              :activeValue="true"
+            />
+          </u-col>
+        </u-row>
+        <PasswordPopup
+          :popup="popupRoom"
+          :isValidate="true"
+          @close="popupRoom = false"
+          @confirmGesture="confirmGestureRoom"
+          @confirmNumber="confirmNumberRoom"
+        />
       </view>
       <view v-if="currentFloor !== 1" class="form__information">
         <FormShow
@@ -279,7 +303,7 @@
 </template>
 
 <script setup lang="ts">
-import { onLoad } from '@dcloudio/uni-app'
+import { onLoad, onShow } from '@dcloudio/uni-app'
 import { ref, watch } from 'vue'
 // 引入类型
 import type { ItemForm, RoomForm, Image } from '@/types/form'
@@ -304,6 +328,75 @@ const useForm = useFormStore()
 const { form, createRoom, createItem, upload, currentFloor, resetForm } = useForm
 const spaceStore = useSpaceStore()
 const { pathsInfo, spaces } = spaceStore
+
+import { useSettingsStore } from '@/stores/settings'
+import { validatePassword } from '@/network/apis/settings'
+import { storeToRefs } from 'pinia'
+const settingsStore = useSettingsStore()
+const { settingsInfo, privacyRoom } = storeToRefs(settingsStore)
+const { getPrivacyDisplayPassword } = settingsStore
+
+// 本地的隐藏空间状态
+const localPrivacyRoom = ref(privacyRoom.value)
+// 隐藏空间密码弹窗
+const popupRoom = ref(false)
+onShow(() => {
+  // 是否显示开启隐藏空间
+  getPrivacyDisplayPassword()
+})
+// 处理隐藏空间开关变化
+const handlePrivacyRoomChange = (newValue: boolean) => {
+  if (newValue) {
+    // 开启隐藏空间需要验证密码
+    popupRoom.value = true
+  } else {
+    // 关闭隐藏空间直接设置
+    localPrivacyRoom.value = false
+    privacyRoom.value = false
+  }
+}
+const confirmGestureRoom = async (password: string) => {
+  try {
+    await validatePassword(password, 1)
+    uni.showToast({
+      title: '验证成功',
+      icon: 'none'
+    })
+    localPrivacyRoom.value = true
+    privacyRoom.value = true
+    popupRoom.value = false
+  } catch {
+    uni.showToast({
+      title: '密码错误',
+      icon: 'none'
+    })
+    localPrivacyRoom.value = false
+    privacyRoom.value = false
+    popupRoom.value = false
+  }
+}
+
+const confirmNumberRoom = async (password: string) => {
+  try {
+    await validatePassword(password, 1)
+    uni.showToast({
+      title: '验证成功',
+      icon: 'none'
+    })
+    localPrivacyRoom.value = true
+    privacyRoom.value = true
+    popupRoom.value = false
+  } catch {
+    uni.showToast({
+      title: '密码错误',
+      icon: 'none'
+    })
+    localPrivacyRoom.value = false
+    privacyRoom.value = false
+    popupRoom.value = false
+  }
+}
+
 // 第一次进入页面时，获取所有标签
 if (!tagStore.tagsInfo.tagData.length) getAllTags()
 
