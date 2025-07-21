@@ -150,5 +150,120 @@ export interface PreScanInfo {
   /**
    * 是否为隐私物品/是否已经为好友(0非1是)
    */
-  state: number
+  // state: number
+  /**
+   * 权限码
+    好友属性(第一位，1是好友、0不是好友)
+    分享属性(第二位，1是0不是)
+    隐私属性(第三位，1是0不是)
+    隐藏属性(第四位，1是0不是)
+    归属属性(第五位，0他人的、1自己的)
+    共同管理属性(第六位，0不是自己共同管理的 1是自己共同管理的)
+   */
+  code: string
+}
+
+// 扫码物品返回
+export interface scanItemRes {
+  /**
+   * 物品信息
+   */
+  id
+  /**
+   * 属性(0房屋1空间2物品3暂存区)
+   */
+  type: string
+  /**
+   * 隐私设置(0非隐私1隐私)
+   */
+  privacy: string
+  /**
+   * 是否是暂存区里的
+   */
+  isTemporary: boolean
+  /**
+   * 物品名
+   */
+  name: string
+  /**
+   * 物品封面
+   */
+  cover: string
+  /**
+   * 路径
+   */
+  path: scanItemPath[]
+  /**
+   * 所属者
+   */
+  userId: number
+}
+
+export interface scanItemPath {
+  id: number
+  /**
+   * 物品名
+   */
+  name: string
+}
+
+// 扫码处获取内部物品列表
+export interface BasePageItemSearchVO {
+  /**
+   * 当前页
+   */
+  current?: number
+  /**
+   * 总页数
+   */
+  pages?: number
+  /**
+   * 分页对象数据
+   */
+  records?: ItemSearchVO[]
+  /**
+   * 每页显示数量
+   */
+  size?: number
+  /**
+   * 数量总数
+   */
+  total?: number
+}
+
+/**
+ * 物品搜索vo
+ *
+ * ItemSearchVO
+ */
+export interface ItemSearchVO {
+  /**
+   * 物品封面
+   */
+  cover?: string
+  id?: number
+  /**
+   * 是否是暂存区里的
+   */
+  isTemporary?: boolean
+  /**
+   * 物品名
+   */
+  name?: string
+  /**
+   * 路径
+   */
+  path?: scanItemPath[]
+  /**
+   * 隐私设置(0非隐私1隐私)
+   */
+  privacy?: Privacy
+  /**
+   * 属性(0房屋1空间2物品3暂存区)
+   */
+  type?: Type
+  /**
+   * 所属者
+   */
+  userId?: number
 }

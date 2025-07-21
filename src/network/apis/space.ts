@@ -1,6 +1,13 @@
 import service from '..'
 import type { PagingParams, Pages, T1 } from '@/utils/typings'
-import type { BriefData, Path, DetailData, PreScanInfo } from '@/types/space'
+import type {
+  BriefData,
+  Path,
+  DetailData,
+  PreScanInfo,
+  scanItemRes,
+  BasePageItemSearchVO
+} from '@/types/space'
 
 // 查看空间列表
 export function getFirstFloorRoomsAPI({
@@ -83,9 +90,43 @@ export function addManagementAPI(ownerId: number, itemId: number): Promise<null>
 }
 
 // 扫码前置请求
-export function preScanRequestAPI(userId: number, itemId: number): Promise<PreScanInfo> {
+export function preScanRequestAPI(
+  itemId: number,
+  userId: number,
+  type: number,
+  privacy: number,
+  hide: number
+): Promise<PreScanInfo> {
   return service<PreScanInfo>({
-    url: `/items/${userId}/${itemId}`,
-    method: 'POST'
+    url: `/items/scan`,
+    method: 'POST',
+    data: {
+      itemId,
+      userId,
+      type,
+      privacy,
+      hide
+    }
+  })
+}
+
+// 扫码处查看物品概况
+export function scanItemAPI(itemId: number, userId: number): Promise<scanItemRes> {
+  return service<scanItemRes>({
+    url: `/items/qrcode/${userId}/${itemId}`,
+    method: 'GET'
+  })
+}
+
+// 扫码处获取内部物品列表
+export function scanInnerItemApi(
+  userId: number,
+  itemId: number,
+  current: number,
+  size: number
+): Promise<BasePageItemSearchVO> {
+  return service<BasePageItemSearchVO>({
+    url: `/items/qrcode/list?userId=${userId}&itemId=${itemId}&current=${current}&size=${size}`,
+    method: 'GET'
   })
 }
