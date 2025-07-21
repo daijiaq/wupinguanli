@@ -1,6 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Path, PreScanInfo, SpacesInfo } from '@/types/space'
+import type {
+  Path,
+  PreScanInfo,
+  SpacesInfo,
+  scanItemRes,
+  BasePageItemSearchVO
+} from '@/types/space'
 import type { T1 } from '@/utils/typings'
 import {
   getFirstFloorRoomsAPI,
@@ -8,7 +14,9 @@ import {
   getAllPathsAPI,
   batchMoveItemsAPI,
   addManagementAPI,
-  preScanRequestAPI
+  preScanRequestAPI,
+  scanItemAPI,
+  scanInnerItemApi
 } from '@/network/apis/space'
 
 export const useSpaceStore = defineStore('space', () => {
@@ -68,8 +76,28 @@ export const useSpaceStore = defineStore('space', () => {
   }
 
   // 扫码前置请求
-  async function preScanRequest(userId: number, itemId: number): Promise<PreScanInfo> {
-    return await preScanRequestAPI(userId, itemId)
+  async function preScanRequest(
+    itemId: number,
+    userId: number,
+    type: number,
+    privacy: number,
+    hide: number
+  ): Promise<PreScanInfo> {
+    return await preScanRequestAPI(itemId, userId, type, privacy, hide)
+  }
+
+  // 扫码处查看物品概况
+  async function scanItemRequest(itemId: number, userId: number): Promise<scanItemRes> {
+    return await scanItemAPI(itemId, userId)
+  }
+  // 扫码处获取内部物品列表
+  async function getInnerItems(
+    userId: number,
+    itemId: number,
+    current: number,
+    size: number
+  ): Promise<BasePageItemSearchVO> {
+    return await scanInnerItemApi(userId, itemId, current, size)
   }
 
   return {
@@ -81,6 +109,8 @@ export const useSpaceStore = defineStore('space', () => {
     getAllPaths,
     batchMove,
     addManagement,
-    preScanRequest
+    preScanRequest,
+    scanItemRequest,
+    getInnerItems
   }
 })

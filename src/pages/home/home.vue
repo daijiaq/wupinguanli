@@ -151,6 +151,8 @@ let isEdit = false
 let isScan = false
 // 是否为分享物品
 let isShareItem = false
+// 是否为自己的物品
+let isOwner = false
 // 暂存物品ID
 let tempItemId = 0
 // 暂存类型
@@ -403,7 +405,8 @@ const scanCode = (): void => {
   uni.scanCode({
     success(res) {
       const result = JSON.parse(res.result)
-      jumpPageDetail(result.userId, result.itemId)
+      console.log('扫码结果:', result)
+      jumpPageDetail(result.itemId, result.userId, result.type, result.privacy, result.hide)
     },
     fail(err) {
       console.log('扫码失败:', err)
@@ -411,17 +414,39 @@ const scanCode = (): void => {
   })
 }
 
-// 扫码跳转详情页
-const jumpPageDetail = async (userId: number, itemId: number) => {
-  const res = await preScanRequest(userId, itemId)
+// 扫码跳转物品列表展示页
+const jumpPageDetail = async (
+  itemId: number,
+  userId: number,
+  type: number,
+  privacy: number,
+  hide: number
+) => {
+  const res = await preScanRequest(itemId, userId, type, privacy, hide)
   // 1.扫描的是物品、房子
   if (itemId !== 0) {
-    if (res.state === 0) {
-      isShareItem = true
-      await getShareItemDetail(2, itemId, userId, '')
+    // 如果是非隐私物品
+    if (res.code[2] === '0') {
+      // 如果是分享物品
+      if (res.code[1] === '1') {
+        isShareItem = true
+      } else {
+        isShareItem = false
+      }
+      // 是否是自己的物品
+      if (res.code[4] === '1') {
+        isOwner = true
+      } else {
+        isOwner = false
+      }
+      console.log(isOwner)
       uni.navigateTo({
-        url: `/pages/details/details?isShareItem=${isShareItem}`
+        url: `/pages/home/scan/scanItem?type=${type}&itemId=${itemId}&userId=${userId}&privacy=${privacy}&hide=${hide}&isShareItem=${isShareItem}&isOwner=${isOwner}`
       })
+      // await getShareItemDetail(2, itemId, userId, '')
+      // uni.navigateTo({
+      //   url: `/pages/details/details?isShareItem=${isShareItem}`
+      // })
     } else {
       tempUserId = userId
       tempItemId = itemId
@@ -433,7 +458,7 @@ const jumpPageDetail = async (userId: number, itemId: number) => {
     // 2.扫描的是用户
     uni.navigateTo({
       url: `/pages/user/friends/detail/detail?id=${userId}&isFriend=${
-        res.state === 0 ? true : false
+        res.code[0] === '0' ? true : false
       }`
     })
   }

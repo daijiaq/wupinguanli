@@ -161,12 +161,12 @@ export const uploadFileService = <T>(options: UniApp.UploadFileOption): Promise<
               icon: 'error'
             })
             break
-          case 404:
-            uni.showToast({
-              title: '界面不存在',
-              icon: 'error'
-            })
-            break
+          // case 404:
+          //   uni.showToast({
+          //     title: '界面不存在',
+          //     icon: 'error'
+          //   })
+          //   break
           case 500:
             uni.showToast({
               title: '服务端异常',
@@ -180,9 +180,9 @@ export const uploadFileService = <T>(options: UniApp.UploadFileOption): Promise<
             break
         }
       })
-      .catch((err) => {
-        reject(err)
-      })
+    // .catch((err) => {
+    //   reject(err)
+    // })
   })
 }
 
