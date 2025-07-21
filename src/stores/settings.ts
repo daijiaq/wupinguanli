@@ -15,7 +15,11 @@ export const useSettingsStore = defineStore('settings', () => {
   // 基础设置
   const settingsInfo = ref<Settings>({
     allowManagement: 0,
+    privacyItemInvisible: 0,
+    unifiedPasswordUsed: 0,
     privacyDisplay: 0,
+    displayPassword: 0,
+    privacyPassword: 0,
     unifiedPassword: 0
   })
 
@@ -51,28 +55,57 @@ export const useSettingsStore = defineStore('settings', () => {
   const initSettings = async () => {
     const data = await getAllSettings()
     settingsInfo.value.allowManagement = data.allowManagement
+    settingsInfo.value.privacyItemInvisible = data.privacyItemInvisible
+    settingsInfo.value.privacyPassword = data.privacyPassword
+    settingsInfo.value.unifiedPasswordUsed = data.unifiedPasswordUsed
     settingsInfo.value.privacyDisplay = data.privacyDisplay
+    settingsInfo.value.displayPassword = data.displayPassword
     settingsInfo.value.unifiedPassword = data.unifiedPassword
   }
 
+  // 开启隐藏空间
+  const privacyRoom = ref(false)
+
+  // 获取是否设置过隐藏空间
+  const getPrivacyDisplayPassword = async () => {
+    const data = await getAllSettings()
+    settingsInfo.value.displayPassword = data.displayPassword
+  }
+
   // 设置密码
-  const setPasswordStore = async (password: string, type: 0 | 1) => {
+  const setPasswordStore = async (password: string, type: 0 | 1 | 2) => {
     setPassword(password, type)
-    if (type) settingsInfo.value.privacyDisplay = 1
-    else settingsInfo.value.unifiedPassword = 1
+    if (type === 0) {
+      settingsInfo.value.unifiedPasswordUsed = 1
+      settingsInfo.value.unifiedPassword = 1
+    } else if (type === 1) {
+      settingsInfo.value.privacyDisplay = 1
+      settingsInfo.value.displayPassword = 1
+    } else if (type === 2) {
+      settingsInfo.value.privacyItemInvisible = 1
+      settingsInfo.value.privacyPassword = 1
+    }
   }
 
   // 修改设置
-  const updateSettingsStore = (allowManagement: 0 | 1) => {
-    updateSettings(allowManagement)
+  const updateSettingsStore = (allowManagement: 0 | 1, privacyItemInvisible: 0 | 1) => {
+    updateSettings(allowManagement, privacyItemInvisible)
     settingsInfo.value.allowManagement = allowManagement
   }
 
   // 清空密码
-  const clearPasswordStore = (type: 0 | 1) => {
+  const clearPasswordStore = (type: 0 | 1 | 2) => {
     clearPassword(type)
-    if (type) settingsInfo.value.privacyDisplay = 0
-    else settingsInfo.value.unifiedPassword = 0
+    if (type === 0) {
+      settingsInfo.value.unifiedPasswordUsed = 0
+      settingsInfo.value.unifiedPassword = 0
+    } else if (type === 1) {
+      settingsInfo.value.privacyDisplay = 0
+      settingsInfo.value.displayPassword = 0
+    } else if (type === 2) {
+      settingsInfo.value.privacyItemInvisible = 0
+      settingsInfo.value.privacyPassword = 0
+    }
   }
 
   // 切换账号初始化
@@ -86,10 +119,12 @@ export const useSettingsStore = defineStore('settings', () => {
   return {
     settingsInfo,
     accountsInfo,
+    privacyRoom,
     initSettings,
     setPasswordStore,
     updateSettingsStore,
     clearPasswordStore,
-    initSwitchAccounts
+    initSwitchAccounts,
+    getPrivacyDisplayPassword
   }
 })

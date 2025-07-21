@@ -26,12 +26,26 @@
         ></u-switch>
         <u-divider line-color="#d9d9d9"></u-divider>
       </view> -->
-      <!-- <view class="settings__item">
+      <view class="settings__item">
+        <view class="settings__item__left">
+          <u-text text="直接删除物品不放入回收站" size="15"></u-text>
+        </view>
+        <u-switch :activeValue="1" :inactiveValue="0"></u-switch>
+        <u-divider line-color="#d9d9d9"></u-divider>
+      </view>
+      <view class="settings__item">
+        <view class="settings__item__left">
+          <u-text text="wifi下自动更新" size="15"></u-text>
+        </view>
+        <u-switch :activeValue="1" :inactiveValue="0"></u-switch>
+        <u-divider line-color="#d9d9d9"></u-divider>
+      </view>
+      <view class="settings__item">
         <view class="settings__item__left">
           <u-text text="设置私密物品不可见" size="15"></u-text>
         </view>
         <u-switch
-          v-model="settingsData.privacyDisplay"
+          v-model="settingsData.privacyItemInvisible"
           :activeValue="1"
           :inactiveValue="0"
           @change="setPrivacyDisplay"
@@ -39,17 +53,17 @@
         <view
           class="settings__item__change-pwd"
           @click="changePrivacyDisplay"
-          :style="{ color: settingsData.privacyDisplay ? '#3988ff' : '#d9d9d9' }"
+          :style="{ color: settingsData.privacyItemInvisible ? '#3988ff' : '#d9d9d9' }"
           >修改密码</view
         >
         <u-divider line-color="#d9d9d9"></u-divider>
-      </view> -->
+      </view>
       <view class="settings__item">
         <view class="settings__item__left">
           <u-text text="私密物品使用通用密码" size="15"></u-text>
         </view>
         <u-switch
-          v-model="settingsData.unifiedPassword"
+          v-model="settingsData.unifiedPasswordUsed"
           :activeValue="1"
           :inactiveValue="0"
           @change="setUnifiedPassword"
@@ -57,7 +71,25 @@
         <view
           class="settings__item__change-pwd"
           @click="changeUnifiedPassword"
-          :style="{ color: settingsData.unifiedPassword ? '#3988ff' : '#d9d9d9' }"
+          :style="{ color: settingsData.unifiedPasswordUsed ? '#3988ff' : '#d9d9d9' }"
+          >修改密码</view
+        >
+        <u-divider line-color="#d9d9d9"></u-divider>
+      </view>
+      <view class="settings__item">
+        <view class="settings__item__left">
+          <u-text text="开启隐藏空间" size="15"></u-text>
+        </view>
+        <u-switch
+          v-model="settingsData.privacyDisplay"
+          :activeValue="1"
+          :inactiveValue="0"
+          @change="setPrivacyDisplayRoom"
+        ></u-switch>
+        <view
+          class="settings__item__change-pwd"
+          @click="changePrivacyDisplayRoom"
+          :style="{ color: settingsData.privacyDisplay ? '#3988ff' : '#d9d9d9' }"
           >修改密码</view
         >
         <u-divider line-color="#d9d9d9"></u-divider>
@@ -69,9 +101,17 @@
         <u-divider line-color="#d9d9d9"></u-divider>
         <u-icon name="arrow-right" color="#0F0F0F"></u-icon>
       </view>
+      <view class="settings__item">
+        <view class="settings__item__left">
+          <u-text text="版本信息" size="15"></u-text>
+        </view>
+        <u-switch :activeValue="1" :inactiveValue="0"></u-switch>
+        <u-divider line-color="#d9d9d9"></u-divider>
+      </view>
     </view>
     <PasswordPopup
       :popup="popup"
+      :isValidate="isValidate"
       @close="popup = false"
       @confirmGesture="confirmGesture"
       @confirmNumber="confirmNumber"
@@ -104,33 +144,57 @@ const settings = useSettingsStore()
 const { settingsInfo } = storeToRefs(settings)
 const { initSettings, setPasswordStore, updateSettingsStore, clearPasswordStore } = settings
 
+const isValidate = ref(false)
+
+// 根据密码类型判断是验证模式还是设置模式
+const getIsValidate = (type: 0 | 1 | 2): boolean => {
+  if (type === 0) {
+    return settingsInfo.value.unifiedPassword === 1
+  } else if (type === 1) {
+    return settingsInfo.value.displayPassword === 1
+  } else if (type === 2) {
+    return settingsInfo.value.privacyPassword === 1
+  }
+  return false
+}
+
 onShow(async () => {
   await initSettings()
   // 初始化
   settingsData.allowManagement = settingsInfo.value.allowManagement
+  settingsData.privacyItemInvisible = settingsInfo.value.privacyItemInvisible
+  settingsData.unifiedPasswordUsed = settingsInfo.value.unifiedPasswordUsed
   settingsData.privacyDisplay = settingsInfo.value.privacyDisplay
-  settingsData.unifiedPassword = settingsInfo.value.unifiedPassword
 })
 
 // 设置数据
 const settingsData = reactive({
   allowManagement: settingsInfo.value.allowManagement,
-  privacyDisplay: settingsInfo.value.privacyDisplay,
-  unifiedPassword: settingsInfo.value.unifiedPassword
+  privacyItemInvisible: settingsInfo.value.privacyItemInvisible,
+  unifiedPasswordUsed: settingsInfo.value.unifiedPasswordUsed,
+  privacyDisplay: settingsInfo.value.privacyDisplay
 })
 
 //密码弹窗
 const popup = ref(false)
 const clearPopup = ref(false)
 const changePasswordPopup = ref(false)
-const tempType = ref<0 | 1>(0)
+// 0隐私物品使用的通用密码 1开启隐藏空间密码,2设置私密物品不可见密码
+const tempType = ref<0 | 1 | 2>(0)
 
-// 监听设置密码弹窗
+// 监听设置密码弹窗 - 只在设置模式下处理回滚
 watch(
   () => popup.value,
   () => {
-    if (!popup.value && !settingsInfo.value.privacyDisplay) settingsData.privacyDisplay = 0
-    if (!popup.value && !settingsInfo.value.unifiedPassword) settingsData.unifiedPassword = 0
+    if (!popup.value && !isValidate.value) {
+      // 只在设置模式下，且没有设置成功时才回滚
+      if (!settingsInfo.value.privacyItemInvisible && tempType.value === 2)
+        settingsData.privacyItemInvisible = 0
+      if (!settingsInfo.value.unifiedPasswordUsed && tempType.value === 0)
+        settingsData.unifiedPasswordUsed = 0
+      if (!settingsInfo.value.privacyDisplay && tempType.value === 1)
+        settingsData.privacyDisplay = 0
+    }
   }
 )
 
@@ -138,46 +202,73 @@ watch(
 watch(
   () => clearPopup.value,
   () => {
+    if (!clearPopup.value && settingsInfo.value.privacyItemInvisible)
+      settingsData.privacyItemInvisible = 1
+    if (!clearPopup.value && settingsInfo.value.unifiedPasswordUsed)
+      settingsData.unifiedPasswordUsed = 1
     if (!clearPopup.value && settingsInfo.value.privacyDisplay) settingsData.privacyDisplay = 1
-    if (!clearPopup.value && settingsInfo.value.unifiedPassword) settingsData.unifiedPassword = 1
   }
 )
 
 // 设置设置私密物品不可见
 const setPrivacyDisplay = () => {
   // 开启密码
-  if (settingsData.privacyDisplay) {
+  if (settingsData.privacyItemInvisible) {
+    updateSettingsStore(settingsData.allowManagement, settingsData.privacyItemInvisible)
+    tempType.value = 2
+    isValidate.value = getIsValidate(2)
     popup.value = true
-    tempType.value = 1
   } else {
+    updateSettingsStore(settingsData.allowManagement, settingsData.privacyItemInvisible)
     // 清空密码
-    tempType.value = 1
+    tempType.value = 2
     clearPopup.value = true
   }
 }
 
 // 修改私密物品不可见密码
 const changePrivacyDisplay = () => {
-  if (settingsData.privacyDisplay) {
+  if (settingsData.privacyItemInvisible) {
     changePasswordPopup.value = true
-    tempType.value = 1
+    tempType.value = 2
   }
 }
 
 // 设置私密物品使用通用密码
 const setUnifiedPassword = () => {
-  if (settingsData.unifiedPassword) {
-    popup.value = true
+  if (settingsData.unifiedPasswordUsed) {
     tempType.value = 0
+    isValidate.value = getIsValidate(0)
+    popup.value = true
   } else {
     tempType.value = 0
     clearPopup.value = true
   }
 }
 
+// 设置隐藏空间密码
+const setPrivacyDisplayRoom = () => {
+  if (settingsData.privacyDisplay) {
+    tempType.value = 1
+    isValidate.value = getIsValidate(1)
+    popup.value = true
+  } else {
+    tempType.value = 1
+    clearPopup.value = true
+  }
+}
+
+// 修改隐藏空间密码
+const changePrivacyDisplayRoom = () => {
+  if (settingsData.privacyDisplay) {
+    changePasswordPopup.value = true
+    tempType.value = 1
+  }
+}
+
 // 修改私密物品使用通用密码
 const changeUnifiedPassword = () => {
-  if (settingsData.unifiedPassword) {
+  if (settingsData.unifiedPasswordUsed) {
     changePasswordPopup.value = true
     tempType.value = 0
   }
@@ -197,26 +288,89 @@ const confirmClearPassword = async (password: string) => {
 // 开启手势密码
 async function confirmGesture(password: string) {
   popup.value = false
-  await setPasswordStore(password, tempType.value)
-  uni.showToast({
-    title: '设置成功',
-    icon: 'success'
-  })
-  if (tempType.value) settingsData.privacyDisplay = 1
-  else settingsData.unifiedPassword = 1
+
+  if (isValidate.value) {
+    // 验证模式：只验证密码，不设置新密码
+    try {
+      await validatePassword(password, tempType.value)
+      uni.showToast({
+        title: '验证成功',
+        icon: 'success'
+      })
+      await setPasswordStore(password, tempType.value)
+    } catch {
+      uni.showToast({
+        title: '密码错误',
+        icon: 'error'
+      })
+      // 密码错误时回滚开关状态
+      if (tempType.value === 0) {
+        settingsData.unifiedPasswordUsed = 0
+      } else if (tempType.value === 1) {
+        settingsData.privacyDisplay = 0
+      } else if (tempType.value === 2) {
+        settingsData.privacyItemInvisible = 0
+      }
+    }
+  } else {
+    // 设置模式：设置新密码
+    await setPasswordStore(password, tempType.value)
+    uni.showToast({
+      title: '设置成功',
+      icon: 'success'
+    })
+    if (tempType.value === 0) {
+      settingsData.unifiedPasswordUsed = 1
+    } else if (tempType.value === 1) {
+      settingsData.privacyDisplay = 1
+    } else if (tempType.value === 2) {
+      settingsData.privacyItemInvisible = 1
+    }
+  }
 }
 
 // 开启数字密码
 async function confirmNumber(password: string) {
   popup.value = false
-  if (tempType.value) await setPasswordStore(password, tempType.value)
-  else await setPasswordStore(password, tempType.value)
-  uni.showToast({
-    title: '设置成功',
-    icon: 'success'
-  })
-  if (tempType.value) settingsData.privacyDisplay = 1
-  else settingsData.unifiedPassword = 1
+
+  if (isValidate.value) {
+    // 验证模式：只验证密码，不设置新密码
+    try {
+      await validatePassword(password, tempType.value)
+      uni.showToast({
+        title: '验证成功',
+        icon: 'success'
+      })
+      await setPasswordStore(password, tempType.value)
+    } catch {
+      uni.showToast({
+        title: '密码错误',
+        icon: 'error'
+      })
+      // 密码错误时回滚开关状态
+      if (tempType.value === 0) {
+        settingsData.unifiedPasswordUsed = 0
+      } else if (tempType.value === 1) {
+        settingsData.privacyDisplay = 0
+      } else if (tempType.value === 2) {
+        settingsData.privacyItemInvisible = 0
+      }
+    }
+  } else {
+    // 设置模式：设置新密码
+    await setPasswordStore(password, tempType.value)
+    uni.showToast({
+      title: '设置成功',
+      icon: 'success'
+    })
+    if (tempType.value === 0) {
+      settingsData.unifiedPasswordUsed = 1
+    } else if (tempType.value === 1) {
+      settingsData.privacyDisplay = 1
+    } else if (tempType.value === 2) {
+      settingsData.privacyItemInvisible = 1
+    }
+  }
 }
 
 // 修改密码
@@ -228,7 +382,7 @@ const confirmChangePassword = async (password: string) => {
       title: '验证成功，请设置新密码',
       icon: 'none'
     })
-    if (settingsData.privacyDisplay) {
+    if (settingsData.privacyItemInvisible) {
       setPrivacyDisplay()
     } else {
       setUnifiedPassword()
@@ -250,7 +404,7 @@ const goToAccount = () => {
 
 // 界面隐藏时更新设置
 onHide(() => {
-  updateSettingsStore(settingsData.allowManagement)
+  updateSettingsStore(settingsData.allowManagement, settingsData.privacyItemInvisible)
 })
 </script>
 

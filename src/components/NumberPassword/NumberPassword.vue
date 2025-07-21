@@ -1,6 +1,6 @@
 <template>
   <view class="acqui_verification_code">
-    <view class="verification_code_continor">
+    <view class="verification_code_continor" @click="handleContainerClick">
       <view
         v-for="(item, index) in latticeNum"
         :key="index"
@@ -25,6 +25,7 @@
         @blur="blur"
         @focus="focus"
         class="input-info__main"
+        adjust-position="false"
       />
     </div>
   </view>
@@ -81,18 +82,34 @@ export default {
   },
   data() {
     return {
-      inputValues: '', //输入的值,
-      blurShowLocal: true
+      inputValues: '',
+      blurShowLocal: true,
+      isFocusInternal: false,
+      isFocusing: false
+    }
+  },
+  watch: {
+    isFocus(val: boolean) {
+      this.isFocusInternal = false
+      wx.nextTick(() => {
+        this.isFocusInternal = val
+      })
     }
   },
   // 监控 show，显示时自动获取焦点
   computed: {
     isFocusLocal() {
-      return this.isFocus
+      return this.isFocusInternal
     }
   },
   mounted() {
     this.blurShowLocal = this.blurShow
+    // 初始化时设置焦点
+    if (this.isFocus) {
+      this.$nextTick(() => {
+        this.isFocusInternal = true
+      })
+    }
   },
   methods: {
     latticeSty(index: any) {
@@ -134,6 +151,16 @@ export default {
     },
     focus() {
       !this.blurShow ? (this.blurShowLocal = true) : ''
+    },
+    handleContainerClick() {
+      if (typeof wx !== 'undefined' && wx.nextTick) {
+        wx.nextTick(() => {
+          this.isFocusInternal = false // 先取消焦点
+          wx.nextTick(() => {
+            this.isFocusInternal = true // 再重新聚焦
+          })
+        })
+      }
     }
   }
 }
@@ -145,42 +172,62 @@ export default {
 
   .verification_code_continor {
     display: flex;
-    justify-content: center;
-    text-align: center;
+    justify-content: space-between;
+    width: 100%;
 
     .verification_code_item {
-      width: 60rpx;
-      height: 60rpx;
+      flex: 1;
+      min-width: 0;
+      position: relative;
+      max-width: 60px;
+      margin: 0 1%;
+
+      /* 内容样式 */
       display: flex;
       align-items: center;
       justify-content: center;
-      display: flex;
-    }
+      font-size: 36rpx;
 
-    .verification_code_item:not(:first-child) {
-      margin-left: 20rpx;
-    }
-    .point {
-      width: 15rpx;
-      height: 15rpx;
-      background-color: #333;
-      border-radius: 200px;
+      /* 密文样式 */
+      .point {
+        width: 16rpx;
+        height: 16rpx;
+        background-color: #333;
+        border-radius: 50%;
+      }
+
+      /* 平板专属适配 */
+      @media (min-width: 1024px) {
+        max-width: 50rpx;
+        max-height: 55rpx;
+        font-size: 32rpx;
+        margin: 0 0.8%;
+      }
     }
   }
 
   .input-info {
-    width: 100%;
-    height: 100%;
-    z-index: 8;
-    display: flex;
-    justify-content: center;
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    z-index: 10;
     overflow: hidden;
 
     &__main {
-      position: absolute;
-      width: 80%;
+      width: 100%;
       height: 100%;
-      left: -100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: transparent;
+      caret-color: transparent;
+      text-shadow: none;
+      -webkit-text-fill-color: transparent;
+      font-size: 0;
+      line-height: 0;
     }
   }
 }

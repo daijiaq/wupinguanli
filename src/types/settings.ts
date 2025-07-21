@@ -6,9 +6,25 @@ export interface Settings {
   /**
    * 是否隐藏隐私物品(0关1开)
    */
+  privacyItemInvisible: 0 | 1
+  /**
+   * 私密物品不可见是否设置过密码(0无1有)
+   */
+  privacyPassword: 0 | 1
+  /**
+   * 隐私物品通用密码是否开启（0关1开）
+   */
+  unifiedPasswordUsed: 0 | 1
+  /**
+   * 是否开启隐藏空间(0关1开)
+   */
   privacyDisplay: 0 | 1
   /**
-   * 是否设置统一隐私密码(0关1开)
+   * 隐藏空间是否设置过密码(0无1有)
+   */
+  displayPassword: 0 | 1
+  /**
+   * 通用密码是否设置过(0无1有)
    */
   unifiedPassword: 0 | 1
 }

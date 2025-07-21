@@ -155,13 +155,15 @@ export function updateItemAPI(
     images,
     figures,
     password,
-    items
+    items,
+    hide
   }: ItemForm
 ): Promise<DetailData> {
   return service<DetailData>({
     url: `/items/${fatherId}/items/${id}`,
     method: 'PUT',
     data: {
+      hide,
       privacy,
       type,
       price,

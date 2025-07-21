@@ -1,6 +1,6 @@
 import type { RoomForm, ItemForm, BatchUpdate, LogsInfo, Image } from '@/types/form'
 import type { DetailData } from '@/types/space'
-import { defineStore } from 'pinia'
+import { defineStore, storeToRefs } from 'pinia'
 import { ref, reactive } from 'vue'
 import { getDetailRoomAPI, getDetailItemAPI, viewShareItemAPI } from '@/network/apis/space'
 import {
@@ -14,6 +14,9 @@ import {
   batchUpdateItemsAPI,
   batchDeleteItemsAPI
 } from '@/network/apis/form'
+import { useSettingsStore } from '@/stores/settings'
+const settingsStore = useSettingsStore()
+const { privacyRoom } = storeToRefs(settingsStore)
 export const useFormStore = defineStore('form', () => {
   // 物品数据
   const itemData = ref<DetailData>({
@@ -37,7 +40,8 @@ export const useFormStore = defineStore('form', () => {
     cover: '',
     address: '',
     longitude: 0,
-    latitude: 0
+    latitude: 0,
+    hide: 0
   })
 
   // 暂存当前编辑数据
@@ -62,7 +66,8 @@ export const useFormStore = defineStore('form', () => {
     cover: '',
     address: '',
     longitude: 0,
-    latitude: 0
+    latitude: 0,
+    hide: 0
   })
 
   // 日志数据
@@ -88,6 +93,8 @@ export const useFormStore = defineStore('form', () => {
       data = await getDetailItemAPI(id, password)
     }
     itemData.value = JSON.parse(JSON.stringify(data))
+    console.log(itemData.value.hide)
+    privacyRoom.value = itemData.value.hide === 1 ? true : false
   }
 
   // 分享的物品详情
