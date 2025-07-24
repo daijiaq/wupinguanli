@@ -870,18 +870,18 @@ const handleCancel = (): void => {
 const handleConfirm = async () => {
   showSpace.value = false
   spacesBox.value.pop()
-  await batchMove(
-    spacesBox.value[spacesBox.value.length - 1].id,
-    [formStore.itemData.id],
-    spacesBox.value
-  )
-  const path = []
-  for (let i = 0; i < pathFloor.value; i++) {
-    path.push({
-      id: spacesBox.value[i].id,
-      name: spacesBox.value[i].name
-    })
-  }
+  // await batchMove(
+  //   spacesBox.value[spacesBox.value.length - 1].id,
+  //   [formStore.itemData.id],
+  //   spacesBox.value
+  // )
+  // const path = []
+  // for (let i = 0; i < pathFloor.value; i++) {
+  //   path.push({
+  //     id: spacesBox.value[i].id,
+  //     name: spacesBox.value[i].name
+  //   })
+  // }
 }
 
 // 关闭弹窗

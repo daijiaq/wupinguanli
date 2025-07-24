@@ -291,6 +291,11 @@ onLoad(async (options: any) => {
   } else {
     isDeleted.value = false
   }
+  if (options.isOwner === 'true') {
+    isOwner.value = true
+  } else {
+    isOwner.value = false
+  }
 })
 
 onShow(() => {
@@ -358,6 +363,8 @@ const isShareItem = ref(false)
 
 // 是否从回收站跳转
 const isDeleted = ref(false)
+
+const isOwner = ref(false)
 
 // 关联物品
 const showAssociate = ref(true)
@@ -444,10 +451,6 @@ const jumpPageShare = () => {
   uni.navigateTo({
     url: `/pages/user/friends/share/share`
   })
-}
-
-function onshow(p0: () => void) {
-  throw new Error('Function not implemented.')
 }
 </script>
 
