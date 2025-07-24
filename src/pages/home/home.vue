@@ -159,6 +159,10 @@ let tempItemId = 0
 let tempType = 0
 // 暂存用户ID
 let tempUserId = 0
+// 暂存隐私设置
+let tempPrivacy = 0
+// 暂存隐藏设置
+let tempHide = 0
 
 // 是否没有更多了
 const isNoMore = computed(
@@ -233,48 +237,76 @@ const longpress = (index: number) => {
 async function confirmGesture(password: string) {
   popup.value = false
   if (isScan) {
-    isShareItem = true
+    // isShareItem = true
     isScan = false
     await getShareItemDetail(2, tempItemId, tempUserId, password)
+    // 密码验证成功后跳转到扫码物品页面
+    uni.navigateTo({
+      url: `/pages/home/scan/scanItem?type=${tempType}&itemId=${tempItemId}&userId=${tempUserId}&privacy=${tempPrivacy}&hide=${tempHide}&isShareItem=${isShareItem}&isOwner=${isOwner}`
+    })
   } else {
-    isShareItem = false
+    // isShareItem = false
     await getDetail(tempType, tempItemId, password)
+    // 密码验证成功后跳转到扫码物品页面
+    uni.navigateTo({
+      url: `/pages/home/scan/scanItem?type=${tempType}&itemId=${tempItemId}&userId=${tempUserId}&privacy=${tempPrivacy}&hide=${tempHide}&isShareItem=${isShareItem}&isOwner=${isOwner}`
+    })
   }
-  if (isEdit) {
-    uni.navigateTo({
-      url: `/pages/edit/edit`
-    })
-  } else
-    uni.navigateTo({
-      url: `/pages/details/details?isShareItem=${isShareItem}`
-    })
-  isEdit = false
+  // 注释掉其他跳转逻辑
+  // if (isEdit) {
+  //   uni.navigateTo({
+  //     url: `/pages/edit/edit`
+  //   })
+  // } else
+  //   uni.navigateTo({
+  //     url: `/pages/details/details?isShareItem=${isShareItem}&isOwner=${isOwner}`
+  //     // url: '/pages/details/details?isShareItem=false'
+  //   })
+  // isEdit = false
 }
 // 验证数字密码
 async function confirmNumber(password: string) {
   popup.value = false
   if (isScan) {
-    isShareItem = true
+    // isShareItem = true
     isScan = false
     await getShareItemDetail(2, tempItemId, tempUserId, password)
+    // 密码验证成功后跳转到扫码物品页面
+    uni.navigateTo({
+      url: `/pages/home/scan/scanItem?type=${tempType}&itemId=${tempItemId}&userId=${tempUserId}&privacy=${tempPrivacy}&hide=${tempHide}&isShareItem=${isShareItem}&isOwner=${isOwner}`
+    })
   } else {
-    isShareItem = false
+    // isShareItem = false
     await getDetail(tempType, tempItemId, password)
+    // 密码验证成功后跳转到扫码物品页面
+    uni.navigateTo({
+      url: `/pages/home/scan/scanItem?type=${tempType}&itemId=${tempItemId}&userId=${tempUserId}&privacy=${tempPrivacy}&hide=${tempHide}&isShareItem=${isShareItem}&isOwner=${isOwner}`
+    })
   }
-  if (isEdit)
-    uni.navigateTo({
-      url: `/pages/edit/edit`
-    })
-  else
-    uni.navigateTo({
-      url: `/pages/details/details?isShareItem=${isShareItem}`
-    })
-  isEdit = false
+  // 注释掉其他跳转逻辑
+  // if (isEdit)
+  //   uni.navigateTo({
+  //     url: `/pages/edit/edit`
+  //   })
+  // else
+  //   uni.navigateTo({
+  //     url: `/pages/details/details?isShareItem=${isShareItem}&isOwner=${isOwner}`
+  //     // url: '/pages/details/details?isShareItem=false'
+  //   })
+  // isEdit = false
 }
 
 async function tryJumpPageDetail(id: number, type: number, privacy: number) {
   isEdit = false
   if (privacy) {
+    // 检查是否是他人隐私物品
+    if (privacyBoolean.value && !isOwner) {
+      uni.showToast({
+        title: '他人隐私空间/物品，不可查看',
+        icon: 'none'
+      })
+      return
+    }
     tempItemId = id
     tempType = type
     popup.value = false
@@ -291,6 +323,14 @@ async function tryJumpPageDetail(id: number, type: number, privacy: number) {
 async function tryJumpPageEdit(id: number, type: number, privacy: number) {
   isEdit = true
   if (privacy) {
+    // 检查是否是他人隐私物品
+    if (privacyBoolean.value && !isOwner) {
+      uni.showToast({
+        title: '他人隐私空间/物品，不可查看',
+        icon: 'none'
+      })
+      return
+    }
     tempItemId = id
     tempType = type
     popup.value = true
@@ -414,6 +454,8 @@ const scanCode = (): void => {
   })
 }
 
+const privacyBoolean = ref(false)
+
 // 扫码跳转物品列表展示页
 const jumpPageDetail = async (
   itemId: number,
@@ -423,10 +465,12 @@ const jumpPageDetail = async (
   hide: number
 ) => {
   const res = await preScanRequest(itemId, userId, type, privacy, hide)
+  console.log(res)
   // 1.扫描的是物品、房子
   if (itemId !== 0) {
     // 如果是非隐私物品
     if (res.code[2] === '0') {
+      privacyBoolean.value = false
       // 如果是分享物品
       if (res.code[1] === '1') {
         isShareItem = true
@@ -448,11 +492,31 @@ const jumpPageDetail = async (
       //   url: `/pages/details/details?isShareItem=${isShareItem}`
       // })
     } else {
+      privacyBoolean.value = true
+      // 是否是自己的物品
+      if (res.code[4] === '1') {
+        isOwner = true
+      } else {
+        isOwner = false
+      }
+      // 检查是否是他人隐私物品
+      if (privacyBoolean.value && !isOwner) {
+        uni.showToast({
+          title: '他人隐私空间/物品，不可查看',
+          icon: 'none'
+        })
+        return
+      }
       tempUserId = userId
       tempItemId = itemId
       tempType = 2
+      tempPrivacy = privacy
+      tempHide = hide
       isScan = true
       popup.value = true
+      // uni.navigateTo({
+      //   url: `/pages/home/scan/scanItem?type=${type}&itemId=${itemId}&userId=${userId}&privacy=${privacy}&hide=${hide}&isShareItem=${isShareItem}&isOwner=${isOwner}`
+      // })
     }
   } else {
     // 2.扫描的是用户
