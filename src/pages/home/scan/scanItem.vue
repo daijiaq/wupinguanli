@@ -446,9 +446,9 @@ const jumpPageDetail = async (
   itemToRoomId.value = itemId
   // isSpace.value = type === 0 || type === 1 ? true : false
   const res = await preScanRequest(itemId, userId, type, privacy, hide)
-  console.log('222', res)
+  console.log('222', res, type)
   // 1.扫描的是物品、房子
-  if (itemId !== 0) {
+  if (itemId !== 0 && type >= 0) {
     // 如果是非隐私物品
     if (res.code[2] === '0') {
       privacyBoolean.value = false
@@ -510,14 +510,22 @@ const jumpPageDetail = async (
     }
   } else {
     // 2.扫描的是用户
-    uni.navigateTo({
-      url: `/pages/user/friends/detail/detail?id=${userId}&isFriend=${
-        res.code[0] === '0' ? true : false
-      }`
+    // uni.navigateTo({
+    //   url: `/pages/user/friends/detail/detail?id=${userId}&isFriend=${
+    //     res.code[0] === '0' ? true : false
+    //   }`
+    // })
+    console.log('11111111')
+    uni.showToast({
+      title: '不可移入好友~',
+      icon: 'none'
     })
+    return
+    // isUser.value = true
   }
-  console.log('密码2', privacyBoolean.value, isOwner)
 }
+
+// const isUser = ref(false)
 
 // 底部操作栏按钮校验和取消逻辑
 const handleAction = async (action: string) => {
@@ -626,6 +634,13 @@ const handleAction = async (action: string) => {
       })
       return
     }
+    // if (isUser.value) {
+    //   uni.showToast({
+    //     title: '不可移入好友~',
+    //     icon: 'none'
+    //   })
+    //   return
+    // }
     // 扫码移入逻辑
     uni.scanCode({
       success(res) {
