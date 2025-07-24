@@ -112,6 +112,8 @@
 import { ref, computed, nextTick } from 'vue'
 import { onShow, onReachBottom, onPullDownRefresh, onLoad } from '@dcloudio/uni-app'
 import { storeToRefs } from 'pinia'
+import { useUserStore } from '@/stores/user'
+const { userInfo } = storeToRefs(useUserStore())
 
 // 引入组件
 import SpaceItem from '@/components/Space/SpaceItem/SpaceItem.vue'
@@ -520,10 +522,28 @@ const jumpPageDetail = async (
     }
   } else {
     // 2.扫描的是用户
-    uni.navigateTo({
-      url: `/pages/user/friends/detail/detail?id=${userId}&isFriend=${
-        res.code[0] === '0' ? true : false
-      }`
+    const userIdSelf = ref(0)
+    uni.getStorage({
+      //检查本地是否存在token
+      key: 'uuid',
+      success: (result) => {
+        userIdSelf.value = result.data
+        console.log(userIdSelf.value)
+        console.log('扫描的是用户', userId, userInfo.value.userId, userIdSelf.value)
+        if (String(userIdSelf.value) === String(userId)) {
+          uni.showToast({
+            title: '自己的二维码信息~',
+            icon: 'none'
+          })
+          return
+        } else {
+          uni.navigateTo({
+            url: `/pages/user/friends/detail/detail?id=${userId}&isFriend=${
+              res.code[0] === '0' ? true : false
+            }`
+          })
+        }
+      }
     })
   }
 }
