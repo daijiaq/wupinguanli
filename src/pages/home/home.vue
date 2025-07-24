@@ -465,9 +465,9 @@ const jumpPageDetail = async (
   hide: number
 ) => {
   const res = await preScanRequest(itemId, userId, type, privacy, hide)
-  console.log(res)
+  console.log('扫码跳转物品列表展示页', res)
   // 1.扫描的是物品、房子
-  if (itemId !== 0) {
+  if (itemId !== 0 && type >= 0) {
     // 如果是非隐私物品
     if (res.code[2] === '0') {
       privacyBoolean.value = false
