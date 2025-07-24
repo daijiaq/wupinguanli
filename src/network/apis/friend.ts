@@ -129,6 +129,17 @@ export function getUserInfoAPI(userId: number): Promise<Friend> {
 }
 
 /**
+ * 获取陌生人信息(新接口，包含备注)
+ * @param userId 用户id
+ */
+export function getStrangerInfoAPI(userId: number): Promise<Friend> {
+  return service({
+    method: 'GET',
+    url: `/friends/search/buddy/${userId}`
+  })
+}
+
+/**
  * 发送好友申请通知接口（新接口）
  */
 export function sendApplicationAPI(

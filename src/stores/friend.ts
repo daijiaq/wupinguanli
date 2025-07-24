@@ -15,7 +15,8 @@ import {
   getFriendLogsAPI,
   sendApplicationAPI,
   shareItemAPI,
-  getGroupFriend
+  getGroupFriend,
+  getStrangerInfoAPI
 } from '@/network/apis/friend'
 import type {
   Group,
@@ -84,6 +85,12 @@ export const useFriendStore = defineStore('friend', () => {
   //获取好友详情
   const getUserInfoData = async (userId: number) => {
     const res = await getUserInfoAPI(userId)
+    friend.value = res
+  }
+
+  //获取好友详情
+  const getStrangerInfoData = async (userId: number) => {
+    const res = await getStrangerInfoAPI(userId)
     friend.value = res
   }
   // 所有好友
@@ -243,6 +250,7 @@ export const useFriendStore = defineStore('friend', () => {
     DeleteFriends,
     tempFriends,
     getUserInfoData,
+    getStrangerInfoData,
     getFriendLogs,
     sendApplication,
     shareItem,

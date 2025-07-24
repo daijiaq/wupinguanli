@@ -223,6 +223,7 @@ const {
   moveFriend,
   sendApplication,
   getUserInfoData,
+  getStrangerInfoData,
   DeleteFriends,
   getFriendLogs,
   friend
@@ -242,7 +243,7 @@ onLoad(async () => {
   const res = await determineWhetherFriend(props.id)
   if (res.buddy === 0) {
     isFriend.value = false
-    getUserInfoData(props.id)
+    getStrangerInfoData(props.id)
   } else {
     getUserInfoData(props.id)
     history.value = await getFriendLogs(props.id)
