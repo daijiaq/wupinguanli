@@ -1,6 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Path, PreScanInfo, SpacesInfo } from '@/types/space'
+import type {
+  Path,
+  PreScanInfo,
+  SpacesInfo,
+  scanItemRes,
+  BasePageItemSearchVO
+} from '@/types/space'
 import type { T1 } from '@/utils/typings'
 import {
   getFirstFloorRoomsAPI,
@@ -8,7 +14,9 @@ import {
   getAllPathsAPI,
   batchMoveItemsAPI,
   addManagementAPI,
-  preScanRequestAPI
+  preScanRequestAPI,
+  scanItemAPI,
+  scanInnerItemApi
 } from '@/network/apis/space'
 
 export const useSpaceStore = defineStore('space', () => {
@@ -57,6 +65,23 @@ export const useSpaceStore = defineStore('space', () => {
     pathsInfo.value = await getAllPathsAPI()
   }
 
+  // 扫码的路径
+  const movePath = ref<T1[]>([])
+  const moveToItemPath = ref<T1[]>([])
+  // 移动物品的直接父id
+  const moveItemFatherId = ref<number[]>([])
+  const moveToItemFatherId = ref<number[]>([])
+  // 移动的item的id
+  const moveItemIds = ref<number[]>([])
+  // 物品转空间的物品id
+  const itemToRoomId = ref(0)
+  const itemToRoomType = ref(0)
+
+  const canMove = ref(false)
+
+  const privacyBoolean = ref(false)
+  const movePassword = ref<string>()
+
   // 批量移动物品
   async function batchMove(fatherId: number, ids: number[], path: T1[]): Promise<void> {
     await batchMoveItemsAPI(fatherId, ids, path)
@@ -68,8 +93,28 @@ export const useSpaceStore = defineStore('space', () => {
   }
 
   // 扫码前置请求
-  async function preScanRequest(userId: number, itemId: number): Promise<PreScanInfo> {
-    return await preScanRequestAPI(userId, itemId)
+  async function preScanRequest(
+    itemId: number,
+    userId: number,
+    type: number,
+    privacy: number,
+    hide: number
+  ): Promise<PreScanInfo> {
+    return await preScanRequestAPI(itemId, userId, type, privacy, hide)
+  }
+
+  // 扫码处查看物品概况
+  async function scanItemRequest(itemId: number, userId: number): Promise<scanItemRes> {
+    return await scanItemAPI(itemId, userId)
+  }
+  // 扫码处获取内部物品列表
+  async function getInnerItems(
+    userId: number,
+    itemId: number,
+    current: number,
+    size: number
+  ): Promise<BasePageItemSearchVO> {
+    return await scanInnerItemApi(userId, itemId, current, size)
   }
 
   return {
@@ -78,9 +123,21 @@ export const useSpaceStore = defineStore('space', () => {
     getRoomItems,
     pathsInfo,
     spaces,
+    movePath,
+    moveToItemPath,
+    moveItemFatherId,
+    moveToItemFatherId,
+    moveItemIds,
+    itemToRoomId,
+    itemToRoomType,
+    canMove,
+    privacyBoolean,
+    movePassword,
     getAllPaths,
     batchMove,
     addManagement,
-    preScanRequest
+    preScanRequest,
+    scanItemRequest,
+    getInnerItems
   }
 })

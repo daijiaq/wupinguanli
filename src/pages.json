@@ -19,6 +19,12 @@
     {
       "path": "pages/home/spaces/spaces"
     },
+      {
+      "path": "pages/home/scan/scanItem"
+    },
+      {
+      "path": "pages/home/scan/scanSpace"
+    },
     {
       "path": "pages/details/details"
     },

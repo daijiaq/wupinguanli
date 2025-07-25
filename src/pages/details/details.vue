@@ -124,6 +124,17 @@
         v-model:input="formStore.itemData.state"
       >
       </FormInput>
+      <u-row
+        customStyle="margin-bottom: 10px"
+        v-if="settingsInfo.displayPassword === 1 ? true : false"
+      >
+        <u-col span="10.5">
+          <u-text color="#353535" :bold="true" text="开启隐藏空间" />
+        </u-col>
+        <u-col span="1.5">
+          <u-switch :disabled="true" v-model="privacyRoom" size="20" :activeValue="true" />
+        </u-col>
+      </u-row>
     </view>
     <template v-if="!isShareItem">
       <view v-if="formStore.itemData.type" class="form__information">
@@ -253,6 +264,12 @@ import FormInput from '@/components/Form/FormInput/FormInput.vue'
 import FormHistory from '@/components/Form/FormHistory/FormHistory.vue'
 import SubordinateSpaceItem from '@/components/Space/SubordinateSpaceItem/SubordinateSpaceItem.vue'
 
+import { useSettingsStore } from '@/stores/settings'
+import { storeToRefs } from 'pinia'
+const settingsStore = useSettingsStore()
+const { settingsInfo } = storeToRefs(settingsStore)
+const { getPrivacyDisplayPassword } = settingsStore
+
 onMounted(() => {
   // 开启分享功能
   uni.showShareMenu({
@@ -274,12 +291,20 @@ onLoad(async (options: any) => {
   } else {
     isDeleted.value = false
   }
+  if (options.isOwner === 'true') {
+    isOwner.value = true
+  } else {
+    isOwner.value = false
+  }
 })
 
 onShow(() => {
   updateSpace()
+  // 是否显示开启隐藏空间
+  getPrivacyDisplayPassword()
   console.log('~', 111)
   console.log(formStore.itemData)
+  privacyRoom.value = formStore.itemData.hide === 1 ? true : false
 })
 
 // onShareAppMessage(() => {
@@ -322,6 +347,7 @@ const showCode = ref(false)
 
 //隐私权
 const privacy = ref(formStore.itemData.privacy ? true : false)
+const privacyRoom = ref(formStore.itemData.hide === 1 ? true : false)
 
 //日期
 const date = ref(new Date(formStore.itemData.date).getTime())
@@ -337,6 +363,8 @@ const isShareItem = ref(false)
 
 // 是否从回收站跳转
 const isDeleted = ref(false)
+
+const isOwner = ref(false)
 
 // 关联物品
 const showAssociate = ref(true)
@@ -423,10 +451,6 @@ const jumpPageShare = () => {
   uni.navigateTo({
     url: `/pages/user/friends/share/share`
   })
-}
-
-function onshow(p0: () => void) {
-  throw new Error('Function not implemented.')
 }
 </script>
 
