@@ -50,6 +50,33 @@
       "path": "pages/user/feedback/feedback"
     },
     {
+      "path": "pages/user/feedback/suggestion"
+    },
+    {
+      "path": "pages/user/feedback/functionError/index"
+    },
+    {
+      "path": "pages/user/feedback/functionError/openFail"
+    },
+    {
+      "path": "pages/user/feedback/functionError/crash"
+    },
+    {
+      "path": "pages/user/feedback/functionError/slowLoad"
+    },
+    {
+      "path": "pages/user/feedback/functionError/other"
+    },
+    {
+      "path": "pages/user/feedback/record"
+    },
+    {
+      "path": "pages/user/feedback/recordDetail"
+    },
+    {
+      "path": "pages/user/deleted/index"
+    },
+    {
       "path": "pages/user/deleted/deleted"
       // "style": {
       //   "enablePullDownRefresh": true
