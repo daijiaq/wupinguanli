@@ -19,7 +19,7 @@
     <view v-else class="formPhoto__content">
       <view class="formPhoto__swiper">
         <u-swiper
-          :list="tempPhoto"
+          :list="tempPhoto.map((item) => item.localUrl)"
           :height="size"
           :autoplay="tempPhoto.length > 1"
           :indicator="tempPhoto.length > 1"
@@ -52,6 +52,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import type { Image } from '@/types/form'
+import { uploadFigureImgAPI } from '@/network/apis/form'
 const props = defineProps<{
   // 大小
   size: string
@@ -82,11 +83,23 @@ watch(
 )
 
 //新增图片的回调
-const photoAfterRead = (event: any): void => {
+const photoAfterRead = async (event: any): Promise<void> => {
   for (let index = 0; index < event.file.length; index++) {
+    // 先本地预览
     tempPhoto.value.push({
-      url: event.file[index].url
+      localUrl: event.file[index].url,
+      url: ''
     })
+    try {
+      const res = await uploadFigureImgAPI(event.file[index].url)
+      // 只更新 url 字段，不替换整个对象
+      const last = tempPhoto.value[tempPhoto.value.length - 1]
+      last.id = res.id
+      last.url = res.url
+    } catch (e) {
+      tempPhoto.value.pop()
+      uni.showToast({ title: '图片上传失败', icon: 'none' })
+    }
   }
   console.log(props.photoList)
 }

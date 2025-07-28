@@ -413,7 +413,7 @@ const goToDetailPage = async (item: ScanItem) => {
     console.log('跳转到分享物品详情页，参数:', params.userId)
     await getShareItemDetail(params.type, params.itemId, params.userId, params.password)
     uni.navigateTo({
-      url: `/pages/details/details?isShareItem=${pageOptions.isShareItem}`
+      url: `/pages/details/details?isShareItem=${pageOptions.isShareItem}&isOwner=${pageOptions.isOwner}`
     })
   } else {
     //  非分享物品调getDetail接口
@@ -425,7 +425,7 @@ const goToDetailPage = async (item: ScanItem) => {
     console.log('跳转到普通物品详情页，参数:', params)
     await getDetail(params.type, params.itemId, params.password)
     uni.navigateTo({
-      url: `/pages/details/details?itemId=${params.itemId}&type=${params.type}`
+      url: `/pages/details/details?itemId=${params.itemId}&type=${params.type}&isOwner=${pageOptions.isOwner}`
     })
   }
 }
@@ -617,6 +617,22 @@ const handleAction = async (action: string) => {
       // 非空间，直接进入编辑页
       const item = mainItems.value[0]
       await getDetail(Number(item.type), item.id, '')
+      // 只设置路径相关store，itemData用接口返回的完整数据
+      if (!formStore.itemData.path || formStore.itemData.path.length === 0) {
+        // 没有空间链，补一层
+        spaceStore.spaces = [
+          {
+            id: formStore.itemData.id,
+            name: formStore.itemData.name,
+            fatherId: 0,
+            layer: 1
+          }
+        ]
+        formStore.currentFloor = 1
+      } else {
+        spaceStore.spaces = formStore.itemData.path
+        formStore.currentFloor = formStore.itemData.path.length
+      }
       uni.navigateTo({
         url: `/pages/edit/edit?from=scan&itemId=${item.id}&type=${item.type}`
       })
@@ -632,11 +648,31 @@ const handleAction = async (action: string) => {
       return
     }
     if (selectedItems.length > 1) {
-      uni.showToast({ title: '只能编辑一个物品', icon: 'none' })
+      // 多选，跳转到共同编辑页面，传递选中物品id列表
+      const ids = selectedItems.map((item) => item.id)
+      uni.navigateTo({
+        url: `/pages/edit/multiple/multiple?ids=${ids.join(',')}`
+      })
       return
     }
     const item = selectedItems[0]
     await getDetail(Number(item.type), item.id, '')
+    // 只设置路径相关store，itemData用接口返回的完整数据
+    if (!formStore.itemData.path || formStore.itemData.path.length === 0) {
+      // 没有空间链，补一层, 不然spaceItem页面toSpace可能会报错
+      spaceStore.spaces = [
+        {
+          id: formStore.itemData.id,
+          name: formStore.itemData.name,
+          fatherId: 0,
+          layer: 1
+        }
+      ]
+      formStore.currentFloor = 1
+    } else {
+      spaceStore.spaces = formStore.itemData.path
+      formStore.currentFloor = formStore.itemData.path.length
+    }
     uni.navigateTo({
       url: `/pages/edit/edit?from=scan&itemId=${item.id}&type=${item.type}`
     })

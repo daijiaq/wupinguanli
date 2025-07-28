@@ -961,8 +961,14 @@ const submitForm = (): void => {
       }
       try {
         isLoading.value = true
-        const images = await concatImages(formStore.tempItemData.images, 0)
-        const figures = await concatImages(formStore.tempItemData.figures, 1)
+        const images = (await concatImages(formStore.tempItemData.images, 0)).map((img) => ({
+          id: img.id,
+          url: img.url
+        }))
+        const figures = (await concatImages(formStore.tempItemData.figures, 1)).map((img) => ({
+          id: img.id,
+          url: img.url
+        }))
         if (formStore.tempItemData.type) {
           const path = []
           console.log(pathFloor)
