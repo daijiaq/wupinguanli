@@ -439,7 +439,6 @@ const jumpPageDetail = async (
       } else {
         isOwner = false
       }
-      console.log(isOwner)
       uni.navigateTo({
         url: `/pages/home/scan/scanItem?type=${type}&itemId=${itemId}&userId=${userId}&privacy=${privacy}&hide=${hide}&isShareItem=${isShareItem}&isOwner=${isOwner}`
       })

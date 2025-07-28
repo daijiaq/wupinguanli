@@ -266,9 +266,11 @@ import SubordinateSpaceItem from '@/components/Space/SubordinateSpaceItem/Subord
 
 import { useSettingsStore } from '@/stores/settings'
 import { storeToRefs } from 'pinia'
+import { useUserStore } from '@/stores/user'
 const settingsStore = useSettingsStore()
 const { settingsInfo } = storeToRefs(settingsStore)
 const { getPrivacyDisplayPassword } = settingsStore
+const userStore = useUserStore()
 
 onMounted(() => {
   // 开启分享功能
@@ -284,6 +286,12 @@ onLoad(async (options: any) => {
     isShareItem.value = true
   } else {
     isShareItem.value = false
+  }
+  // 如果有isOwner参数，按参数判断(主要是扫码页)，否则默认true
+  if (typeof options.isOwner !== 'undefined') {
+    isOwner.value = options.isOwner === 'true'
+  } else {
+    isOwner.value = true
   }
   // 初始化isDeleted
   if (options.isDeleted === 'true') {
@@ -355,6 +363,8 @@ const showTag = ref(true)
 
 // 是否为分享的物品
 const isShareItem = ref(false)
+// 是否为自己的物品
+const isOwner = ref(false)
 
 // 是否从回收站跳转
 const isDeleted = ref(false)
@@ -435,6 +445,13 @@ async function deleteItem(): Promise<void> {
 
 // 跳转编辑页
 const jumpPageEdit = () => {
+  if (isShareItem.value || !isOwner.value) {
+    uni.showToast({
+      title: '不可以编辑他人物品',
+      icon: 'none'
+    })
+    return
+  }
   uni.navigateTo({
     url: `/pages/edit/edit`
   })
