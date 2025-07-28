@@ -93,7 +93,7 @@ export const useFormStore = defineStore('form', () => {
       data = await getDetailItemAPI(id, password)
     }
     itemData.value = JSON.parse(JSON.stringify(data))
-    console.log(itemData.value.hide)
+    console.log(itemData.value, itemData.value.hide)
     privacyRoom.value = itemData.value.hide === 1 ? true : false
   }
 

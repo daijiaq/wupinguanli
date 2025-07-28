@@ -65,6 +65,23 @@ export const useSpaceStore = defineStore('space', () => {
     pathsInfo.value = await getAllPathsAPI()
   }
 
+  // 扫码的路径
+  const movePath = ref<T1[]>([])
+  const moveToItemPath = ref<T1[]>([])
+  // 移动物品的直接父id
+  const moveItemFatherId = ref<number[]>([])
+  const moveToItemFatherId = ref<number[]>([])
+  // 移动的item的id
+  const moveItemIds = ref<number[]>([])
+  // 物品转空间的物品id
+  const itemToRoomId = ref(0)
+  const itemToRoomType = ref(0)
+
+  const canMove = ref(false)
+
+  const privacyBoolean = ref(false)
+  const movePassword = ref<string>()
+
   // 批量移动物品
   async function batchMove(fatherId: number, ids: number[], path: T1[]): Promise<void> {
     await batchMoveItemsAPI(fatherId, ids, path)
@@ -106,6 +123,16 @@ export const useSpaceStore = defineStore('space', () => {
     getRoomItems,
     pathsInfo,
     spaces,
+    movePath,
+    moveToItemPath,
+    moveItemFatherId,
+    moveToItemFatherId,
+    moveItemIds,
+    itemToRoomId,
+    itemToRoomType,
+    canMove,
+    privacyBoolean,
+    movePassword,
     getAllPaths,
     batchMove,
     addManagement,

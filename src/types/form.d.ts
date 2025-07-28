@@ -174,6 +174,10 @@ export interface BatchUpdate {
   password?: string
 }
 
+export interface BatchUpdateNew extends BatchUpdate {
+  path: T1[]
+}
+
 // 标签信息
 export interface LogsInfo {
   /**

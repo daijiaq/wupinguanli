@@ -469,6 +469,7 @@ async function confirmMove(): Promise<void> {
       name: spacesBox.value[i].name
     })
   }
+  console.log(path)
   await batchMove(formStore.currentId, formStore.ids, path)
   uni.showToast({
     title: '移动成功',
