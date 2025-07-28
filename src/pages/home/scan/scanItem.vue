@@ -147,6 +147,7 @@ import { onLoad } from '@dcloudio/uni-app'
 import { useSpaceStore } from '@/stores/space'
 import { useFormStore } from '@/stores/form'
 import type { ItemForm } from '@/types/form'
+import { batchUpdateItemsAPINew } from '@/network/apis/form'
 const spaceStore = useSpaceStore()
 const {
   movePath,
@@ -259,19 +260,32 @@ const handleMoveToItemConfirm = async () => {
     ...itemData.value,
     fatherName: itemData.value.fatherName || '111',
     path: itemData.value.path || [],
+    // path: [],
     url: itemData.value.url || '',
     count: itemData.value.count || 0,
     hide: itemData.value.hide || 0,
     items: itemData.value.items || []
   }
   console.log(formData)
-  console.log('formData.path[0].id', formData.path[0].id)
-  const res = await updateItem(formData.path[0].id, itemToRoomId.value, formData)
+  // console.log('formData.path[0].id', formData.path[0].id)
+  // const res = await updateItem(formData.path[0].id, itemToRoomId.value, formData)
   // console.log(movePath.value, moveItemFatherId.value[0], moveItemIds.value)
-  moveToItemPath.value = res.path || []
-  moveToItemPath.value.push({ id: res.id, name: res.name })
-  console.log(moveItemIds.value)
-  await batchMove(formData.path[0].id, moveItemIds.value, moveToItemPath.value)
+
+  // moveToItemPath.value = res.path || []
+  // moveToItemPath.value.reverse()
+  // moveToItemPath.value.push({ id: res.id, name: res.name })
+  // console.log('movepath', moveItemIds.value, moveToItemPath.value)
+  // await batchUpdateItemsAPINew(moveItemIds.value, [{ id: res.id, name: res.name }])
+
+  moveToItemPath.value = formData.path || []
+  moveToItemPath.value.reverse()
+  moveToItemPath.value.push({ id: itemData.value.id, name: itemData.value.name })
+  console.log('movepath', moveItemIds.value, moveToItemPath.value)
+  await batchUpdateItemsAPINew(moveItemIds.value, [
+    { id: itemData.value.id, name: itemData.value.name }
+  ])
+  // await batchUpdateItemsAPINew(moveItemIds.value, moveToItemPath.value)
+  // await batchMove(formData.path[0].id, moveItemIds.value, moveToItemPath.value)
   uni.switchTab({
     url: '/pages/home/home'
   })
