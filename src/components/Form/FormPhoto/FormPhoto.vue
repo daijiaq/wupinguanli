@@ -19,7 +19,9 @@
     <view v-else class="formPhoto__content">
       <view class="formPhoto__swiper">
         <u-swiper
-          :list="tempPhoto.map((item) => item.localUrl)"
+          :list="
+            tempPhoto.map((item) => (props.previewType === 'localUrl' ? item.localUrl : item.url))
+          "
           :height="size"
           :autoplay="tempPhoto.length > 1"
           :indicator="tempPhoto.length > 1"
@@ -60,6 +62,7 @@ const props = defineProps<{
   disabled?: boolean
   // 图片列表
   photoList: Image[]
+  previewType?: 'url' | 'localUrl'
 }>()
 //图片列表内容
 const tempPhoto = ref(props.photoList)

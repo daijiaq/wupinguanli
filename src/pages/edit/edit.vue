@@ -9,6 +9,7 @@
           :size="'310rpx'"
           v-model:photoList="formStore.tempItemData.images"
           :disabled="false"
+          :previewType="'url'"
         />
       </view>
       <view class="form__information">
@@ -294,6 +295,7 @@
           :size="'140rpx'"
           v-model:photoList="formStore.tempItemData.figures"
           :disabled="false"
+          :previewType="'url'"
         />
         <u-textarea
           maxlength="200"

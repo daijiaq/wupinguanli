@@ -7,7 +7,12 @@
       :autoBack="true"
     />
     <view class="form__photo">
-      <FormPhoto :size="'310rpx'" v-model:photoList="formStore.itemData.images" :disabled="true" />
+      <FormPhoto
+        :size="'310rpx'"
+        v-model:photoList="formStore.itemData.images"
+        :disabled="true"
+        :previewType="'url'"
+      />
     </view>
     <view class="form__information">
       <u-row customStyle="margin-bottom: 10px">
@@ -195,6 +200,7 @@
           v-model:photoList="formStore.itemData.figures"
           :disabled="true"
           class="form__information__photo"
+          :previewType="'url'"
         />
         <u-textarea
           maxlength="200"

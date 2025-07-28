@@ -157,6 +157,7 @@
         v-model:photoList="form.figures"
         :disabled="false"
         class="form__information__photo"
+        :previewType="'localUrl'"
       />
       <u-textarea
         maxlength="200"
@@ -245,21 +246,41 @@ const form = reactive({
   comment: '',
   figures: []
 })
-
+// 共同编辑有改数据才传参，不然不传，以免更改了原本的数据
+const getNonEmptyFields = (form: Record<string, any>) => {
+  const result: Record<string, any> = {}
+  // 遍历表单对象的所有键
+  Object.keys(form).forEach((key) => {
+    const value = form[key]
+    // 只要有值（非空字符串、非undefined、非null、非空数组）就传
+    if (
+      value !== undefined &&
+      value !== null &&
+      !(typeof value === 'string' && value.trim() === '') &&
+      !(Array.isArray(value) && value.length === 0)
+    ) {
+      result[key] = value
+    }
+  })
+  return result
+}
 // 确认提交
 async function submitMultiple() {
   try {
-    const tempForm = <ItemModifyRequest>{
+    const tempForm = getNonEmptyFields({
       hide: form.hide,
-      privacy: form.privacy ? 1 : 0,
+      privacy: form.privacy,
       state: form.state,
       labels: form.labels,
       comment: form.comment,
       figures: form.figures.map((item: any) => ({ id: item.id, url: item.url })),
       password: form.privacy ? PIN.value : '',
       path: form.path
+    })
+    if (Object.keys(tempForm).length === 0) {
+      uni.showToast({ title: '未做任何更改', icon: 'none' })
+      return
     }
-    console.log(tempForm, formStore.ids)
     isLoading.value = true
     await batchUpdateItems(formStore.ids, tempForm)
     isLoading.value = false
@@ -322,7 +343,7 @@ const successCallback = (): void => {
 // 页面参数处理(scanItem页面是通过传参传递所选物品id的)
 onLoad((options) => {
   if (options?.ids) {
-    formStore.ids = options.ids.split(',').map((id) => Number(id))
+    formStore.ids = options.ids.split(',').map((id: any) => Number(id))
   }
 })
 
