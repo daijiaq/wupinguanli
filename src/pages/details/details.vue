@@ -374,8 +374,6 @@ const isOwner = ref(false)
 // 是否从回收站跳转
 const isDeleted = ref(false)
 
-const isOwner = ref(false)
-
 // 关联物品
 const showAssociate = ref(true)
 if (!formStore.itemData.items) {
