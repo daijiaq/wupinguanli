@@ -184,7 +184,7 @@ import type { Path, BriefData } from '@/types/space'
 import { useFormStore } from '@/stores/form'
 import { useSpaceStore } from '@/stores/space'
 const spaceStore = useSpaceStore()
-const { getFirstFloorRooms, getRoomItems, batchMove, getAllPaths } = spaceStore
+const { getFirstFloorRooms, getRoomItems, batchMove, getAllPaths, preScanRequest } = spaceStore
 const { spacesInfo } = storeToRefs(spaceStore)
 const formStore = useFormStore()
 const { getDetail, batchDeleteItems } = formStore
@@ -210,11 +210,19 @@ const showSpace = ref(false)
 // 密码弹窗
 const popup = ref(false)
 // 是否跳转到编辑页
+// 是否处于扫码
+let isScan = false
+// 是否为分享物品
+let isShareItem = false
+// 是否为自己的物品
+let isOwner = false
 let isEdit = false
 // 暂存ID
 let tempItemId = 0
 // 暂存类型
 let tempType = 0
+// 暂存用户ID
+let tempUserId = 0
 
 const currentId = formStore.currentId
 
@@ -461,6 +469,7 @@ async function confirmMove(): Promise<void> {
       name: spacesBox.value[i].name
     })
   }
+  console.log(path)
   await batchMove(formStore.currentId, formStore.ids, path)
   uni.showToast({
     title: '移动成功',
@@ -504,27 +513,61 @@ const scanCode = (): void => {
   uni.scanCode({
     success(res) {
       const result = JSON.parse(res.result)
-      jumpPageDetail(result.type, result.id)
+      jumpPageDetail(result.itemId, result.userId, result.type, result.privacy, result.hide)
+    },
+    fail(err) {
+      uni.showToast({
+        title: err.errMsg || '扫码失败',
+        icon: 'none'
+      })
     }
   })
 }
 
-// 扫码跳转详情页
-const jumpPageDetail = async (type: number, id: number) => {
+// 扫码跳转物品列表展示页
+const jumpPageDetail = async (
+  itemId: number,
+  userId: number,
+  type: number,
+  privacy: number,
+  hide: number
+) => {
+  const res = await preScanRequest(itemId, userId, type, privacy, hide)
+  console.log('home', res)
   // 1.扫描的是物品、房子
-  if (type) {
-    // if (tempType.value) await fetchItemDetail(id, '')
-    // else await fetchRoomDetail(id, '')
-    await getDetail(1, id, '')
-    uni.navigateTo({
-      url: `/pages/details/details`
-    })
+  if (itemId !== 0) {
+    // 如果是非隐私物品
+    if (res.code[2] === '0') {
+      // 如果是分享物品
+      if (res.code[1] === '1') {
+        isShareItem = true
+      } else {
+        isShareItem = false
+      }
+      // 是否是自己的物品
+      if (res.code[4] === '1') {
+        isOwner = true
+      } else {
+        isOwner = false
+      }
+      console.log(isShareItem)
+      uni.navigateTo({
+        url: `/pages/home/scan/scanItem?type=${type}&itemId=${itemId}&userId=${userId}&privacy=${privacy}&hide=${hide}&isShareItem=${isShareItem}&isOwner=${isOwner}`
+      })
+    } else {
+      tempUserId = userId
+      tempItemId = itemId
+      tempType = 2
+      isScan = true
+      popup.value = true
+    }
   } else {
     // 2.扫描的是用户
-    // await fetchSpaceDetail(id)
-    // uni.navigateTo({
-    //   url: `/pages/space/space`
-    // })
+    uni.navigateTo({
+      url: `/pages/user/friends/detail/detail?id=${userId}&isFriend=${
+        res.code[0] === '0' ? true : false
+      }`
+    })
   }
 }
 

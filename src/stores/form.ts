@@ -1,4 +1,4 @@
-import type { RoomForm, ItemForm, BatchUpdate, LogsInfo, Image } from '@/types/form'
+import type { RoomForm, ItemForm, LogsInfo, Image, ItemModifyRequest } from '@/types/form'
 import type { DetailData } from '@/types/space'
 import { defineStore, storeToRefs } from 'pinia'
 import { ref, reactive } from 'vue'
@@ -93,7 +93,7 @@ export const useFormStore = defineStore('form', () => {
       data = await getDetailItemAPI(id, password)
     }
     itemData.value = JSON.parse(JSON.stringify(data))
-    console.log(itemData.value.hide)
+    console.log(itemData.value, itemData.value.hide)
     privacyRoom.value = itemData.value.hide === 1 ? true : false
   }
 
@@ -158,7 +158,7 @@ export const useFormStore = defineStore('form', () => {
   const ids = <number[]>[]
 
   //多选更新物品或空间
-  async function batchUpdateItems(ids: number[], form: BatchUpdate): Promise<void> {
+  async function batchUpdateItems(ids: number[], form: ItemModifyRequest): Promise<void> {
     await batchUpdateItemsAPI(ids, form)
   }
 

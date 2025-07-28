@@ -1,5 +1,15 @@
 // import type { Common } from '@/types/faceBack'
-import type { FaceBack, TemporaryToken } from '@/types/user'
+import type {
+  FaceBack,
+  TemporaryToken,
+  FeedbackDTO,
+  LatestVersionInfo,
+  FeedbackVO,
+  FeedbackResponse,
+  FeedbackRequest,
+  FeedbackTypeResponse,
+  FeedbackTypeVo
+} from '@/types/user'
 import service, { uploadFileService } from '..'
 /**
  *
@@ -27,5 +37,36 @@ export const getTemporaryTokenAPI = () => {
   return service<TemporaryToken>({
     url: '/valid/authentication',
     method: 'POST'
+  })
+}
+
+export const feedBackAPI = (data: FeedbackDTO): Promise<FaceBack> => {
+  return service({
+    url: '/feedback',
+    method: 'POST',
+    data
+  })
+}
+
+export const getVersionAPI = (): Promise<LatestVersionInfo> => {
+  return service({
+    // url: '/version/check/update',
+    url: '/version/get/update/apk',
+    method: 'GET'
+  })
+}
+
+export const fetchFeedbackListAPI = (data: FeedbackRequest): Promise<FeedbackVO> => {
+  const { type, offset, limit } = data
+  return service({
+    url: `/feedback/page?type=${type}&offset=${offset}&limit=${limit}`,
+    method: 'POST'
+  })
+}
+
+export const fetchFeedbackTypeAPI = (): Promise<FeedbackTypeResponse> => {
+  return service({
+    url: '/feedback/type',
+    method: 'GET'
   })
 }

@@ -174,6 +174,10 @@ export interface BatchUpdate {
   password?: string
 }
 
+export interface BatchUpdateNew extends BatchUpdate {
+  path: T1[]
+}
+
 // 标签信息
 export interface LogsInfo {
   /**
@@ -196,4 +200,95 @@ export interface LogsInfo {
    * 标签数据
    */
   logsData: Log[]
+}
+
+/**
+ * 物品修改(共同编辑)
+ *
+ * ItemModifyDTO
+ */
+export interface ItemModifyRequest {
+  /**
+   * 备注
+   */
+  comment?: string
+  /**
+   * 入库日期
+   */
+  date?: string
+  /**
+   * 备注图片
+   */
+  figures?: ItemModifyImage[]
+  /**
+   * 标签
+   */
+  labels?: ItemModifyLabelVO[]
+  /**
+   * 共同管理人
+   */
+  managementIds?: number[]
+  /**
+   * 密码
+   */
+  password?: string
+  /**
+   * 从属空间
+   */
+  path?: ItemModifyPath[]
+  /**
+   * 隐私设置(0非隐私1隐私)
+   */
+  privacy?: number
+  /**
+   * 状态
+   */
+  state?: string
+  /**
+   * 隐藏(0非隐藏，1隐藏)
+   */
+  hide?: number
+}
+
+/**
+ * 图片bo
+ *
+ * Image
+ */
+export interface ItemModifyImage {
+  id?: number
+  /**
+   * 图片url
+   */
+  url?: string
+}
+
+/**
+ * 标签vo
+ *
+ * LabelVO
+ */
+export interface ItemModifyLabelVO {
+  /**
+   * 颜色代码
+   */
+  color?: string
+  id?: number
+  /**
+   * 标签名
+   */
+  name?: string
+}
+
+/**
+ * 路径bo
+ *
+ * Path
+ */
+export interface ItemModifyPath {
+  id?: number
+  /**
+   * 物品名
+   */
+  name?: string
 }

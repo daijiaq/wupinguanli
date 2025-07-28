@@ -9,6 +9,7 @@
           :size="'310rpx'"
           v-model:photoList="formStore.tempItemData.images"
           :disabled="false"
+          :previewType="'url'"
         />
       </view>
       <view class="form__information">
@@ -294,6 +295,7 @@
           :size="'140rpx'"
           v-model:photoList="formStore.tempItemData.figures"
           :disabled="false"
+          :previewType="'url'"
         />
         <u-textarea
           maxlength="200"
@@ -961,8 +963,14 @@ const submitForm = (): void => {
       }
       try {
         isLoading.value = true
-        const images = await concatImages(formStore.tempItemData.images, 0)
-        const figures = await concatImages(formStore.tempItemData.figures, 1)
+        const images = (await concatImages(formStore.tempItemData.images, 0)).map((img) => ({
+          id: img.id,
+          url: img.url
+        }))
+        const figures = (await concatImages(formStore.tempItemData.figures, 1)).map((img) => ({
+          id: img.id,
+          url: img.url
+        }))
         if (formStore.tempItemData.type) {
           const path = []
           console.log(pathFloor)
