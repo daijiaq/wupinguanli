@@ -299,11 +299,11 @@ onLoad(async (options: any) => {
   } else {
     isDeleted.value = false
   }
-  if (options.isOwner === 'true') {
-    isOwner.value = true
-  } else {
-    isOwner.value = false
-  }
+  // if (options.isOwner === 'true') {
+  //   isOwner.value = true
+  // } else {
+  //   isOwner.value = false
+  // }
 })
 
 onShow(() => {
