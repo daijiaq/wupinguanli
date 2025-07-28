@@ -9,8 +9,12 @@
     ></u-navbar>
 
     <view style="display: flex">
-      <SearchInput @onFocus="onFocus" @searchEmpty="determineEmpty" />
-      <!-- <SearchScreen /> -->
+      <SearchInput
+        @onFocus="onFocus"
+        @searchEmpty="determineEmpty"
+        @updateInput="handleInputUpdate"
+      />
+      <SearchScreenother @screenEmpty="determineEmpty" @filterParams="handleFilterParams" />
     </view>
 
     <SearchList
@@ -18,6 +22,8 @@
       :isLoading="isLoading"
       :manualDisable="manualDisable"
       :cancelMultiple="cancelMultiple"
+      :filterParams="filterParams"
+      :searchInput="searchInputValue"
     />
 
     <!-- 空 -->
@@ -26,10 +32,27 @@
 </template>
 
 <script setup lang="ts">
-import { onShow, onPullDownRefresh, onPageScroll } from '@dcloudio/uni-app'
+import { onShow, onPullDownRefresh, onPageScroll, onLoad } from '@dcloudio/uni-app'
 import { ref, provide } from 'vue'
 import { useSearchStore } from '@/stores/search'
 import { storeToRefs } from 'pinia'
+import SearchScreenother from '@/components/SearchScreen/SearchScreenother.vue'
+
+const isFiltering = ref(0)
+provide('isFiltering', isFiltering)
+
+const isSearching = ref(0)
+provide('isSearching', isSearching)
+
+const filterParams = ref<any>(null)
+const handleFilterParams = (params: any) => {
+  filterParams.value = params
+}
+
+const searchInputValue = ref('')
+const handleInputUpdate = (value: string) => {
+  searchInputValue.value = value
+}
 
 const searchStore = useSearchStore()
 const { currentSearchList } = storeToRefs(searchStore)
@@ -72,10 +95,12 @@ async function loadHistoryList() {
 
   try {
     await fetchHistoryItem('')
+    console.log(111)
   } catch {
     manualDisable.value = true
   } finally {
     isLoading.value = false
+    console.log('currentSearchList.value.itemList', currentSearchList.value.itemList)
     currentSearchList.value.itemList.length ? (isEmpty.value = false) : (isEmpty.value = true)
   }
 }
@@ -97,6 +122,7 @@ onPageScroll((e) => {
 
 onShow(() => {
   loadHistoryList()
+  console.log('currentSearchList.value.itemList', currentSearchList.value.itemList)
 })
 </script>
 
@@ -104,10 +130,11 @@ onShow(() => {
 .history {
   overflow-x: hidden;
 }
-::v-deep .search-input.data-v-53960f6d {
-  width: 90vw;
-}
-::v-deep .search-input__content.data-v-53960f6d {
-  width: 90vw;
-}
+
+// ::v-deep .search-input.data-v-53960f6d {
+//   width: 90vw;
+// }
+// ::v-deep .search-input__content.data-v-53960f6d {
+//   width: 90vw;
+// }
 </style>

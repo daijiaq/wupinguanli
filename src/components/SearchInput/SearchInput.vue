@@ -20,10 +20,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, inject } from 'vue'
+import { ref, watch, inject, Ref } from 'vue'
 import { useSearchStore } from '@/stores/search'
 import { storeToRefs } from 'pinia'
 
+const isSearching = inject<Ref<number>>('isSearching')
+if (!isSearching) {
+  throw new Error('isSearching is not provided')
+}
 const searchStore = useSearchStore()
 const { currentSearchList, currentSearchInputData } = storeToRefs(searchStore)
 const { searchItemByInput, fetchHistoryItem } = searchStore
@@ -31,6 +35,7 @@ const { searchItemByInput, fetchHistoryItem } = searchStore
 const emits = defineEmits<{
   (e: 'onFocus'): void
   (e: 'searchEmpty'): void
+  (e: 'updateInput', value: string): void
 }>()
 
 const isDeleted = inject<boolean>('isDetele', false)
@@ -57,7 +62,11 @@ const submitSearch = async () => {
     // 重置列表状态
     currentSearchList.value.offset = 0
     currentSearchList.value.itemList = []
+    currentSearchList.value.total = 0
+    searchStore.currentScreenData.offset = 0
+    isSearching.value = 1
     await fetchHistoryItem(inputBox.value)
+    emits('updateInput', inputBox.value)
   }
   uni.showToast({
     title: '搜索成功',

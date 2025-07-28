@@ -16,6 +16,7 @@ import type {
   ExtendCurrentSearchInput,
   ItemList
 } from '@/types/search'
+import { filterHistory } from '@/network/apis/history'
 
 export const useSearchStore = defineStore('search', () => {
   // 搜索页的主体列表
@@ -258,6 +259,7 @@ export const useSearchStore = defineStore('search', () => {
 
   // 获取/查询历史记录（name 有值则搜索对应名字，搜索全部 name 为空）
   async function fetchHistoryItem(name: string) {
+    console.log('111', currentSearchList.value.itemList)
     const data = await getAllHistory(
       {
         offset: currentSearchList.value.offset + 1
@@ -281,6 +283,65 @@ export const useSearchStore = defineStore('search', () => {
     currentSearchList.value.offset = data.current
   }
 
+  // 筛选物品的修改记录
+  async function fetchScreenHistoryList(filterParams: any) {
+    console.log('添加前的页数', currentScreenData.offset)
+    console.log(filterParams)
+    currentScreenData.offset = currentScreenData.offset + 1
+    console.log('添加前:', [...currentSearchList.value.itemList])
+    const data = await filterHistory(
+      {
+        offset: currentScreenData.offset + 1
+      },
+      filterParams
+    )
+    console.log(data)
+    const newdata = JSON.parse(JSON.stringify(data))
+    console.log(newdata.records)
+    const NewDataList = newdata.records.map((item: any) => ({
+      cover: item.itemCover,
+      hide: 0,
+      id: item.itemId,
+      ischecked: false,
+      name: item.itemName,
+      privacy: item.privacy,
+      type: 0,
+      log: {
+        username: item.modifierName,
+        content: item.content,
+        date: item.modifyTime,
+        ip: null,
+        id: null
+      }
+    }))
+    console.log(NewDataList)
+    // currentSearchList.value.itemList.push(...NewDataList)
+    // NewDataList = []
+    console.log(currentScreenData.offset)
+    // 筛选第一页则替换整个列表， 否则追加
+    if (currentScreenData.offset === 0) {
+      currentSearchList.value.itemList = NewDataList
+    } else {
+      currentSearchList.value.itemList.push(...NewDataList)
+    }
+    console.log('添加后:', [...currentSearchList.value.itemList])
+    console.log('添加后的页数', currentSearchList.value.offset)
+    let lastPageNum = newdata.size
+    if (newdata.current === newdata.pages) {
+      lastPageNum = newdata.total % newdata.size
+    }
+    // 如果有数据则添加 isChecked 属性
+    if (newdata.records.length !== 0) {
+      setItemList(
+        currentSearchList.value.itemList,
+        currentSearchList.value.offset * newdata.size,
+        currentSearchList.value.offset * newdata.size + lastPageNum
+      )
+    }
+    currentSearchList.value.total = newdata.total
+    currentSearchList.value.offset = newdata.current
+  }
+
   return {
     currentSearchList,
     currentTagList,
@@ -294,6 +355,7 @@ export const useSearchStore = defineStore('search', () => {
     batchDeleteSearch,
     fetchDeletedItem,
     restoreDeletedItem,
-    fetchHistoryItem
+    fetchHistoryItem,
+    fetchScreenHistoryList
   }
 })

@@ -870,18 +870,18 @@ const handleCancel = (): void => {
 const handleConfirm = async () => {
   showSpace.value = false
   spacesBox.value.pop()
-  await batchMove(
-    spacesBox.value[spacesBox.value.length - 1].id,
-    [formStore.itemData.id],
-    spacesBox.value
-  )
-  const path = []
-  for (let i = 0; i < pathFloor.value; i++) {
-    path.push({
-      id: spacesBox.value[i].id,
-      name: spacesBox.value[i].name
-    })
-  }
+  // await batchMove(
+  //   spacesBox.value[spacesBox.value.length - 1].id,
+  //   [formStore.itemData.id],
+  //   spacesBox.value
+  // )
+  // const path = []
+  // for (let i = 0; i < pathFloor.value; i++) {
+  //   path.push({
+  //     id: spacesBox.value[i].id,
+  //     name: spacesBox.value[i].name
+  //   })
+  // }
 }
 
 // 关闭弹窗
@@ -1023,8 +1023,16 @@ const submitForm = (): void => {
           successCallback()
           console.log(formStore.itemData)
         }
-      } catch {
+      } catch (error: any) {
         isLoading.value = false
+        isLoading.value = false
+        uni.showToast({
+          title: error.message.includes('timeout')
+            ? '请求超时，请重试'
+            : '操作失败: ' + error.message,
+          icon: 'none'
+        })
+        console.error('Error:', error)
       }
     })
     .catch((error: any) => {
