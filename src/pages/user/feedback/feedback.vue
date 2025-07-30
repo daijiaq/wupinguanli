@@ -1,14 +1,14 @@
 <template>
   <view class="nav">
-    <u-navbar
+    <up-navbar
       bgColor="transparent"
       placeholder
       title="请选择反馈类型"
       titleStyle="font-weight:bold"
-      autoBack
+      autoBack="false"
       leftIcon="arrow-left"
     >
-    </u-navbar>
+    </up-navbar>
   </view>
   <view class="record" @click="gotoRecord">
     <up-icon

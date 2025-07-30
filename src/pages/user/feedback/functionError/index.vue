@@ -1,7 +1,13 @@
 <template>
   <view>
-    <u-navbar bgColor="transparent" placeholder title="" titleStyle="font-weight:bold" autoBack>
-    </u-navbar>
+    <up-navbar
+      bgColor="transparent"
+      placeholder
+      title=""
+      titleStyle="font-weight:bold"
+      autoBack="false"
+    >
+    </up-navbar>
   </view>
   <view class="title">
     <text>请选择异常类型</text>
