@@ -953,9 +953,10 @@ const submitForm = (): void => {
   formVerify.value
     .validate()
     .then(async () => {
-      if (Number(formStore.tempItemData.price) < 0) {
+      const amount = String(formStore.tempItemData.price).trim()
+      if (!/^[1-9]\d*(\.\d{1,2})?$|^0(\.\d{1,2})?$/.test(amount)) {
         uni.showToast({
-          title: '金额不能小于0',
+          title: '金额格式错误：示例 123 或 123.45',
           icon: 'none'
         })
         isLoading.value = false
