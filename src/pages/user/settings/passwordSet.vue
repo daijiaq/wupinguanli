@@ -126,7 +126,12 @@ const validateOldPassword = async () => {
 
 // 忘记密码
 const forgetPassword = () => {
-  console.log('忘记密码')
+  uni.showModal({
+    title: '忘记密码',
+    content: '可前往APP重置密码',
+    showCancel: false,
+    confirmText: '确认'
+  })
 }
 
 // 确认提交
