@@ -114,7 +114,7 @@
         <FormInput
           :type="'number'"
           :name="'金额'"
-          :maxLength="10"
+          :maxLength="9"
           :disabled="false"
           :placeHolder="'请输入金额'"
           :unitName="'元'"
