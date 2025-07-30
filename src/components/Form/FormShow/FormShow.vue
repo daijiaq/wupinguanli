@@ -12,7 +12,13 @@
         />
       </u-col>
       <u-col span="0.5">
-        <u-icon v-if="showJump" @click="toPlus" name="plus" color="#2979ff" size="15" />
+        <u-icon
+          v-if="showJump && historyShow"
+          @click="toPlus"
+          name="plus"
+          color="#2979ff"
+          size="15"
+        />
       </u-col>
     </u-row>
   </view>
@@ -20,16 +26,23 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
-const props = defineProps<{
-  // 是否显示
-  show: boolean
-  // 显示跳转图标
-  showJump: boolean
-  // 名字
-  name: string
-  // 链接
-  url?: string
-}>()
+const props = withDefaults(
+  defineProps<{
+    // 是否显示
+    show: boolean
+    // 显示跳转图标
+    showJump: boolean
+    // 名字
+    name: string
+    // 链接
+    url?: string
+    //历史记录
+    historyShow?: boolean
+  }>(),
+  {
+    historyShow: true // 默认值为 true
+  }
+)
 // const tempShow = ref(props.show)
 const emits = defineEmits<{
   //更新是否显示布尔值
