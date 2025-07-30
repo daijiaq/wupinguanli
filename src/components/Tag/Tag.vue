@@ -1,7 +1,14 @@
 <template>
   <view class="tag">
     <view class="tag__name">
-      <u-input @blur="blur" @focus="focus" border="none" type="text" v-model="name" />
+      <u-input
+        @blur="blur"
+        @focus="focus"
+        border="none"
+        type="text"
+        v-model="name"
+        :maxlength="8"
+      />
     </view>
     <view class="tag__icon">
       <view
@@ -53,6 +60,7 @@ const focus = (): void => {
 const blur = (): void => {
   emits('blur', props.tag.id, name.value, color.value)
 }
+
 watch(
   () => props.tag.name,
   () => {
