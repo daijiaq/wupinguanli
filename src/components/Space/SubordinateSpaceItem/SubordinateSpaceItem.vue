@@ -13,11 +13,7 @@
     </view>
     <view v-show="show" :style="`padding:${tagPadding}`" class="subordinateSpaceItem__tag">
       <FormTag
-        v-show="
-          (currentFloor !== item.layer || !ids.includes(item.id)) &&
-          (!parent || parent === item.fatherId) &&
-          show
-        "
+        v-show="(!parent || parent === item.fatherId) && !ids.includes(item.id) && show"
         :tag="item"
         v-for="(item, index) in props.subordinateSpaces"
         @click="radioClick(index, floor)"

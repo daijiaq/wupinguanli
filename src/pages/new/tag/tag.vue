@@ -20,7 +20,13 @@
     <view v-if="showNew" class="tags__new">
       <view class="tags__new-label"> 名称 </view>
       <view class="tags__new-input">
-        <u-input v-model="name" fontSize="35rpx" border="none" placeholder="请输入标签名称" />
+        <u-input
+          v-model="name"
+          fontSize="35rpx"
+          border="none"
+          placeholder="请输入标签名称"
+          :maxlength="8"
+        />
       </view>
       <view class="tags__new-label"> 颜色 </view>
       <view class="tags__new-colors">
