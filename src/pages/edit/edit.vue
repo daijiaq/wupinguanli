@@ -308,7 +308,12 @@
         />
       </view>
       <view class="form__information">
-        <FormShow v-model:show="showHistory" :name="'历史记录'" :show-jump="true" />
+        <FormShow
+          v-model:show="showHistory"
+          :name="'历史记录'"
+          :show-jump="true"
+          :historyShow="false"
+        />
         <view
           v-show="showHistory"
           :key="index"

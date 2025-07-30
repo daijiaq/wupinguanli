@@ -5,7 +5,7 @@
       placeholder
       title="意见反馈"
       titleStyle="font-weight:bold"
-      autoBack
+      autoBack="false"
     >
     </u-navbar>
   </view>
@@ -60,6 +60,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { feedBackAPI, getVersionAPI } from '@/network/apis/faceBack'
+import { useSafeBack } from '@/stores/user'
 // 反馈的文本
 const feedbackContent = ref('')
 const imageList = ref<string[]>([])
@@ -72,6 +73,7 @@ const feedBackData = computed(() => ({
   version: '1.1.0',
   returninformation: true
 }))
+const safeback = useSafeBack('/pages/user/feedback/feedback')
 // 添加反馈图片
 function chooseImage() {
   uni.chooseImage({
@@ -121,9 +123,7 @@ async function submitFeedBack() {
     console.log('反馈上传成功')
     // 跳转回反馈界面
     setTimeout(() => {
-      uni.navigateTo({
-        url: '/pages/user/feedback/feedback'
-      })
+      safeback()
     }, 1000)
   } catch (error) {
     console.error('Error submitting feedback:', error)

@@ -218,7 +218,7 @@
     </u-form>
     <view v-if="loading" class="form__submit">
       <u-button
-        :loading="isLoading"
+        :disabled="isLoading"
         loadingText="新建中"
         @click="submitForm"
         type="primary"
@@ -807,12 +807,13 @@ const submitForm = (): void => {
             icon: 'success',
             duration: 2000
           })
-          isLoading.value = false
+          // isLoading.value = false
           form.labels = []
           setTimeout(() => {
             uni.navigateBack({
               delta: 1
             })
+            isLoading.value = false
           }, 1000)
         } else {
           const paths = []
@@ -847,11 +848,12 @@ const submitForm = (): void => {
             icon: 'success',
             duration: 2000
           })
-          isLoading.value = false
+          // isLoading.value = false
           setTimeout(() => {
             uni.navigateBack({
               delta: 1
             })
+            isLoading.value = false
           }, 1000)
         }
         submitted.value = true

@@ -217,6 +217,11 @@ const loginSubmit = () => {
       auth.logined = false
       // 不立刻关闭 loading
       loginFailed.value = true
+      // 1秒后自动取消登录状态
+      setTimeout(() => {
+        isLoading.value = false
+        loginFailed.value = false
+      }, 1000)
     }
   })
 }

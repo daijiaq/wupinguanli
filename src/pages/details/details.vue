@@ -238,7 +238,7 @@
       <u-icon customStyle="font-size:25px;top:10px" name="edit-pen-fill" color="#3988ff"></u-icon>
       <u-text customStyle="font-size: 15px;margin-top:10px;" color="#000" text="编辑" />
     </view>
-    <view class="form__operate__item" @click="showDelete = true">
+    <view class="form__operate__item" @click="showDeleteClick">
       <u-icon customStyle="font-size:25px;top:10px" name="trash" color="#3988ff"></u-icon>
       <u-text customStyle="font-size: 15px;margin-top:10px;" color="#000" text="删除" />
     </view>
@@ -436,6 +436,17 @@ getItemLogs(formStore.itemData.id)
 
 // 显示删除弹窗
 const showDelete = ref(false)
+const showDeleteClick = () => {
+  showDelete.value = true
+  if (isShareItem.value || !isOwner.value) {
+    uni.showToast({
+      title: '不可以删除他人物品',
+      icon: 'none'
+    })
+    showDelete.value = false
+    return
+  }
+}
 
 // 删除当前物品
 async function deleteItem(): Promise<void> {

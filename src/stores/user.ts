@@ -55,3 +55,14 @@ export const useUserStore = defineStore('user', () => {
     changeName
   }
 })
+// 使用安全的返回函数，确保在没有历史页面时跳转到指定页面
+export function useSafeBack(fallbackUrl: string) {
+  return (): void => {
+    const pages = getCurrentPages()
+    if (pages.length > 1) {
+      uni.navigateBack()
+    } else {
+      uni.redirectTo({ url: fallbackUrl })
+    }
+  }
+}
