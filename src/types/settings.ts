@@ -27,6 +27,8 @@ export interface Settings {
    * 通用密码是否设置过(0无1有)
    */
   unifiedPassword: 0 | 1
+  openRecycleBin: 0 | 1
+  updatingWifi: 0 | 1
 }
 
 export interface AccountsInfo {

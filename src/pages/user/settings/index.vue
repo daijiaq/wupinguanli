@@ -30,14 +30,24 @@
         <view class="settings__item__left">
           <u-text text="直接删除物品不放入回收站" size="15"></u-text>
         </view>
-        <u-switch :activeValue="1" :inactiveValue="0"></u-switch>
+        <u-switch
+          v-model="settingsData.openRecycleBin"
+          :activeValue="1"
+          :inactiveValue="0"
+          @change="deleteDirectChange"
+        ></u-switch>
         <u-divider line-color="#d9d9d9"></u-divider>
       </view>
       <view class="settings__item">
         <view class="settings__item__left">
           <u-text text="wifi下自动更新" size="15"></u-text>
         </view>
-        <u-switch :activeValue="1" :inactiveValue="0"></u-switch>
+        <u-switch
+          v-model="settingsData.updatingWifi"
+          :activeValue="1"
+          :inactiveValue="0"
+          @change="updatingWifiChange"
+        ></u-switch>
         <u-divider line-color="#d9d9d9"></u-divider>
       </view>
       <view class="settings__item">
@@ -146,6 +156,69 @@ const { initSettings, setPasswordStore, updateSettingsStore, clearPasswordStore 
 
 const isValidate = ref(false)
 
+// const deleteDirect = ref<boolean>()
+// 不放入回收站
+const deleteDirectChange = () => {
+  if (settingsData.openRecycleBin === 1 ? true : false) {
+    uni.showModal({
+      title: '提示',
+      content: '开启后，物品将直接删除，不会放入回收站，请谨慎操作！',
+      confirmText: '确定',
+      cancelText: '取消',
+      success: () => {
+        updateSettingsStore(
+          settingsData.allowManagement,
+          settingsData.privacyItemInvisible,
+          1,
+          settingsData.updatingWifi
+        )
+      }
+    })
+  } else {
+    uni.showToast({
+      title: '已关闭',
+      success: () => {
+        settingsData.openRecycleBin === 1 ? true : false
+        updateSettingsStore(
+          settingsData.allowManagement,
+          settingsData.privacyItemInvisible,
+          0,
+          settingsData.updatingWifi
+        )
+      }
+    })
+  }
+}
+
+const updatingWifiChange = () => {
+  if (settingsData.updatingWifi === 1 ? true : false) {
+    uni.showToast({
+      title: '已开启',
+      success: () => {
+        updateSettingsStore(
+          settingsData.allowManagement,
+          settingsData.privacyItemInvisible,
+          settingsData.openRecycleBin,
+          1
+        )
+      }
+    })
+  } else {
+    uni.showToast({
+      title: '已关闭',
+      success: () => {
+        settingsData.updatingWifi === 1 ? true : false
+        updateSettingsStore(
+          settingsData.allowManagement,
+          settingsData.privacyItemInvisible,
+          settingsData.openRecycleBin,
+          0
+        )
+      }
+    })
+  }
+}
+
 // 根据密码类型判断是验证模式还是设置模式
 const getIsValidate = (type: 0 | 1 | 2): boolean => {
   if (type === 0) {
@@ -165,6 +238,8 @@ onShow(async () => {
   settingsData.privacyItemInvisible = settingsInfo.value.privacyItemInvisible
   settingsData.unifiedPasswordUsed = settingsInfo.value.unifiedPasswordUsed
   settingsData.privacyDisplay = settingsInfo.value.privacyDisplay
+  settingsData.openRecycleBin = settingsInfo.value.openRecycleBin
+  settingsData.updatingWifi = settingsInfo.value.updatingWifi
 })
 
 // 设置数据
@@ -172,7 +247,9 @@ const settingsData = reactive({
   allowManagement: settingsInfo.value.allowManagement,
   privacyItemInvisible: settingsInfo.value.privacyItemInvisible,
   unifiedPasswordUsed: settingsInfo.value.unifiedPasswordUsed,
-  privacyDisplay: settingsInfo.value.privacyDisplay
+  privacyDisplay: settingsInfo.value.privacyDisplay,
+  openRecycleBin: settingsInfo.value.openRecycleBin,
+  updatingWifi: settingsInfo.value.updatingWifi
 })
 
 //密码弹窗
@@ -214,12 +291,22 @@ watch(
 const setPrivacyDisplay = () => {
   // 开启密码
   if (settingsData.privacyItemInvisible) {
-    updateSettingsStore(settingsData.allowManagement, settingsData.privacyItemInvisible)
+    updateSettingsStore(
+      settingsData.allowManagement,
+      settingsData.privacyItemInvisible,
+      settingsData.openRecycleBin,
+      settingsData.updatingWifi
+    )
     tempType.value = 2
     isValidate.value = getIsValidate(2)
     popup.value = true
   } else {
-    updateSettingsStore(settingsData.allowManagement, settingsData.privacyItemInvisible)
+    updateSettingsStore(
+      settingsData.allowManagement,
+      settingsData.privacyItemInvisible,
+      settingsData.openRecycleBin,
+      settingsData.updatingWifi
+    )
     // 清空密码
     tempType.value = 2
     clearPopup.value = true
@@ -404,7 +491,12 @@ const goToAccount = () => {
 
 // 界面隐藏时更新设置
 onHide(() => {
-  updateSettingsStore(settingsData.allowManagement, settingsData.privacyItemInvisible)
+  updateSettingsStore(
+    settingsData.allowManagement,
+    settingsData.privacyItemInvisible,
+    settingsData.openRecycleBin,
+    settingsData.updatingWifi
+  )
 })
 </script>
 
