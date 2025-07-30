@@ -1,7 +1,7 @@
 import service from '..'
-import type { ItemForm, RoomForm, Log, BatchUpdate } from '@/types/form'
+import type { ItemForm, RoomForm, Log, BatchUpdate, ItemModifyRequest } from '@/types/form'
 import type { DetailData } from '@/types/space'
-import type { Pages } from '@/utils/typings'
+import type { Pages, T1 } from '@/utils/typings'
 import type { PagingParams } from '@/utils/typings'
 import { uploadFileService } from '..'
 
@@ -230,21 +230,48 @@ export function uploadFigureImgAPI(imgUrl: string): Promise<{
 // 批量修改物品
 export function batchUpdateItemsAPI(
   ids: number[],
-  { state, count, price, name, date, privacy, password }: BatchUpdate
+  {
+    comment,
+    date,
+    figures,
+    labels,
+    managementIds,
+    password,
+    path,
+    privacy,
+    hide,
+    state
+  }: ItemModifyRequest
 ): Promise<null> {
   return service<null>({
-    url: `/items/modify`,
+    url: `/items/modify/test`,
     method: 'PUT',
     timeout: 10000,
     data: {
       ids,
-      state,
-      count,
-      price,
-      name,
+      comment,
       date,
+      figures,
+      labels,
+      managementIds,
+      password,
+      path,
       privacy,
-      password
+      hide,
+      state
+    }
+  })
+}
+
+// 批量修改物品
+export function batchUpdateItemsAPINew(ids: number[], path: T1[]): Promise<null> {
+  return service<null>({
+    url: `/items/modify/test`,
+    method: 'PUT',
+    timeout: 10000,
+    data: {
+      ids,
+      path
     }
   })
 }

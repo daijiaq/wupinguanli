@@ -7,7 +7,12 @@
       :autoBack="true"
     />
     <view class="form__photo">
-      <FormPhoto :size="'310rpx'" v-model:photoList="formStore.itemData.images" :disabled="true" />
+      <FormPhoto
+        :size="'310rpx'"
+        v-model:photoList="formStore.itemData.images"
+        :disabled="true"
+        :previewType="'url'"
+      />
     </view>
     <view class="form__information">
       <u-row customStyle="margin-bottom: 10px">
@@ -195,6 +200,7 @@
           v-model:photoList="formStore.itemData.figures"
           :disabled="true"
           class="form__information__photo"
+          :previewType="'url'"
         />
         <u-textarea
           maxlength="200"
@@ -232,7 +238,7 @@
       <u-icon customStyle="font-size:25px;top:10px" name="edit-pen-fill" color="#3988ff"></u-icon>
       <u-text customStyle="font-size: 15px;margin-top:10px;" color="#000" text="编辑" />
     </view>
-    <view class="form__operate__item" @click="showDelete = true">
+    <view class="form__operate__item" @click="showDeleteClick">
       <u-icon customStyle="font-size:25px;top:10px" name="trash" color="#3988ff"></u-icon>
       <u-text customStyle="font-size: 15px;margin-top:10px;" color="#000" text="删除" />
     </view>
@@ -266,9 +272,11 @@ import SubordinateSpaceItem from '@/components/Space/SubordinateSpaceItem/Subord
 
 import { useSettingsStore } from '@/stores/settings'
 import { storeToRefs } from 'pinia'
+import { useUserStore } from '@/stores/user'
 const settingsStore = useSettingsStore()
 const { settingsInfo } = storeToRefs(settingsStore)
 const { getPrivacyDisplayPassword } = settingsStore
+const userStore = useUserStore()
 
 onMounted(() => {
   // 开启分享功能
@@ -285,17 +293,23 @@ onLoad(async (options: any) => {
   } else {
     isShareItem.value = false
   }
+  // 如果有isOwner参数，按参数判断(主要是扫码页)，否则默认true
+  if (typeof options.isOwner !== 'undefined') {
+    isOwner.value = options.isOwner === 'true'
+  } else {
+    isOwner.value = true
+  }
   // 初始化isDeleted
   if (options.isDeleted === 'true') {
     isDeleted.value = true
   } else {
     isDeleted.value = false
   }
-  if (options.isOwner === 'true') {
-    isOwner.value = true
-  } else {
-    isOwner.value = false
-  }
+  // if (options.isOwner === 'true') {
+  //   isOwner.value = true
+  // } else {
+  //   isOwner.value = false
+  // }
 })
 
 onShow(() => {
@@ -360,11 +374,11 @@ const showTag = ref(true)
 
 // 是否为分享的物品
 const isShareItem = ref(false)
+// 是否为自己的物品
+const isOwner = ref(false)
 
 // 是否从回收站跳转
 const isDeleted = ref(false)
-
-const isOwner = ref(false)
 
 // 关联物品
 const showAssociate = ref(true)
@@ -422,6 +436,17 @@ getItemLogs(formStore.itemData.id)
 
 // 显示删除弹窗
 const showDelete = ref(false)
+const showDeleteClick = () => {
+  showDelete.value = true
+  if (isShareItem.value || !isOwner.value) {
+    uni.showToast({
+      title: '不可以删除他人物品',
+      icon: 'none'
+    })
+    showDelete.value = false
+    return
+  }
+}
 
 // 删除当前物品
 async function deleteItem(): Promise<void> {
@@ -442,6 +467,13 @@ async function deleteItem(): Promise<void> {
 
 // 跳转编辑页
 const jumpPageEdit = () => {
+  if (isShareItem.value || !isOwner.value) {
+    uni.showToast({
+      title: '不可以编辑他人物品',
+      icon: 'none'
+    })
+    return
+  }
   uni.navigateTo({
     url: `/pages/edit/edit`
   })

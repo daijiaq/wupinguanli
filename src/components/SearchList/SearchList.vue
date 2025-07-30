@@ -50,6 +50,10 @@ import { storeToRefs } from 'pinia'
 import { ref, computed, toRefs, inject, watch } from 'vue'
 import type { Ref } from 'vue'
 import type { ItemList } from '@/types/search'
+import { filterHistory } from '@/network/apis/history'
+const isFiltering = inject<Ref<number>>('isFiltering')
+const isSearching = inject<Ref<number>>('isSearching')
+
 const searchStore = useSearchStore()
 const { currentSearchList, currentScreenData, currentSearchInputData } = storeToRefs(searchStore)
 const {
@@ -58,8 +62,10 @@ const {
   searchItemByInput,
   batchDeleteSearch,
   restoreDeletedItem,
-  fetchHistoryItem
+  fetchHistoryItem,
+  fetchScreenHistoryList
 } = searchStore
+
 const FormStore = useFormStore()
 const { getDetail } = FormStore
 // 是否是删除页面
@@ -70,6 +76,8 @@ const props = defineProps<{
   isLoading: boolean
   manualDisable: boolean
   cancelMultiple: boolean
+  filterParams: any
+  searchInput: string
 }>()
 
 const { isLoading } = toRefs(props)
@@ -144,9 +152,10 @@ watch(isNoMore, () => {
     loadMoreStatus.value = 'loading'
   }
 })
-
 // 触底加载更多
 onReachBottom(async () => {
+  console.log(isFiltering?.value)
+  console.log(isSearching?.value)
   if (!isNoMore.value && !manualDisable.value) {
     loadMoreStatus.value = 'loading'
     await loadMoreItem()
@@ -154,23 +163,37 @@ onReachBottom(async () => {
     loadMoreStatus.value = 'nomore'
   }
 })
-
 // 请求更多
 async function loadMoreItem() {
+  isLoading.value = true
   isLoadingMore.value = true
   manualDisable.value = true
 
   try {
-    if (currentScreenData.value.offset) {
+    if (isHistory.value) {
+      // 历史记录页面
+      console.log('筛选条件:', props.filterParams)
+      console.log('搜索条件:', props.searchInput)
+      if (isFiltering?.value === 1) {
+        console.log('添加前:', currentSearchList.value.itemList)
+        await fetchScreenHistoryList(props.filterParams)
+        console.log(222)
+        console.log(currentSearchList.value.itemList)
+      } else if (isSearching?.value === 1) {
+        await fetchHistoryItem(props.searchInput)
+      } else {
+        // 调用普通历史记录接口
+        await fetchHistoryItem('')
+      }
+    } else if (currentScreenData.value.offset) {
+      // 普通页面的筛选
       isDeleted ? await fetchScreenSearchList(1) : await fetchScreenSearchList(0)
     } else if (currentSearchInputData.value.offset) {
+      // 普通页面的搜索
       isDeleted ? await searchItemByInput(1) : await searchItemByInput(0)
     } else {
-      isHistory.value
-        ? fetchHistoryItem('')
-        : isDeleted
-        ? await fetchNewSearchList(1)
-        : await fetchNewSearchList(0)
+      // 普通页面的默认加载
+      isDeleted ? await fetchNewSearchList(1) : await fetchNewSearchList(0)
     }
     manualDisable.value = false
   } catch {

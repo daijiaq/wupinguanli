@@ -147,6 +147,7 @@ import { onLoad } from '@dcloudio/uni-app'
 import { useSpaceStore } from '@/stores/space'
 import { useFormStore } from '@/stores/form'
 import type { ItemForm } from '@/types/form'
+import { batchUpdateItemsAPINew } from '@/network/apis/form'
 const spaceStore = useSpaceStore()
 const {
   movePath,
@@ -259,19 +260,32 @@ const handleMoveToItemConfirm = async () => {
     ...itemData.value,
     fatherName: itemData.value.fatherName || '111',
     path: itemData.value.path || [],
+    // path: [],
     url: itemData.value.url || '',
     count: itemData.value.count || 0,
     hide: itemData.value.hide || 0,
     items: itemData.value.items || []
   }
   console.log(formData)
-  console.log('formData.path[0].id', formData.path[0].id)
-  const res = await updateItem(formData.path[0].id, itemToRoomId.value, formData)
+  // console.log('formData.path[0].id', formData.path[0].id)
+  // const res = await updateItem(formData.path[0].id, itemToRoomId.value, formData)
   // console.log(movePath.value, moveItemFatherId.value[0], moveItemIds.value)
-  moveToItemPath.value = res.path || []
-  moveToItemPath.value.push({ id: res.id, name: res.name })
-  console.log(moveItemIds.value)
-  await batchMove(formData.path[0].id, moveItemIds.value, moveToItemPath.value)
+
+  // moveToItemPath.value = res.path || []
+  // moveToItemPath.value.reverse()
+  // moveToItemPath.value.push({ id: res.id, name: res.name })
+  // console.log('movepath', moveItemIds.value, moveToItemPath.value)
+  // await batchUpdateItemsAPINew(moveItemIds.value, [{ id: res.id, name: res.name }])
+
+  moveToItemPath.value = formData.path || []
+  moveToItemPath.value.reverse()
+  moveToItemPath.value.push({ id: itemData.value.id, name: itemData.value.name })
+  console.log('movepath', moveItemIds.value, moveToItemPath.value)
+  await batchUpdateItemsAPINew(moveItemIds.value, [
+    { id: itemData.value.id, name: itemData.value.name }
+  ])
+  // await batchUpdateItemsAPINew(moveItemIds.value, moveToItemPath.value)
+  // await batchMove(formData.path[0].id, moveItemIds.value, moveToItemPath.value)
   uni.switchTab({
     url: '/pages/home/home'
   })
@@ -399,7 +413,7 @@ const goToDetailPage = async (item: ScanItem) => {
     console.log('跳转到分享物品详情页，参数:', params.userId)
     await getShareItemDetail(params.type, params.itemId, params.userId, params.password)
     uni.navigateTo({
-      url: `/pages/details/details?isShareItem=${pageOptions.isShareItem}`
+      url: `/pages/details/details?isShareItem=${pageOptions.isShareItem}&isOwner=${pageOptions.isOwner}`
     })
   } else {
     //  非分享物品调getDetail接口
@@ -411,7 +425,7 @@ const goToDetailPage = async (item: ScanItem) => {
     console.log('跳转到普通物品详情页，参数:', params)
     await getDetail(params.type, params.itemId, params.password)
     uni.navigateTo({
-      url: `/pages/details/details?itemId=${params.itemId}&type=${params.type}`
+      url: `/pages/details/details?itemId=${params.itemId}&type=${params.type}&isOwner=${pageOptions.isOwner}`
     })
   }
 }
@@ -603,6 +617,22 @@ const handleAction = async (action: string) => {
       // 非空间，直接进入编辑页
       const item = mainItems.value[0]
       await getDetail(Number(item.type), item.id, '')
+      // 只设置路径相关store，itemData用接口返回的完整数据
+      if (!formStore.itemData.path || formStore.itemData.path.length === 0) {
+        // 没有空间链，补一层
+        spaceStore.spaces = [
+          {
+            id: formStore.itemData.id,
+            name: formStore.itemData.name,
+            fatherId: 0,
+            layer: 1
+          }
+        ]
+        formStore.currentFloor = 1
+      } else {
+        spaceStore.spaces = formStore.itemData.path
+        formStore.currentFloor = formStore.itemData.path.length
+      }
       uni.navigateTo({
         url: `/pages/edit/edit?from=scan&itemId=${item.id}&type=${item.type}`
       })
@@ -618,11 +648,31 @@ const handleAction = async (action: string) => {
       return
     }
     if (selectedItems.length > 1) {
-      uni.showToast({ title: '只能编辑一个物品', icon: 'none' })
+      // 多选，跳转到共同编辑页面，传递选中物品id列表
+      const ids = selectedItems.map((item) => item.id)
+      uni.navigateTo({
+        url: `/pages/edit/multiple/multiple?ids=${ids.join(',')}`
+      })
       return
     }
     const item = selectedItems[0]
     await getDetail(Number(item.type), item.id, '')
+    // 只设置路径相关store，itemData用接口返回的完整数据
+    if (!formStore.itemData.path || formStore.itemData.path.length === 0) {
+      // 没有空间链，补一层, 不然spaceItem页面toSpace可能会报错
+      spaceStore.spaces = [
+        {
+          id: formStore.itemData.id,
+          name: formStore.itemData.name,
+          fatherId: 0,
+          layer: 1
+        }
+      ]
+      formStore.currentFloor = 1
+    } else {
+      spaceStore.spaces = formStore.itemData.path
+      formStore.currentFloor = formStore.itemData.path.length
+    }
     uni.navigateTo({
       url: `/pages/edit/edit?from=scan&itemId=${item.id}&type=${item.type}`
     })
