@@ -222,7 +222,7 @@ export const useSearchStore = defineStore('search', () => {
     // 重置列表
     currentSearchList.value.checkedItemList = []
     // 重新获取列表
-    resetSearchList(0)
+    resetSearchList(1)
   }
 
   // 当前是否是已删除列表
