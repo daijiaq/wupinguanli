@@ -20,7 +20,9 @@ export const useSettingsStore = defineStore('settings', () => {
     privacyDisplay: 0,
     displayPassword: 0,
     privacyPassword: 0,
-    unifiedPassword: 0
+    unifiedPassword: 0,
+    openRecycleBin: 0,
+    updatingWifi: 0
   })
 
   // 切换账号的列表数据
@@ -61,6 +63,8 @@ export const useSettingsStore = defineStore('settings', () => {
     settingsInfo.value.privacyDisplay = data.privacyDisplay
     settingsInfo.value.displayPassword = data.displayPassword
     settingsInfo.value.unifiedPassword = data.unifiedPassword
+    settingsInfo.value.openRecycleBin = data.openRecycleBin
+    settingsInfo.value.updatingWifi = data.updatingWifi
   }
 
   // 开启隐藏空间
@@ -88,8 +92,13 @@ export const useSettingsStore = defineStore('settings', () => {
   }
 
   // 修改设置
-  const updateSettingsStore = (allowManagement: 0 | 1, privacyItemInvisible: 0 | 1) => {
-    updateSettings(allowManagement, privacyItemInvisible)
+  const updateSettingsStore = (
+    allowManagement: 0 | 1,
+    privacyItemInvisible: 0 | 1,
+    recycleBin: 0 | 1,
+    updatingWifi: 0 | 1
+  ) => {
+    updateSettings(allowManagement, privacyItemInvisible, recycleBin, updatingWifi)
     settingsInfo.value.allowManagement = allowManagement
   }
 
