@@ -35,7 +35,7 @@
               :key="item.id"
               @click="goToDetail(item)"
             >
-              <view> {{ item.content }} </view>
+              <view class="record-content-text"> {{ item.content }} </view>
               <view class="feedback-time">{{ item.feedTime?.slice(0, 10) }}</view>
             </view>
           </scroll-view>
@@ -184,6 +184,12 @@ onMounted(async () => {
           border-bottom: 0.5px solid rgb(230, 238, 255);
           &:last-child {
             border-bottom: none;
+          }
+          .record-content-text {
+            white-space: nowrap; /* 不换行 */
+            overflow: hidden; /* 超出隐藏 */
+            text-overflow: ellipsis; /* 省略号 */
+            max-width: 80%;
           }
           .feedback-time {
             font-size: 10px;
