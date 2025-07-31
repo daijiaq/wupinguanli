@@ -13,9 +13,15 @@ export function getUserInfo(): Promise<UserInfo> {
 }
 
 // 修改用户头像
-export function changeUserAvatar(filePath: string): Promise<UserInfo> {
+// export function changeUserAvatar(filePath: string): Promise<UserInfo> {
+//   return service({
+//     url: `/users/avatar?avatar=${filePath}`,
+//     method: 'POST'
+//   })
+// }
+export function changeUserAvatar(avatarUrl: string): Promise<UserInfo> {
   return service({
-    url: `/users/avatar?avatar=${filePath}`,
+    url: `/users/avatar?avatar=${avatarUrl}`,
     method: 'POST'
   })
 }

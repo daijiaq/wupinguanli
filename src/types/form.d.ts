@@ -62,6 +62,10 @@ interface Image {
    * 图片链接
    */
   url: string
+  /**
+   * 本地图片路径（用于预览）
+   */
+  localUrl?: string
 }
 
 // 标签

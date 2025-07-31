@@ -85,6 +85,15 @@ export const uploadSDK = (address: string, res: any, fileList1: Ref<any>) => {
  */
 export const AvatarSDk = async (address: string, res: any, avatarPath: string) => {
   return new Promise<string>((resolve) => {
+    console.log('开始上传头像，文件路径:', avatarPath)
+
+    // 验证文件路径
+    if (!avatarPath) {
+      console.error('文件路径为空')
+      resolve('')
+      return
+    }
+
     const cos = new COS({
       SimpleUploadMethod: 'putObject',
       getAuthorization: function (options: any, callback: any) {
@@ -116,29 +125,28 @@ export const AvatarSDk = async (address: string, res: any, avatarPath: string) =
     // 当前时间
     const currentTimestamp = new Date().getTime()
 
+    const uploadConfig = {
+      Bucket: 'szlab-1327149304',
+      Region: 'ap-guangzhou',
+      Key: `${address}/${year}/${month}/${day}/${currentTimestamp}.${urlPart}`,
+      FilePath: avatarPath
+    }
+
+    console.log('上传配置:', uploadConfig)
+
     // 配置cos
-    cos.postObject(
-      {
-        // Bucket: 'smart-management-1310045286',
-        Bucket: 'szlab-1327149304',
-        Region: 'ap-guangzhou',
-        Key: `${address}/${year}/${month}/${day}/${currentTimestamp}.${urlPart}`,
-        FilePath: avatarPath
-      },
-      function (err: any, data: any) {
-        if (err) {
-          console.log('上传失败')
-          resolve('')
-        } else {
-          console.log('上传成功')
-          // 当前地址
-          // const key = `https://szpic.lxtlovely.top/${address}/${year}/${month}/${day}/${currentTimestamp}.${urlPart}`
-          const key = `https://www.szlab.xyz/${address}/${year}/${month}/${day}/${currentTimestamp}.${urlPart}`
-          // 图片地址数组
-          avatarUrl.value = key
-          resolve(avatarUrl.value)
-        }
+    cos.postObject(uploadConfig, function (err: any, data: any) {
+      if (err) {
+        console.log('上传失败', err)
+        resolve('')
+      } else {
+        console.log('上传成功', data)
+        // 当前地址
+        const key = `https://www.szlab.xyz/${address}/${year}/${month}/${day}/${currentTimestamp}.${urlPart}`
+        // 图片地址数组
+        avatarUrl.value = key
+        resolve(avatarUrl.value)
       }
-    )
+    })
   })
 }
