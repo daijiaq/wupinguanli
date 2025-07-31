@@ -7,6 +7,7 @@
       <view class="form__photo">
         <FormPhoto
           :size="'310rpx'"
+          :uploadType="0"
           v-model:photoList="formStore.tempItemData.images"
           :disabled="false"
           :previewType="'url'"
@@ -293,6 +294,7 @@
         <u-text color="#353535" customStyle="margin-bottom: 10px" :bold="true" text="备注" />
         <FormPhoto
           :size="'140rpx'"
+          :uploadType="1"
           v-model:photoList="formStore.tempItemData.figures"
           :disabled="false"
           :previewType="'url'"
