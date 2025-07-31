@@ -856,7 +856,6 @@ const openSpace = (): void => {
       formStore.ids.push(spacesData.value[i].id)
     }
   }
-  console.log(11)
 }
 
 const formShowRef = ref(null)
@@ -864,14 +863,23 @@ const parentTempShow = ref(false)
 //取消按钮
 const handleCancel = (): void => {
   showSpace.value = false
-  spacesBox.value = initialPath.value
+  spacesBox.value = JSON.parse(JSON.stringify(initialPath.value))
+  // 恢复 pathFloor 到初始状态（为了正确渲染空间层级和路径导航面包屑）
+  pathFloor.value = formStore.currentFloor - 1
   parentTempShow.value = false
 }
 
 //确认按钮
 const handleConfirm = async () => {
+  // 检查是否选择了路径
+  if (pathFloor.value === 0 || spacesBox.value.length === 0) {
+    uni.showToast({
+      title: '操作失败',
+      icon: 'none'
+    })
+    return // 不关闭弹框，保持显示状态
+  }
   showSpace.value = false
-  spacesBox.value.pop()
   // await batchMove(
   //   spacesBox.value[spacesBox.value.length - 1].id,
   //   [formStore.itemData.id],
