@@ -25,7 +25,7 @@
 
 <script setup lang="ts">
 import { onShow, onPullDownRefresh, onPageScroll } from '@dcloudio/uni-app'
-import { ref } from 'vue'
+import { ref, provide } from 'vue'
 import { useSearchStore } from '@/stores/search'
 import { storeToRefs } from 'pinia'
 
@@ -42,6 +42,8 @@ const isEmpty = ref(false)
 // navBar 颜色
 const navBarColor = ref('transparent')
 
+const isSearching = ref(0)
+provide('isSearching', isSearching)
 // 判断搜索/筛选后是否为空
 const determineEmpty = () => {
   if (!currentSearchList.value.itemList.length) {
