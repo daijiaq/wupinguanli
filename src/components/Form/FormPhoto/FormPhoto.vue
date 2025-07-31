@@ -54,7 +54,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import type { Image } from '@/types/form'
-import { uploadFigureImgAPI } from '@/network/apis/form'
+import { uploadFigureImgAPI, uploadImgAPI } from '@/network/apis/form'
 const props = defineProps<{
   // 大小
   size: string
@@ -63,7 +63,12 @@ const props = defineProps<{
   // 图片列表
   photoList: Image[]
   previewType?: 'url' | 'localUrl'
+  // 上传类型：0-主图片，1-备注图片，默认为1（备注图片）
+  uploadType?: number
 }>()
+
+// 设置默认值
+const uploadType = props.uploadType ?? 1
 //图片列表内容
 const tempPhoto = ref(props.photoList)
 const emits = defineEmits<{
@@ -88,13 +93,22 @@ watch(
 //新增图片的回调
 const photoAfterRead = async (event: any): Promise<void> => {
   for (let index = 0; index < event.file.length; index++) {
+    const file = event.file[index]
+    // 检查文件路径是否存在
+    if (!file.url) {
+      console.error('文件路径为空:', file)
+      uni.showToast({ title: '文件路径错误', icon: 'none' })
+      continue
+    }
     // 先本地预览
     tempPhoto.value.push({
-      localUrl: event.file[index].url,
+      localUrl: file.url,
       url: ''
     })
     try {
-      const res = await uploadFigureImgAPI(event.file[index].url)
+      // 根据uploadType选择对应接口
+      const uploadAPI = uploadType === 1 ? uploadFigureImgAPI : uploadImgAPI
+      const res = await uploadAPI(file.url)
       // 只更新 url 字段，不替换整个对象
       const last = tempPhoto.value[tempPhoto.value.length - 1]
       last.id = res.id
@@ -104,7 +118,6 @@ const photoAfterRead = async (event: any): Promise<void> => {
       uni.showToast({ title: '图片上传失败', icon: 'none' })
     }
   }
-  console.log(props.photoList)
 }
 //删除图片的回调
 const deletePhoto = (index: number): void => {
