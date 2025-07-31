@@ -204,25 +204,75 @@ const chooseAvatar = () => {
     mediaType: ['image'],
     sizeType: ['compressed'],
     success: async (res) => {
-      uni.showLoading({
-        title: '头像上传中'
-      })
-      // 大小限制
-      if (res.tempFiles[0].size > 1572864) {
-        uni.showToast({
-          title: '图片大小不能超过1.5M',
-          icon: 'none'
+      try {
+        uni.showLoading({
+          title: '头像上传中'
         })
-        return
+        // 大小限制
+        if (res.tempFiles[0].size > 1572864) {
+          uni.showToast({
+            title: '图片大小不能超过1.5M',
+            icon: 'none'
+          })
+          return
+        }
+
+        // 检查文件路径是否存在
+        const tempFilePath = res.tempFiles[0].tempFilePath
+        console.log('选择的文件路径:', tempFilePath)
+
+        // 验证文件是否存在
+        try {
+          await new Promise((resolve, reject) => {
+            uni.getFileInfo({
+              filePath: tempFilePath,
+              success: resolve,
+              fail: reject
+            })
+          })
+        } catch (fileError) {
+          console.error('文件不存在:', fileError)
+          uni.showToast({
+            title: '选择的文件无效',
+            icon: 'error'
+          })
+          return
+        }
+
+        //获取临时token
+        const token = await getTemporaryTokenAPI()
+        const avatarRes = await AvatarSDk('user/avatar', token, tempFilePath)
+
+        // 检查上传是否成功
+        if (!avatarRes) {
+          uni.showToast({
+            title: '头像上传失败',
+            icon: 'error'
+          })
+          return
+        }
+
+        //发送请求
+        await changeAvatar(avatarUrl.value)
+        uni.showToast({
+          title: '头像修改成功',
+          icon: 'success'
+        })
+      } catch (error) {
+        console.error('头像上传失败:', error)
+        uni.showToast({
+          title: '头像上传失败',
+          icon: 'error'
+        })
+      } finally {
+        uni.hideLoading()
       }
-      //获取临时token
-      const token = await getTemporaryTokenAPI()
-      const avatarRes = await AvatarSDk('user/avatar', token, res.tempFiles[0].tempFilePath)
-      //发送请求
-      await changeAvatar(avatarUrl.value)
+    },
+    fail: (error) => {
+      console.error('选择图片失败:', error)
       uni.showToast({
-        title: '头像修改成功',
-        icon: 'success'
+        title: '选择图片失败',
+        icon: 'error'
       })
     }
   })

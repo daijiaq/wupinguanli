@@ -180,9 +180,9 @@ export const uploadFileService = <T>(options: UniApp.UploadFileOption): Promise<
             break
         }
       })
-    // .catch((err) => {
-    //   reject(err)
-    // })
+      .catch((err) => {
+        reject(err)
+      })
   })
 }
 
