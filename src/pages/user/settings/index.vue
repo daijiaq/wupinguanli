@@ -165,20 +165,32 @@ const deleteDirectChange = () => {
       content: '开启后，物品将直接删除，不会放入回收站，请谨慎操作！',
       confirmText: '确定',
       cancelText: '取消',
-      success: () => {
-        updateSettingsStore(
-          settingsData.allowManagement,
-          settingsData.privacyItemInvisible,
-          1,
-          settingsData.updatingWifi
-        )
+      success: (res) => {
+        if (res.confirm) {
+          // 用户点击确定，设置为1
+          updateSettingsStore(
+            settingsData.allowManagement,
+            settingsData.privacyItemInvisible,
+            1,
+            settingsData.updatingWifi
+          )
+        } else {
+          // 用户点击取消，设置为0
+          settingsData.openRecycleBin = 0
+          updateSettingsStore(
+            settingsData.allowManagement,
+            settingsData.privacyItemInvisible,
+            0,
+            settingsData.updatingWifi
+          )
+        }
       }
     })
   } else {
     uni.showToast({
       title: '已关闭',
       success: () => {
-        settingsData.openRecycleBin === 1 ? true : false
+        settingsData.openRecycleBin = 0
         updateSettingsStore(
           settingsData.allowManagement,
           settingsData.privacyItemInvisible,

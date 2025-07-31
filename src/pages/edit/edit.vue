@@ -7,6 +7,7 @@
       <view class="form__photo">
         <FormPhoto
           :size="'310rpx'"
+          :uploadType="0"
           v-model:photoList="formStore.tempItemData.images"
           :disabled="false"
           :previewType="'url'"
@@ -293,6 +294,7 @@
         <u-text color="#353535" customStyle="margin-bottom: 10px" :bold="true" text="备注" />
         <FormPhoto
           :size="'140rpx'"
+          :uploadType="1"
           v-model:photoList="formStore.tempItemData.figures"
           :disabled="false"
           :previewType="'url'"
@@ -824,6 +826,7 @@ const refresh = async (refreshPath = false) => {
       spacesBox.value[i] = { fatherId: 0, id: 0, name: '', layer: 0 }
     }
     // 写入当前路径
+    console.log('当前路径', formStore.currentFloor - 1, spacesBox.value)
     for (let i = 0; i < formStore.currentFloor - 1; i++) {
       pathFloor.value++
       spacesBox.value[i] = {
@@ -861,7 +864,6 @@ const openSpace = (): void => {
       formStore.ids.push(spacesData.value[i].id)
     }
   }
-  console.log(11)
 }
 
 const formShowRef = ref(null)
@@ -869,14 +871,23 @@ const parentTempShow = ref(false)
 //取消按钮
 const handleCancel = (): void => {
   showSpace.value = false
-  spacesBox.value = initialPath.value
+  spacesBox.value = JSON.parse(JSON.stringify(initialPath.value))
+  // 恢复 pathFloor 到初始状态（为了正确渲染空间层级和路径导航面包屑）
+  pathFloor.value = formStore.currentFloor - 1
   parentTempShow.value = false
 }
 
 //确认按钮
 const handleConfirm = async () => {
+  // 检查是否选择了路径
+  if (pathFloor.value === 0 || spacesBox.value.length === 0) {
+    uni.showToast({
+      title: '操作失败',
+      icon: 'none'
+    })
+    return // 不关闭弹框，保持显示状态
+  }
   showSpace.value = false
-  spacesBox.value.pop()
   // await batchMove(
   //   spacesBox.value[spacesBox.value.length - 1].id,
   //   [formStore.itemData.id],
@@ -979,7 +990,11 @@ const submitForm = (): void => {
         }))
         if (formStore.tempItemData.type) {
           const path = []
-          console.log(pathFloor)
+          console.log('图片', pathFloor.value, spacesBox.value)
+          if (pathFloor.value >= spacesBox.value.length) {
+            pathFloor.value = spacesBox.value.length - 1
+            console.log('图片修改后', pathFloor.value, spacesBox.value, pathFloor.value - 1)
+          }
           for (let i = 0; i < pathFloor.value; i++) {
             path.push({
               id: spacesBox.value[i].id,
@@ -989,6 +1004,7 @@ const submitForm = (): void => {
           finalpath.value = JSON.parse(JSON.stringify(path))
           console.log('1', path)
           console.log('2', finalpath)
+          console.log('fatherName', spacesBox.value[pathFloor.value - 1].name)
           formStore.tempItemData.hide = localPrivacyRoom.value ? 1 : 0
           const tempForm = <ItemForm>{
             privacy: privacy.value ? 1 : 0,

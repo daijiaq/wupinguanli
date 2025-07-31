@@ -225,6 +225,8 @@ const availableTags = ref<any>([]) // 存所有去重后的标签
 const showSpace = ref(false)
 // 存储当前路径
 const spacesBox = ref([])
+// 保存初始路径
+const initialPath = ref([])
 // 当前层数
 const pathFloor = ref(0)
 // 路径加载
@@ -368,6 +370,8 @@ onMounted(async () => {
       }
       spacesBox.value = fullPath
       pathFloor.value = detailList[0].path.length
+      // 保存初始路径
+      initialPath.value = JSON.parse(JSON.stringify(fullPath))
     }
     console.log(spacesBox.value, pathFloor.value)
   }
@@ -413,6 +417,14 @@ const radioClick = (index: number, floor: number) => {
 }
 // 弹框确认选择空间
 const confirmSpace = () => {
+  // 检查是否选择了路径
+  if (pathFloor.value === 0 || spacesBox.value.length === 0) {
+    uni.showToast({
+      title: '操作失败',
+      icon: 'none'
+    })
+    return // 不关闭弹框，保持显示状态
+  }
   form.path = spacesBox.value.slice(0, pathFloor.value).map((item: any) => ({
     id: item.id,
     name: item.name
@@ -422,6 +434,11 @@ const confirmSpace = () => {
 // 取消选择空间
 const cancelSpace = () => {
   showSpace.value = false
+  // 恢复初始路径
+  if (initialPath.value.length > 0) {
+    spacesBox.value = JSON.parse(JSON.stringify(initialPath.value))
+    pathFloor.value = initialPath.value.filter((item: any) => item.id !== 0).length
+  }
 }
 const findFullPath = (pathArr: any, pathsInfo: any) => {
   return pathArr.map((p: any) => {
