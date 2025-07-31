@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, reactive } from 'vue'
 import {
   getAllItems,
+  getDependceItems,
   getAllTags,
   searchByScreen,
   searchByInput,
@@ -124,6 +125,33 @@ export const useSearchStore = defineStore('search', () => {
     currentSearchList.value.offset = data.current
   }
 
+  async function fetchDependceItems(deleted: number) {
+    // 当前位置不是已删除列表
+    isDeleted.value = false
+
+    // 发起请求
+    const data = await getDependceItems(
+      {
+        offset: currentSearchList.value.offset + 1
+      },
+      deleted
+    )
+    // 更新列表
+    currentSearchList.value.itemList.push(...data.records)
+    let lastPageNum = data.size
+    if (data.current === data.pages) {
+      lastPageNum = data.total % data.size
+    }
+    // 给新增的元素加上 isChecked 属性
+    setItemList(
+      currentSearchList.value.itemList,
+      currentSearchList.value.offset * data.size,
+      currentSearchList.value.offset * data.size + lastPageNum
+    )
+    // 更新 searchList 的 total 和 offset
+    currentSearchList.value.total = data.total
+    currentSearchList.value.offset = data.current
+  }
   // 获取筛选中的标签列表
   async function fetchTagList() {
     const data = await getAllTags({
@@ -349,6 +377,7 @@ export const useSearchStore = defineStore('search', () => {
     currentSearchInputData,
     setItemList,
     fetchNewSearchList,
+    fetchDependceItems,
     fetchScreenSearchList,
     fetchTagList,
     searchItemByInput,

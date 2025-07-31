@@ -43,7 +43,7 @@ import { storeToRefs } from 'pinia'
 const searchStore = useSearchStore()
 const formStore = useFormStore()
 const { currentSearchList } = storeToRefs(searchStore)
-const { fetchNewSearchList } = searchStore
+const { fetchDependceItems } = searchStore
 
 // 是否正在加载
 const isLoading = ref(false)
@@ -71,7 +71,7 @@ async function loadSearchList() {
   isLoading.value = true
 
   try {
-    await fetchNewSearchList(0)
+    await fetchDependceItems(0)
   } catch {
     manualDisable.value = true
     console.log('请求失败')

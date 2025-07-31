@@ -10,9 +10,14 @@ export function getAllSettings(): Promise<Settings> {
 }
 
 // 更改设置
-export function updateSettings(allowManagement: 0 | 1, privacyItemInvisible: 0 | 1): Promise<null> {
+export function updateSettings(
+  allowManagement: 0 | 1,
+  privacyItemInvisible: 0 | 1,
+  recycleBin: 0 | 1,
+  updatingWifi: 0 | 1
+): Promise<null> {
   return service({
-    url: `/settings?type=${allowManagement}&open=0&wifi=0&recycleBin=0&privacyItemInvisible=${privacyItemInvisible}`,
+    url: `/settings?type=${allowManagement}&open=0&wifi=${updatingWifi}&recycleBin=${recycleBin}&privacyItemInvisible=${privacyItemInvisible}`,
     method: 'PUT'
   })
 }

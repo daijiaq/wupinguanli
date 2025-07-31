@@ -78,11 +78,12 @@
         </view>
 
         <view v-show="showControl.showPrice">
-          <u-form :rules="rules" :model="priceRange" ref="priceForm">
+          <u-form :model="priceRange" ref="priceForm">
             <u-form-item prop="lowPrice">
               <u-input
                 v-model="priceRange.lowPrice"
                 placeholder="自定最低价"
+                @input="(val:any) => handlePriceInput('lowPrice', val)"
                 custom-style="
                   width: 130px;
                   height: 30px;
@@ -96,6 +97,7 @@
               <u-input
                 v-model="priceRange.highPrice"
                 placeholder="自定最高价"
+                @input="(val:any) => handlePriceInput('highPrice', val)"
                 custom-style="
                   width: 130px;
                   height: 30px;
@@ -248,21 +250,31 @@ const priceRange = reactive({
   highPrice: ''
 })
 
-const rules = {
-  lowPrice: [
-    {
-      pattern: /^[0-9]*$/g,
-      message: '请输入数字',
-      trigger: ['change', 'blur']
-    }
-  ],
-  highPrice: [
-    {
-      pattern: /^[0-9]*$/g,
-      message: '请输入数字',
-      trigger: ['change', 'blur']
-    }
-  ]
+// 自定义输入校验函数
+const validatePriceInput = (value: string) => {
+  if (value === '') return true // 允许清空输入
+  // 匹配：整数部分最多9位，小数部分最多2位（可选）
+  const regex = /^\d{0,9}(\.\d{0,2})?$/
+  return regex.test(value)
+}
+
+// 监听输入并过滤非法字符
+const handlePriceInput = (key: 'lowPrice' | 'highPrice', value: string) => {
+  if (value === '') {
+    priceRange[key] = ''
+    return
+  }
+  // 移除非数字和小数点的字符
+  let filtered = value.replace(/[^\d.]/g, '')
+  // 确保最多一个小数点
+  const parts = filtered.split('.')
+  if (parts.length > 2) {
+    filtered = parts[0] + '.' + parts.slice(1).join('')
+  }
+  // 校验整数和小数位数
+  if (validatePriceInput(filtered)) {
+    priceRange[key] = filtered
+  }
 }
 
 // 筛选入库日期
@@ -293,31 +305,76 @@ const cancelScreen = () => {
   resetAllScreen()
 }
 
-const submitScreen = () => {
-  priceForm.value
-    .validate()
-    .then(async () => {
-      try {
-        isSubmitting.value = true
-        updateScreenData()
-        // 判断当前是否为最近删除页，1 表示在已删除的数据中筛选，0 表示在未删除的数据中筛选
-        isDeleted ? await fetchScreenSearchList(1) : await fetchScreenSearchList(0)
-        isSubmitting.value = false
-        uni.showToast({
-          title: '筛选成功',
-          icon: 'success'
-        })
-        resetAllScreen()
-        emits('screenEmpty')
-        closePopupEvent()
-      } catch {}
+// const submitScreen = async () => {
+//   priceForm.value
+//     .validate()
+//     .then(async () => {
+//       try {
+//         isSubmitting.value = true
+//         updateScreenData()
+//         // 判断当前是否为最近删除页，1 表示在已删除的数据中筛选，0 表示在未删除的数据中筛选
+//         isDeleted ? await fetchScreenSearchList(1) : await fetchScreenSearchList(0)
+//         isSubmitting.value = false
+//         uni.showToast({
+//           title: '筛选成功',
+//           icon: 'success'
+//         })
+//         resetAllScreen()
+//         emits('screenEmpty')
+//         closePopupEvent()
+//       } catch {}
+//     })
+//     .catch(() => {
+//       uni.showToast({
+//         title: '请输入正确的金额',
+//         icon: 'none'
+//       })
+//     })
+// }
+
+const submitScreen = async () => {
+  // 检查最低价是否大于最高价
+  if (
+    priceRange.lowPrice &&
+    priceRange.highPrice &&
+    parseFloat(priceRange.lowPrice) > parseFloat(priceRange.highPrice)
+  ) {
+    uni.showToast({
+      title: '最低价不能大于最高价',
+      icon: 'none'
     })
-    .catch(() => {
-      uni.showToast({
-        title: '请输入正确的金额',
-        icon: 'none'
-      })
+    return
+  }
+
+  if (
+    (priceRange.lowPrice && parseFloat(priceRange.lowPrice) > 999999999) ||
+    (priceRange.highPrice && parseFloat(priceRange.highPrice) > 999999999)
+  ) {
+    uni.showToast({
+      title: '金额最大不能超过999999999',
+      icon: 'none'
     })
+    return
+  }
+
+  try {
+    isSubmitting.value = true
+    updateScreenData() // 更新筛选参数
+
+    // 调用筛选接口（区分是否在回收站）
+    await fetchScreenSearchList(isDeleted ? 1 : 0)
+
+    uni.showToast({
+      title: '筛选成功',
+      icon: 'success'
+    })
+    emits('screenEmpty') // 通知父组件检查空状态
+    closePopupEvent() // 关闭弹窗
+  } catch (error) {
+    console.error('筛选失败:', error)
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
 // 重置筛选选项
@@ -360,10 +417,10 @@ const updateScreenData = () => {
   // 筛选金额
   if (priceRange.lowPrice !== '') {
     // 选择金额
-    currentScreenData.value.screenData.lowPrice = Number(priceRange.lowPrice)
+    currentScreenData.value.screenData.lowPrice = parseFloat(priceRange.lowPrice)
   }
   if (priceRange.highPrice !== '') {
-    currentScreenData.value.screenData.highPrice = Number(priceRange.highPrice)
+    currentScreenData.value.screenData.highPrice = parseFloat(priceRange.highPrice)
   }
   if (priceRange.lowPrice === '' && priceRange.highPrice === '') {
     // 恢复默认
