@@ -824,6 +824,7 @@ const refresh = async (refreshPath = false) => {
       spacesBox.value[i] = { fatherId: 0, id: 0, name: '', layer: 0 }
     }
     // 写入当前路径
+    console.log('当前路径', formStore.currentFloor - 1, spacesBox.value)
     for (let i = 0; i < formStore.currentFloor - 1; i++) {
       pathFloor.value++
       spacesBox.value[i] = {
@@ -979,7 +980,11 @@ const submitForm = (): void => {
         }))
         if (formStore.tempItemData.type) {
           const path = []
-          console.log(pathFloor)
+          console.log('图片', pathFloor.value, spacesBox.value)
+          if (pathFloor.value >= spacesBox.value.length) {
+            pathFloor.value = spacesBox.value.length - 1
+            console.log('图片修改后', pathFloor.value, spacesBox.value, pathFloor.value - 1)
+          }
           for (let i = 0; i < pathFloor.value; i++) {
             path.push({
               id: spacesBox.value[i].id,
@@ -989,6 +994,7 @@ const submitForm = (): void => {
           finalpath.value = JSON.parse(JSON.stringify(path))
           console.log('1', path)
           console.log('2', finalpath)
+          console.log('fatherName', spacesBox.value[pathFloor.value - 1].name)
           formStore.tempItemData.hide = localPrivacyRoom.value ? 1 : 0
           const tempForm = <ItemForm>{
             privacy: privacy.value ? 1 : 0,
