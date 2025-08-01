@@ -176,13 +176,15 @@ import type { ShowControl } from '@/types/search'
 
 const searchStore = useSearchStore()
 const { currentTagList, currentScreenData } = storeToRefs(searchStore)
-const { fetchScreenSearchList, fetchTagList } = searchStore
+const { fetchScreenSearchList, fetchTagList, fetchDependceItems } = searchStore
 const showPopup = ref(false)
 const priceForm = ref()
 const isSubmitting = ref(false)
 
 // 是否为最近删除页
 const isDeleted = inject<boolean>('isDetele', false)
+//是否关联物品页
+const isDependence = inject<boolean>('isDependence', false)
 
 const emits = defineEmits<{
   (e: 'screenEmpty'): void
@@ -362,7 +364,11 @@ const submitScreen = async () => {
     updateScreenData() // 更新筛选参数
 
     // 调用筛选接口（区分是否在回收站）
-    await fetchScreenSearchList(isDeleted ? 1 : 0)
+    if (isDependence) {
+      await fetchDependceItems(0)
+    } else {
+      await fetchScreenSearchList(isDeleted ? 1 : 0)
+    }
 
     uni.showToast({
       title: '筛选成功',
