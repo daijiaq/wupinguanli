@@ -59,6 +59,7 @@ import { onLoad } from '@dcloudio/uni-app'
 import { ref, reactive, watch } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { useMessageStore } from '@/stores/message'
+import { clearDots } from '@/network/apis/message'
 // import type { MessageItem } from '@/types/message'
 import type { ItemMessageDetail } from '@/types/message'
 import item from '@/components/MessageList/MessageItem/MessageItem.vue'
@@ -91,6 +92,8 @@ onLoad(async () => {
   await messageStore.fetchItemShareList(0, 10)
   // 隐藏骨架屏
   isLoad.value = false
+  // 清除红点(进入页面就相当于已读)
+  await clearDots(3)
 })
 
 // 搜索框信息
