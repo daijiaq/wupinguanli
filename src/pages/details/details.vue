@@ -112,6 +112,7 @@
       />
       <FormDate :can-click="false" v-model:date="date" />
       <FormInput
+        v-if="formStore.itemData.type !== 0"
         :type="'text'"
         :name="'链接'"
         :maxLength="100"

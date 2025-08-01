@@ -32,25 +32,25 @@
 <script setup lang="ts">
 function goToOpenFail() {
   uni.navigateTo({
-    url: '/pages/user/feedback/functionError/openFail'
+    url: '/pages/user/feedback/functionError/FeedbackByType?type=1'
   })
 }
 
 function goToCrash() {
   uni.navigateTo({
-    url: '/pages/user/feedback/functionError/crash'
+    url: '/pages/user/feedback/functionError/FeedbackByType?type=2'
   })
 }
 
 function goToSlowLoad() {
   uni.navigateTo({
-    url: '/pages/user/feedback/functionError/slowLoad'
+    url: '/pages/user/feedback/functionError/FeedbackByType?type=3'
   })
 }
 
 function goToOther() {
   uni.navigateTo({
-    url: '/pages/user/feedback/functionError/other'
+    url: '/pages/user/feedback/functionError/FeedbackByType?type=4'
   })
 }
 </script>

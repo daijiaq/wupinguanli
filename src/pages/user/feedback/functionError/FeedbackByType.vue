@@ -10,7 +10,7 @@
     </u-navbar>
   </view>
   <view class="title">
-    <text>页面加载慢</text>
+    <text>{{ title[type || 1] }}</text>
   </view>
   <view class="textarea-box">
     <textarea
@@ -19,6 +19,7 @@
       placeholder="添加描述和问题截图使问题更易被解决"
       placeholder-class="textarea-placeholder"
       maxlength="100"
+      @input="onInput"
     />
     <view class="counter">
       <text>{{ feedbackContent.length }}/100</text>
@@ -61,6 +62,7 @@
 import { ref, computed } from 'vue'
 import { feedBackAPI, getVersionAPI } from '@/network/apis/faceBack'
 import { useSafeBack } from '@/stores/user'
+import { onLoad } from '@dcloudio/uni-app'
 // 反馈的文本
 const feedbackContent = ref('')
 const imageList = ref<string[]>([])
@@ -69,11 +71,21 @@ const checked = ref(false)
 const feedBackData = computed(() => ({
   content: feedbackContent.value,
   imageUrl: imageList.value,
-  type: 3,
+  type: type.value,
   version: '1.1.0',
-  returninformation: true
+  returninformation: false
 }))
 const safeback = useSafeBack('/pages/user/feedback/feedback')
+const title = [
+  '',
+  '无法打开小程序',
+  '小程序闪退',
+  '页面加载慢',
+  '其他异常',
+  '产品开发建议',
+  '意见反馈'
+]
+const type = ref<number | null>(1)
 // 添加反馈图片
 function chooseImage() {
   uni.chooseImage({
@@ -94,12 +106,17 @@ function previewImage(index: number) {
 function removeImage(index: number) {
   imageList.value.splice(index, 1)
 }
-// 获取checkbox状态
 
+// 获取checkbox状态
 function onCheckChange(event: any) {
   checked.value = event.detail.value.includes('allow')
-
   feedBackData.value.returninformation = checked.value
+}
+
+function onInput(e: any) {
+  if (e.detail.value.length > 100) {
+    feedbackContent.value = e.detail.value.slice(0, 100)
+  }
 }
 // 获取最新版本号
 async function fetchVersion() {
@@ -114,6 +131,22 @@ async function fetchVersion() {
 // 提交反馈
 async function submitFeedBack() {
   try {
+    if (feedBackData.value.content.trim() === '') {
+      uni.showToast({
+        title: '反馈内容不能为空',
+        icon: 'none',
+        duration: 2000
+      })
+      return
+    }
+    if (feedBackData.value.content.length > 100) {
+      uni.showToast({
+        title: '反馈内容不能超过100字',
+        icon: 'none',
+        duration: 2000
+      })
+      return
+    }
     // 获取最新版本号
     feedBackData.value.version = (await fetchVersion()) || '1.1.0'
     await feedBackAPI(feedBackData.value)
@@ -125,12 +158,18 @@ async function submitFeedBack() {
     console.log('反馈上传成功')
     // 跳转回反馈界面
     setTimeout(() => {
+      // uni.redirectTo({
+      //   url: '/pages/user/feedback/feedback'
+      // })
       safeback()
     }, 1000)
   } catch (error) {
     console.error('Error submitting feedback:', error)
   }
 }
+onLoad((options = {}) => {
+  type.value = options.type || '1'
+})
 </script>
 <style lang="scss">
 $width: 80%;
@@ -204,13 +243,9 @@ $width: 80%;
 }
 .checkbox {
   width: $width;
-
   display: flex;
-
   align-items: center;
-
   justify-content: center;
-
   margin: 0 auto;
 }
 .submit-button {
