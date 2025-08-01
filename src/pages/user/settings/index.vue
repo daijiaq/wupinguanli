@@ -277,12 +277,8 @@ watch(
   () => {
     if (!popup.value && !isValidate.value) {
       // 只在设置模式下，且没有设置成功时才回滚
-      if (!settingsInfo.value.privacyItemInvisible && tempType.value === 2)
-        settingsData.privacyItemInvisible = 0
-      if (!settingsInfo.value.unifiedPasswordUsed && tempType.value === 0)
-        settingsData.unifiedPasswordUsed = 0
-      if (!settingsInfo.value.privacyDisplay && tempType.value === 1)
-        settingsData.privacyDisplay = 0
+      // 注意：现在按钮状态的变化已经在 confirmGesture 和 confirmNumber 中处理
+      // 这里不再需要额外的回滚逻辑
     }
   }
 )
@@ -291,11 +287,10 @@ watch(
 watch(
   () => clearPopup.value,
   () => {
-    if (!clearPopup.value && settingsInfo.value.privacyItemInvisible)
-      settingsData.privacyItemInvisible = 1
-    if (!clearPopup.value && settingsInfo.value.unifiedPasswordUsed)
-      settingsData.unifiedPasswordUsed = 1
-    if (!clearPopup.value && settingsInfo.value.privacyDisplay) settingsData.privacyDisplay = 1
+    if (!clearPopup.value) {
+      // 注意：现在按钮状态的变化已经在 confirmClearPassword 中处理
+      // 这里不再需要额外的回滚逻辑
+    }
   }
 )
 
@@ -303,22 +298,14 @@ watch(
 const setPrivacyDisplay = () => {
   // 开启密码
   if (settingsData.privacyItemInvisible) {
-    updateSettingsStore(
-      settingsData.allowManagement,
-      settingsData.privacyItemInvisible,
-      settingsData.openRecycleBin,
-      settingsData.updatingWifi
-    )
+    // 立即回滚状态，避免按钮立即变色
+    settingsData.privacyItemInvisible = 0
     tempType.value = 2
     isValidate.value = getIsValidate(2)
     popup.value = true
   } else {
-    updateSettingsStore(
-      settingsData.allowManagement,
-      settingsData.privacyItemInvisible,
-      settingsData.openRecycleBin,
-      settingsData.updatingWifi
-    )
+    // 立即回滚状态，避免按钮立即变色
+    settingsData.privacyItemInvisible = 1
     // 清空密码
     tempType.value = 2
     clearPopup.value = true
@@ -336,10 +323,14 @@ const changePrivacyDisplay = () => {
 // 设置私密物品使用通用密码
 const setUnifiedPassword = () => {
   if (settingsData.unifiedPasswordUsed) {
+    // 立即回滚状态，避免按钮立即变色
+    settingsData.unifiedPasswordUsed = 0
     tempType.value = 0
     isValidate.value = getIsValidate(0)
     popup.value = true
   } else {
+    // 立即回滚状态，避免按钮立即变色
+    settingsData.unifiedPasswordUsed = 1
     tempType.value = 0
     clearPopup.value = true
   }
@@ -348,10 +339,14 @@ const setUnifiedPassword = () => {
 // 设置隐藏空间密码
 const setPrivacyDisplayRoom = () => {
   if (settingsData.privacyDisplay) {
+    // 立即回滚状态，避免按钮立即变色
+    settingsData.privacyDisplay = 0
     tempType.value = 1
     isValidate.value = getIsValidate(1)
     popup.value = true
   } else {
+    // 立即回滚状态，避免按钮立即变色
+    settingsData.privacyDisplay = 1
     tempType.value = 1
     clearPopup.value = true
   }
@@ -375,55 +370,115 @@ const changeUnifiedPassword = () => {
 
 // 清空密码时输入密码验证的弹窗
 const confirmClearPassword = async (password: string) => {
-  await validatePassword(password, tempType.value)
-  uni.showToast({
-    title: '验证成功',
-    icon: 'success'
-  })
-  clearPopup.value = false
-  clearPasswordStore(tempType.value)
+  try {
+    await validatePassword(password, tempType.value)
+    await clearPasswordStore(tempType.value)
+    clearPopup.value = false
+    // 清除成功后设置正确的状态
+    if (tempType.value === 0) {
+      settingsData.unifiedPasswordUsed = 0
+    } else if (tempType.value === 1) {
+      settingsData.privacyDisplay = 0
+    } else if (tempType.value === 2) {
+      settingsData.privacyItemInvisible = 0
+    }
+    uni.showToast({
+      title: '清除成功',
+      icon: 'success',
+      success: () => {
+        updateSettingsStore(
+          settingsData.allowManagement,
+          settingsData.privacyItemInvisible,
+          settingsData.openRecycleBin,
+          settingsData.updatingWifi
+        )
+      }
+    })
+  } catch (error) {
+    uni.showToast({
+      title: '密码错误',
+      icon: 'error'
+    })
+    // 密码错误时保持回滚状态（已经在 setPrivacyDisplay 等函数中设置）
+  }
 }
 
 // 开启手势密码
 async function confirmGesture(password: string) {
   popup.value = false
 
-  if (isValidate.value) {
+  if (isValidate.value && !fixPassword.value) {
+    // popup.value = false
     // 验证模式：只验证密码，不设置新密码
+    console.log('验证密码')
     try {
       await validatePassword(password, tempType.value)
+      await setPasswordStore(password, tempType.value)
+      // 验证成功后设置正确的状态
+      if (tempType.value === 0) {
+        settingsData.unifiedPasswordUsed = 1
+      } else if (tempType.value === 1) {
+        settingsData.privacyDisplay = 1
+      } else if (tempType.value === 2) {
+        settingsData.privacyItemInvisible = 1
+      }
       uni.showToast({
         title: '验证成功',
-        icon: 'success'
+        icon: 'success',
+        success: () => {
+          updateSettingsStore(
+            settingsData.allowManagement,
+            settingsData.privacyItemInvisible,
+            settingsData.openRecycleBin,
+            settingsData.updatingWifi
+          )
+        }
       })
-      await setPasswordStore(password, tempType.value)
     } catch {
       uni.showToast({
         title: '密码错误',
         icon: 'error'
       })
-      // 密码错误时回滚开关状态
-      if (tempType.value === 0) {
-        settingsData.unifiedPasswordUsed = 0
-      } else if (tempType.value === 1) {
-        settingsData.privacyDisplay = 0
-      } else if (tempType.value === 2) {
-        settingsData.privacyItemInvisible = 0
-      }
+      // 密码错误时保持回滚状态（已经在 setPrivacyDisplay 等函数中设置）
     }
   } else {
+    // fixPasswordInputNum.value++
+    // if (fixPasswordInputNum.value === 2) {
+    //   fixPassword.value = false
+    //   fixPasswordInputNum.value = 0
+    //   popup.value = false
+    // }
     // 设置模式：设置新密码
-    await setPasswordStore(password, tempType.value)
-    uni.showToast({
-      title: '设置成功',
-      icon: 'success'
-    })
-    if (tempType.value === 0) {
-      settingsData.unifiedPasswordUsed = 1
-    } else if (tempType.value === 1) {
-      settingsData.privacyDisplay = 1
-    } else if (tempType.value === 2) {
-      settingsData.privacyItemInvisible = 1
+    console.log('设置新密码')
+    fixPassword.value = false
+    try {
+      await setPasswordStore(password, tempType.value)
+      // 设置成功后设置正确的状态
+      if (tempType.value === 0) {
+        settingsData.unifiedPasswordUsed = 1
+      } else if (tempType.value === 1) {
+        settingsData.privacyDisplay = 1
+      } else if (tempType.value === 2) {
+        settingsData.privacyItemInvisible = 1
+      }
+      uni.showToast({
+        title: '设置成功',
+        icon: 'success',
+        success: () => {
+          updateSettingsStore(
+            settingsData.allowManagement,
+            settingsData.privacyItemInvisible,
+            settingsData.openRecycleBin,
+            settingsData.updatingWifi
+          )
+        }
+      })
+    } catch (error) {
+      uni.showToast({
+        title: '设置失败',
+        icon: 'error'
+      })
+      // 设置失败时保持回滚状态（已经在 setPrivacyDisplay 等函数中设置）
     }
   }
 }
@@ -432,60 +487,110 @@ async function confirmGesture(password: string) {
 async function confirmNumber(password: string) {
   popup.value = false
 
-  if (isValidate.value) {
+  if (isValidate.value && !fixPassword.value) {
+    // popup.value = false
     // 验证模式：只验证密码，不设置新密码
     try {
       await validatePassword(password, tempType.value)
+      await setPasswordStore(password, tempType.value)
+      // 验证成功后设置正确的状态
+      if (tempType.value === 0) {
+        settingsData.unifiedPasswordUsed = 1
+      } else if (tempType.value === 1) {
+        settingsData.privacyDisplay = 1
+      } else if (tempType.value === 2) {
+        settingsData.privacyItemInvisible = 1
+      }
       uni.showToast({
         title: '验证成功',
-        icon: 'success'
+        icon: 'success',
+        success: () => {
+          updateSettingsStore(
+            settingsData.allowManagement,
+            settingsData.privacyItemInvisible,
+            settingsData.openRecycleBin,
+            settingsData.updatingWifi
+          )
+        }
       })
-      await setPasswordStore(password, tempType.value)
     } catch {
       uni.showToast({
         title: '密码错误',
         icon: 'error'
       })
-      // 密码错误时回滚开关状态
-      if (tempType.value === 0) {
-        settingsData.unifiedPasswordUsed = 0
-      } else if (tempType.value === 1) {
-        settingsData.privacyDisplay = 0
-      } else if (tempType.value === 2) {
-        settingsData.privacyItemInvisible = 0
-      }
+      // 密码错误时保持回滚状态（已经在 setPrivacyDisplay 等函数中设置）
     }
   } else {
+    fixPassword.value = false
     // 设置模式：设置新密码
-    await setPasswordStore(password, tempType.value)
-    uni.showToast({
-      title: '设置成功',
-      icon: 'success'
-    })
-    if (tempType.value === 0) {
-      settingsData.unifiedPasswordUsed = 1
-    } else if (tempType.value === 1) {
-      settingsData.privacyDisplay = 1
-    } else if (tempType.value === 2) {
-      settingsData.privacyItemInvisible = 1
+    // fixPasswordInputNum.value++
+    // if (fixPasswordInputNum.value === 2) {
+    //   fixPassword.value = false
+    //   fixPasswordInputNum.value = 0
+    //   popup.value = false
+    // }
+    try {
+      await setPasswordStore(password, tempType.value)
+      // 设置成功后设置正确的状态
+      if (tempType.value === 0) {
+        settingsData.unifiedPasswordUsed = 1
+      } else if (tempType.value === 1) {
+        settingsData.privacyDisplay = 1
+      } else if (tempType.value === 2) {
+        settingsData.privacyItemInvisible = 1
+      }
+      uni.showToast({
+        title: '设置成功',
+        icon: 'success',
+        success: () => {
+          updateSettingsStore(
+            settingsData.allowManagement,
+            settingsData.privacyItemInvisible,
+            settingsData.openRecycleBin,
+            settingsData.updatingWifi
+          )
+        }
+      })
+    } catch (error) {
+      uni.showToast({
+        title: '设置失败',
+        icon: 'error'
+      })
+      // 设置失败时保持回滚状态（已经在 setPrivacyDisplay 等函数中设置）
     }
   }
 }
 
 // 修改密码
+const fixPassword = ref(false)
+// const fixPasswordInputNum = ref(0)
 const confirmChangePassword = async (password: string) => {
   changePasswordPopup.value = false
   try {
     await validatePassword(password, tempType.value)
     uni.showToast({
       title: '验证成功，请设置新密码',
-      icon: 'none'
+      icon: 'none',
+      success: () => {
+        isValidate.value = true
+      }
     })
-    if (settingsData.privacyItemInvisible) {
-      setPrivacyDisplay()
-    } else {
-      setUnifiedPassword()
-    }
+    // 验证成功后，根据当前状态重新设置密码
+    // 设置成功后设置正确的状态
+    popup.value = true
+    fixPassword.value = true
+    // if (tempType.value === 0) {
+    //   setUnifiedPassword()
+    // } else if (tempType.value === 1) {
+    //   setPrivacyDisplayRoom()
+    // } else if (tempType.value === 2) {
+    //   setPrivacyDisplay()
+    // }
+    // if (settingsData.privacyItemInvisible) {
+    //   setPrivacyDisplay()
+    // } else {
+    //   setUnifiedPassword()
+    // }
   } catch {
     uni.showToast({
       title: '密码错误',
@@ -501,15 +606,15 @@ const goToAccount = () => {
   })
 }
 
-// 界面隐藏时更新设置
-onHide(() => {
-  updateSettingsStore(
-    settingsData.allowManagement,
-    settingsData.privacyItemInvisible,
-    settingsData.openRecycleBin,
-    settingsData.updatingWifi
-  )
-})
+// // 界面隐藏时更新设置
+// onHide(() => {
+//   updateSettingsStore(
+//     settingsData.allowManagement,
+//     settingsData.privacyItemInvisible,
+//     settingsData.openRecycleBin,
+//     settingsData.updatingWifi
+//   )
+// })
 </script>
 
 <style lang="scss" scoped>
