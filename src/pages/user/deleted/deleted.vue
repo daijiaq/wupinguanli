@@ -12,6 +12,10 @@
       <SearchScreen @screenEmpty="determineEmpty" />
     </view>
 
+    <view class="search__total">
+      <view class="search__total__text">共{{ currentSearchList.total }}件筛选结果</view>
+    </view>
+
     <SearchList
       v-if="!isEmpty"
       :isLoading="isLoading"
@@ -52,6 +56,8 @@ const isEmpty = ref(false)
 // navBar 颜色
 const navBarColor = ref('transparent')
 
+const isSearching = ref(0)
+provide('isSearching', isSearching)
 // 判断搜索/筛选后是否为空
 const determineEmpty = () => {
   if (!currentSearchList.value.itemList.length) {
@@ -111,5 +117,27 @@ onShow(() => {
 <style lang="scss" scoped>
 .deleted {
   overflow-x: hidden;
+}
+
+.search {
+  overflow-x: hidden;
+
+  &__total {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 250rpx;
+    height: 60rpx;
+    padding: 0 20rpx;
+    margin-left: 40rpx;
+    border-radius: 10px;
+    background-color: #f8f9fd;
+
+    &__text {
+      color: #000;
+      font-size: 25rpx;
+      letter-spacing: 4rpx;
+    }
+  }
 }
 </style>

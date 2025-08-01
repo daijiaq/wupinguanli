@@ -35,7 +35,7 @@
 
 <script setup lang="ts">
 import { onShow, onPullDownRefresh, onPageScroll } from '@dcloudio/uni-app'
-import { ref } from 'vue'
+import { ref, provide } from 'vue'
 import { useSearchStore } from '@/stores/search'
 import { useFormStore } from '@/stores/form'
 import { storeToRefs } from 'pinia'
@@ -43,7 +43,7 @@ import { storeToRefs } from 'pinia'
 const searchStore = useSearchStore()
 const formStore = useFormStore()
 const { currentSearchList } = storeToRefs(searchStore)
-const { fetchNewSearchList } = searchStore
+const { fetchDependceItems } = searchStore
 
 // 是否正在加载
 const isLoading = ref(false)
@@ -54,6 +54,8 @@ const isEmpty = ref(false)
 // 是否显示确认模态框
 const showModal = ref(false)
 
+const isSearching = ref(0)
+provide('isSearching', isSearching)
 // 判断搜索/筛选后是否为空
 const determineEmpty = () => {
   if (!currentSearchList.value.itemList.length) {
@@ -71,7 +73,7 @@ async function loadSearchList() {
   isLoading.value = true
 
   try {
-    await fetchNewSearchList(0)
+    await fetchDependceItems(0)
   } catch {
     manualDisable.value = true
     console.log('请求失败')

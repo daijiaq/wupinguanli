@@ -461,6 +461,14 @@ const radioClick = (index: number, floor: number): void => {
 
 // 确认移动
 async function confirmMove(): Promise<void> {
+  // 检查是否选择了路径
+  if (pathFloor.value === 0 || spacesBox.value.length === 0) {
+    uni.showToast({
+      title: '操作失败',
+      icon: 'none'
+    })
+    return // 不关闭弹框，保持显示状态
+  }
   showSpace.value = false
   const path = []
   for (let i = 0; i < pathFloor.value; i++) {

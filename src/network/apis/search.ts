@@ -25,6 +25,27 @@ export function getAllItems(
   })
 }
 
+//获取相关物品，type为2
+export function getDependceItems(
+  { offset, limit = 10 }: PagingParams,
+  deleted: number
+): Promise<ResponseItemList> {
+  return service({
+    url: `/items/search?offset=${offset}&limit=${limit}`,
+    method: 'POST',
+    data: {
+      type: 2,
+      highPrice: -1,
+      dateType: -1,
+      name: '',
+      lowPrice: -1,
+      labelId: [],
+      deleted,
+      hide: 0
+    }
+  })
+}
+
 // 获取所有标签
 export function getAllTags({ offset, limit = 100 }: PagingParams): Promise<ResponseTagList> {
   return service({

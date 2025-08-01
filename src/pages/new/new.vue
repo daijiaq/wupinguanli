@@ -5,7 +5,12 @@
       <u-form-item prop="name" />
       <u-navbar @leftClick="back" titleWidth="250rpx" :title="'新建'" bgColor="#f6f6f6" />
       <view class="form__photo">
-        <FormPhoto :disabled="false" :size="'310rpx'" v-model:photoList="form.images" />
+        <FormPhoto
+          :disabled="false"
+          :size="'310rpx'"
+          :uploadType="0"
+          v-model:photoList="form.images"
+        />
       </view>
       <view class="form__information">
         <u-row customStyle="margin-bottom: 10px">
@@ -205,7 +210,12 @@
       </view>
       <view class="form__information">
         <u-text color="#353535" customStyle="margin-bottom: 10px" :bold="true" text="备注" />
-        <FormPhoto :disabled="false" :size="'140rpx'" v-model:photoList="form.figures" />
+        <FormPhoto
+          :disabled="false"
+          :size="'140rpx'"
+          :uploadType="1"
+          v-model:photoList="form.figures"
+        />
         <u-textarea
           maxlength="200"
           :count="true"
@@ -780,8 +790,20 @@ const submitForm = (): void => {
     .then(async () => {
       try {
         isLoading.value = true
-        const images = await uploadAllImgs(form.images, 0)
-        const figures = await uploadAllImgs(form.figures, 1)
+        // 检查图片是否已经上传完成
+        const hasUnuploadedImages = form.images.some((img) => !img.url || img.url === '')
+        const hasUnuploadedFigures = form.figures.some((img) => !img.url || img.url === '')
+        if (hasUnuploadedImages || hasUnuploadedFigures) {
+          uni.showToast({
+            title: '图片上传中，请稍后重试',
+            icon: 'none'
+          })
+          isLoading.value = false
+          return
+        }
+        // 直接使用已上传的图片数据
+        const images = form.images
+        const figures = form.figures
         if (currentFloor === 1) {
           const tempForm = <RoomForm>{
             privacy: privacy.value ? 1 : 0,
@@ -858,12 +880,18 @@ const submitForm = (): void => {
         }
         submitted.value = true
         uni.removeStorageSync('form')
-      } catch {
+      } catch (error) {
+        console.error('提交表单失败:', error)
         isLoading.value = false
+        uni.showToast({
+          title: '提交失败，请重试',
+          icon: 'error'
+        })
       }
     })
     .catch((error: any) => {
-      console.log(error)
+      console.error('表单验证失败:', error)
+      isLoading.value = false
     })
 }
 //获得inPut值
