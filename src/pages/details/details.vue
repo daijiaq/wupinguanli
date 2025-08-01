@@ -124,7 +124,7 @@
       <FormInput
         :type="'text'"
         :name="'状态'"
-        :maxLength="30"
+        :maxLength="32"
         :disabled="true"
         :placeHolder="'输入物品状态'"
         v-model:input="formStore.itemData.state"
