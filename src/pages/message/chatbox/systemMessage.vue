@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useMessageStore } from '@/stores/message'
+import { clearDots } from '@/network/apis/message'
 import { onLoad } from '@dcloudio/uni-app'
 import { formatDate } from '@/utils/util'
 import { computed } from 'vue'
@@ -17,6 +18,8 @@ const loadMore = async () => {
 
 onLoad(async () => {
   await fetchSystemMessage(0)
+  // 清除红点(进入页面就相当于已读)
+  await clearDots(0)
 })
 
 const typeText = computed(() => {
