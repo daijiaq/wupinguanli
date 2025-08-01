@@ -244,6 +244,58 @@ export const useSearchStore = defineStore('search', () => {
     currentSearchInputData.offset = data.current
   }
 
+  // 关联物品输入框搜索物品
+  async function searchDependceItemByInput(deleted: number, isRepagination?: boolean) {
+    // 关联物品搜索时，重置筛选
+    currentScreenData.screenData = {
+      type: 2,
+      dateType: -1,
+      highPrice: -1,
+      lowPrice: -1,
+      labelId: []
+    }
+    if (isRepagination) {
+      currentSearchInputData.offset = 0
+    }
+    const data = await searchByInput(
+      {
+        offset: currentSearchInputData.offset + 1
+      },
+      currentSearchInputData.inputData,
+      currentScreenData.screenData,
+      deleted
+    )
+    console.log(currentScreenData)
+
+    // 筛选第一页则替换整个列表，否则追加
+    if (currentSearchInputData.offset === 0) {
+      currentSearchList.value.itemList = data.records
+    } else {
+      currentSearchList.value.itemList.push(...data.records)
+    }
+
+    // 搜索后重置 currentSearchList 的 offset
+    currentSearchList.value.offset = 0
+
+    // 获取最后一页的数量
+    let lastPageNum = data.size
+    if (data.current === data.pages) {
+      lastPageNum = data.total % data.size
+    }
+    if (data.pages) {
+      setItemList(
+        currentSearchList.value.itemList,
+        currentSearchInputData.offset * data.size,
+        currentSearchInputData.offset * data.size + lastPageNum
+      )
+    }
+
+    // 获取总数更新 searchList
+    currentSearchList.value.total = data.total
+    // 更新当前页数
+    currentSearchInputData.offset = data.current
+  }
+
   // 批量删除
   async function batchDeleteSearch(checkedItemList: number[], type: number) {
     await batchDelete(type, checkedItemList)
@@ -381,6 +433,7 @@ export const useSearchStore = defineStore('search', () => {
     fetchScreenSearchList,
     fetchTagList,
     searchItemByInput,
+    searchDependceItemByInput,
     batchDeleteSearch,
     fetchDeletedItem,
     restoreDeletedItem,
