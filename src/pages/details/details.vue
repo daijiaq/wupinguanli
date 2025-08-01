@@ -112,6 +112,7 @@
       />
       <FormDate :can-click="false" v-model:date="date" />
       <FormInput
+        v-if="formStore.itemData.type !== 0"
         :type="'text'"
         :name="'链接'"
         :maxLength="100"
@@ -123,7 +124,7 @@
       <FormInput
         :type="'text'"
         :name="'状态'"
-        :maxLength="30"
+        :maxLength="32"
         :disabled="true"
         :placeHolder="'输入物品状态'"
         v-model:input="formStore.itemData.state"

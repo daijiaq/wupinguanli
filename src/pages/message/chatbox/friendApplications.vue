@@ -73,7 +73,7 @@ import type { FriendMsgDetail } from '@/types/message'
 
 import { storeToRefs } from 'pinia'
 import { useMessageStore } from '@/stores/message'
-import { chooseMessage, getFriend } from '@/network/apis/message'
+import { chooseMessage, getFriend, clearDots } from '@/network/apis/message'
 import { useFriendStore } from '@/stores/friend'
 const messageStore = useMessageStore()
 // const newMessageData = ref<MessageItem[]>([])
@@ -145,6 +145,8 @@ onLoad(async () => {
   currentMessageList.value.content = ''
   await messageStore.fetchNewMessageList(10)
   newMessageData.value = messageStore.currentMessageList.messageList
+  // 清除红点(进入页面就相当于已读)
+  await clearDots(2)
 })
 </script>
 <style scoped lang="scss">

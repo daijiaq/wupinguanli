@@ -92,11 +92,10 @@ export function getDots(): Promise<number[]> {
 }
 
 // 清空红点
-export function clearDots(noticeId: number[]): Promise<null> {
+export function clearDots(type: number): Promise<null> {
   return service({
-    url: `/notices/empty/dots`,
-    method: 'PUT',
-    data: noticeId
+    url: `/notices/empty/dots/${type}`,
+    method: 'PUT'
   })
 }
 

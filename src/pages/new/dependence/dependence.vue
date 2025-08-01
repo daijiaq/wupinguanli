@@ -35,7 +35,7 @@
 
 <script setup lang="ts">
 import { onShow, onPullDownRefresh, onPageScroll } from '@dcloudio/uni-app'
-import { ref } from 'vue'
+import { ref, provide } from 'vue'
 import { useSearchStore } from '@/stores/search'
 import { useFormStore } from '@/stores/form'
 import { storeToRefs } from 'pinia'
@@ -54,6 +54,10 @@ const isEmpty = ref(false)
 // 是否显示确认模态框
 const showModal = ref(false)
 
+const isSearching = ref(0)
+provide('isSearching', isSearching)
+const isDependence = ref(true)
+provide('isDependence', isDependence.value)
 // 判断搜索/筛选后是否为空
 const determineEmpty = () => {
   if (!currentSearchList.value.itemList.length) {

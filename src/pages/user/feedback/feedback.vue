@@ -40,7 +40,7 @@ function goToFunctionError() {
 
 function goToSuggestion() {
   uni.navigateTo({
-    url: '/pages/user/feedback/suggestion'
+    url: '/pages/user/feedback/functionError/FeedbackByType?type=5'
   })
 }
 function gotoRecord() {
