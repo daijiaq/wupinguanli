@@ -25,12 +25,14 @@ import { useSearchStore } from '@/stores/search'
 import { useFormStore } from '@/stores/form'
 import { onReachBottom } from '@dcloudio/uni-app'
 import { storeToRefs } from 'pinia'
-import { ref, computed, toRefs } from 'vue'
+import { ref, computed, toRefs, inject, Ref } from 'vue'
 import type { ItemList } from '@/types/search'
 
 const searchStore = useSearchStore()
 const { currentSearchList, currentScreenData, currentSearchInputData } = storeToRefs(searchStore)
-const { fetchNewSearchList, fetchScreenSearchList, searchItemByInput } = searchStore
+const { searchItemByInput } = searchStore
+const { fetchDependceItems, searchDependceItemByInput } = searchStore
+const isSearching = inject<Ref<number>>('isSearching')
 
 const formStore = useFormStore()
 
@@ -58,12 +60,12 @@ async function loadMoreItem() {
   isLoadingMore.value = true
 
   try {
-    if (currentScreenData.value.offset) {
-      await fetchScreenSearchList(0)
+    if (isSearching?.value === 1) {
+      await searchDependceItemByInput(0)
     } else if (currentSearchInputData.value.offset) {
       await searchItemByInput(0)
     } else {
-      await fetchNewSearchList(0)
+      await fetchDependceItems(0)
     }
   } catch {
     console.log('加载更多失败')

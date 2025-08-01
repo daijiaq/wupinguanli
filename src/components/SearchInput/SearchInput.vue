@@ -30,7 +30,7 @@ if (!isSearching) {
 }
 const searchStore = useSearchStore()
 const { currentSearchList, currentSearchInputData } = storeToRefs(searchStore)
-const { searchItemByInput, fetchHistoryItem } = searchStore
+const { searchItemByInput, fetchHistoryItem, searchDependceItemByInput } = searchStore
 
 const emits = defineEmits<{
   (e: 'onFocus'): void
@@ -40,6 +40,7 @@ const emits = defineEmits<{
 
 const isDeleted = inject<boolean>('isDetele', false)
 const isHistory = inject<boolean>('isHistory', false)
+const isDependence = inject<boolean>('isDependence', false)
 
 const inputBox = ref('')
 
@@ -52,12 +53,16 @@ const submitSearch = async () => {
     title: '搜索中'
   })
   // 发送请求获取新的数据
-  if (!isHistory) {
+  if (!isHistory && !isDependence) {
     currentSearchInputData.value.offset = 0
     currentSearchInputData.value.inputData.name = inputBox.value
     isDeleted ? await searchItemByInput(1) : await searchItemByInput(0)
 
     // 历史修改页的搜索
+  } else if (isDependence) {
+    currentSearchInputData.value.offset = 0
+    currentSearchInputData.value.inputData.name = inputBox.value
+    await searchDependceItemByInput(0)
   } else {
     // 重置列表状态
     currentSearchList.value.offset = 0
