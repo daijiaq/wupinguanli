@@ -58,6 +58,8 @@ const isSearching = ref(0)
 provide('isSearching', isSearching)
 const isDependence = ref(true)
 provide('isDependence', isDependence.value)
+const isFiltering = ref(0)
+provide('isFiltering', isFiltering)
 // 判断搜索/筛选后是否为空
 const determineEmpty = () => {
   if (!currentSearchList.value.itemList.length) {

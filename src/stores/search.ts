@@ -201,6 +201,48 @@ export const useSearchStore = defineStore('search', () => {
     currentScreenData.offset = data.current
   }
 
+  //关联物品的筛选
+  async function fetchDependceList(deleted: number) {
+    // 关联物品筛选时，重置筛选
+    currentScreenData.screenData.type = 2
+    const data = await searchByScreen(
+      {
+        offset: currentScreenData.offset + 1
+      },
+      currentSearchInputData.inputData,
+      currentScreenData.screenData,
+      deleted
+    )
+
+    // 筛选第一页则替换整个列表，否则追加
+    if (currentScreenData.offset === 0) {
+      currentSearchList.value.itemList = data.records
+    } else {
+      currentSearchList.value.itemList.push(...data.records)
+    }
+    // 筛选后重置 currentSearchList 的 offset
+    currentSearchList.value.offset = 0
+
+    // 获取最后一页的数量
+    let lastPageNum = data.size
+    if (data.current === data.pages) {
+      lastPageNum = data.total % data.size
+    }
+    if (data.pages) {
+      // 为新列表重新添加 isChecked 属性
+      setItemList(
+        currentSearchList.value.itemList,
+        currentScreenData.offset * data.size,
+        currentScreenData.offset * data.size + lastPageNum
+      )
+    }
+
+    // 获取总数更新 searchList
+    currentSearchList.value.total = data.total
+    // 更新当前页数
+    currentScreenData.offset = data.current
+  }
+
   // 输入框搜索物品
   async function searchItemByInput(deleted: number, isRepagination?: boolean) {
     if (isRepagination) {
@@ -431,6 +473,7 @@ export const useSearchStore = defineStore('search', () => {
     fetchNewSearchList,
     fetchDependceItems,
     fetchScreenSearchList,
+    fetchDependceList,
     fetchTagList,
     searchItemByInput,
     searchDependceItemByInput,

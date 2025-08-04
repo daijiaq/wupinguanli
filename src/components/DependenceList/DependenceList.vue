@@ -25,14 +25,12 @@ import { useSearchStore } from '@/stores/search'
 import { useFormStore } from '@/stores/form'
 import { onReachBottom } from '@dcloudio/uni-app'
 import { storeToRefs } from 'pinia'
-import { ref, computed, toRefs, inject, Ref } from 'vue'
+import { ref, computed, toRefs } from 'vue'
 import type { ItemList } from '@/types/search'
 
 const searchStore = useSearchStore()
 const { currentSearchList, currentScreenData, currentSearchInputData } = storeToRefs(searchStore)
-const { searchItemByInput } = searchStore
-const { fetchDependceItems, searchDependceItemByInput } = searchStore
-const isSearching = inject<Ref<number>>('isSearching')
+const { fetchScreenSearchList, searchItemByInput, fetchDependceItems } = searchStore
 
 const formStore = useFormStore()
 
@@ -48,24 +46,31 @@ const isLoadingMore = ref(false)
 
 // 是否无法加载更多了
 const loadMoreStatus = ref('nomore')
-const isNoMore = computed(
-  () =>
+const isNoMore = computed(() => {
+  console.log('itemList length:', currentSearchList.value.itemList.length)
+  console.log('limit:', currentSearchList.value.limit)
+  console.log('total:', currentSearchList.value.total)
+  return (
     currentSearchList.value.itemList.length < currentSearchList.value.limit ||
     (currentSearchList.value.itemList.length &&
       currentSearchList.value.itemList.length === currentSearchList.value.total)
-)
+  )
+})
 
 // 请求更多
 async function loadMoreItem() {
   isLoadingMore.value = true
 
   try {
-    if (isSearching?.value === 1) {
-      await searchDependceItemByInput(0)
+    if (currentScreenData.value.offset) {
+      await fetchScreenSearchList(0)
+      console.log(111)
     } else if (currentSearchInputData.value.offset) {
       await searchItemByInput(0)
+      console.log(222)
     } else {
       await fetchDependceItems(0)
+      console.log(333)
     }
   } catch {
     console.log('加载更多失败')

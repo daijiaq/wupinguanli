@@ -168,7 +168,7 @@ export default defineComponent({
 </script>
 
 <script setup lang="ts">
-import { ref, reactive, inject } from 'vue'
+import { ref, reactive, inject, Ref } from 'vue'
 import { useSearchStore } from '@/stores/search'
 import { onLoad } from '@dcloudio/uni-app'
 import { storeToRefs } from 'pinia'
@@ -176,7 +176,7 @@ import type { ShowControl } from '@/types/search'
 
 const searchStore = useSearchStore()
 const { currentTagList, currentScreenData } = storeToRefs(searchStore)
-const { fetchScreenSearchList, fetchTagList, fetchDependceItems } = searchStore
+const { fetchScreenSearchList, fetchTagList, fetchDependceItems, fetchDependceList } = searchStore
 const showPopup = ref(false)
 const priceForm = ref()
 const isSubmitting = ref(false)
@@ -185,6 +185,8 @@ const isSubmitting = ref(false)
 const isDeleted = inject<boolean>('isDetele', false)
 //是否关联物品页
 const isDependence = inject<boolean>('isDependence', false)
+//是否筛选
+const isFiltering = inject<Ref<number>>('isFiltering')
 
 const emits = defineEmits<{
   (e: 'screenEmpty'): void
@@ -232,7 +234,10 @@ const selectItem = (index: number) => {
 const isItemSelected = ref(false)
 const isSpaceSelected = ref(false)
 const sortByProperties = (index: number) => {
-  if (index) {
+  if (isDependence) {
+    isItemSelected.value = true
+    isSpaceSelected.value = false
+  } else if (index) {
     isSpaceSelected.value = !isSpaceSelected.value
     isItemSelected.value = false
   } else {
@@ -303,6 +308,7 @@ const openPopup = () => {
 
 const cancelScreen = () => {
   isSubmitting.value = false
+  if (isFiltering) isFiltering.value = 0
   closePopupEvent()
   resetAllScreen()
 }
@@ -335,6 +341,7 @@ const cancelScreen = () => {
 // }
 
 const submitScreen = async () => {
+  if (isFiltering) isFiltering.value = 1
   // 检查最低价是否大于最高价
   if (
     priceRange.lowPrice &&
@@ -365,7 +372,7 @@ const submitScreen = async () => {
 
     // 调用筛选接口（区分是否在回收站）
     if (isDependence) {
-      await fetchDependceItems(0)
+      await fetchDependceList(isDeleted ? 1 : 0)
     } else {
       await fetchScreenSearchList(isDeleted ? 1 : 0)
     }

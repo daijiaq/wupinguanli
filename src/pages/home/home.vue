@@ -249,22 +249,18 @@ async function confirmGesture(password: string) {
   } else {
     // isShareItem = false
     await getDetail(tempType, tempItemId, password)
-    // 密码验证成功后跳转到扫码物品页面
-    uni.navigateTo({
-      url: `/pages/home/scan/scanItem?type=${tempType}&itemId=${tempItemId}&userId=${tempUserId}&privacy=${tempPrivacy}&hide=${tempHide}&isShareItem=${isShareItem}&isOwner=${isOwner}`
-    })
+    // 密码验证成功后根据操作类型跳转
+    if (isEdit) {
+      uni.navigateTo({
+        url: `/pages/edit/edit`
+      })
+    } else {
+      uni.navigateTo({
+        url: `/pages/details/details?isShareItem=${isShareItem}&isOwner=${isOwner}`
+      })
+    }
+    isEdit = false
   }
-  // 注释掉其他跳转逻辑
-  // if (isEdit) {
-  //   uni.navigateTo({
-  //     url: `/pages/edit/edit`
-  //   })
-  // } else
-  //   uni.navigateTo({
-  //     url: `/pages/details/details?isShareItem=${isShareItem}&isOwner=${isOwner}`
-  //     // url: '/pages/details/details?isShareItem=false'
-  //   })
-  // isEdit = false
 }
 // 验证数字密码
 async function confirmNumber(password: string) {
@@ -280,25 +276,22 @@ async function confirmNumber(password: string) {
   } else {
     // isShareItem = false
     await getDetail(tempType, tempItemId, password)
-    // 密码验证成功后跳转到扫码物品页面
-    uni.navigateTo({
-      url: `/pages/home/scan/scanItem?type=${tempType}&itemId=${tempItemId}&userId=${tempUserId}&privacy=${tempPrivacy}&hide=${tempHide}&isShareItem=${isShareItem}&isOwner=${isOwner}`
-    })
+    // 密码验证成功后根据操作类型跳转
+    if (isEdit) {
+      uni.navigateTo({
+        url: `/pages/edit/edit`
+      })
+    } else {
+      uni.navigateTo({
+        url: `/pages/details/details?isShareItem=${isShareItem}&isOwner=${isOwner}`
+      })
+    }
+    isEdit = false
   }
-  // 注释掉其他跳转逻辑
-  // if (isEdit)
-  //   uni.navigateTo({
-  //     url: `/pages/edit/edit`
-  //   })
-  // else
-  //   uni.navigateTo({
-  //     url: `/pages/details/details?isShareItem=${isShareItem}&isOwner=${isOwner}`
-  //     // url: '/pages/details/details?isShareItem=false'
-  //   })
-  // isEdit = false
 }
 
 async function tryJumpPageDetail(id: number, type: number, privacy: number) {
+  isScan = false
   isEdit = false
   if (privacy) {
     // 检查是否是他人隐私物品
