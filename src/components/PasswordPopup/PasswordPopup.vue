@@ -224,6 +224,7 @@ const secondSetGesture = () => {
 const inputVerificationChange = (inputValues: string) => {
   if (inputValues.length === 4) {
     numberPassword.value = inputValues
+    console.log(111)
 
     if (props.isValidate) {
       // 1. 触发父组件验证密码
