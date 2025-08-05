@@ -25,6 +25,8 @@ export interface CompleteSearchList extends SearchList {
    * 多选物品的 id 数组
    */
   checkedItemList: number[]
+  effectiveSize: number
+  current: number
 }
 
 // 标签参数：
@@ -106,6 +108,7 @@ export interface ItemList {
    * 是否选中
    */
   isChecked?: boolean
+  userId?: number
 }
 
 // 每个路径对象

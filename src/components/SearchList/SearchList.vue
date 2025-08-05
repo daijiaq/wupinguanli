@@ -45,7 +45,7 @@
 <script setup lang="ts">
 import { useSearchStore } from '@/stores/search'
 import { useFormStore } from '@/stores/form'
-import { onReachBottom } from '@dcloudio/uni-app'
+import { onReachBottom, onShow } from '@dcloudio/uni-app'
 import { storeToRefs } from 'pinia'
 import { ref, computed, toRefs, inject, watch } from 'vue'
 import type { Ref } from 'vue'
@@ -138,33 +138,57 @@ const isLoadingMore = ref(false)
 
 // 是否无法加载更多了
 const loadMoreStatus = ref('nomore')
-const isNoMore = computed(
-  () =>
-    currentSearchList.value.itemList.length < currentSearchList.value.limit ||
-    (currentSearchList.value.itemList.length &&
-      currentSearchList.value.itemList.length === currentSearchList.value.total)
-)
+const isNoMore = computed(() => {
+  // 简化逻辑：只要还有更多页就继续加载
+  // 因为过滤是在前端进行的，后端分页参数仍然有效
+  const hasMorePages =
+    currentSearchList.value.offset <
+    Math.ceil(currentSearchList.value.total / currentSearchList.value.limit)
+  console.log(currentSearchList.value.total <= 10)
+
+  return (
+    !hasMorePages ||
+    currentSearchList.value.total <= 10 ||
+    currentSearchList.value.itemList.length === currentSearchList.value.effectiveSize
+  )
+})
 // isNoMore 改变时，改变列表加载状态
 watch(isNoMore, () => {
   if (isNoMore.value) {
-    loadMoreStatus.value = 'nomore'
+    ;(loadMoreStatus.value = 'nomore'), (currentSearchList.value.offset = 0)
   } else {
     loadMoreStatus.value = 'loading'
   }
 })
 // 触底加载更多
 onReachBottom(async () => {
-  console.log(isFiltering?.value)
-  console.log(isSearching?.value)
+  console.log('=== 触底加载更多 ===')
+  console.log('isFiltering:', isFiltering?.value)
+  console.log('isSearching:', isSearching?.value)
+  console.log('isNoMore:', isNoMore.value)
+  console.log('manualDisable:', manualDisable.value)
+  console.log('currentSearchList.offset:', currentSearchList.value.offset)
+  console.log('currentSearchList.total:', currentSearchList.value.total)
+  console.log('currentSearchList.limit:', currentSearchList.value.limit)
+  console.log('itemList.length:', currentSearchList.value.itemList.length)
+
   if (!isNoMore.value && !manualDisable.value) {
+    console.log('开始加载更多数据...')
     loadMoreStatus.value = 'loading'
     await loadMoreItem()
   } else {
+    console.log('无法加载更多，原因:', isNoMore.value ? '没有更多数据' : '手动禁用')
     loadMoreStatus.value = 'nomore'
   }
 })
 // 请求更多
 async function loadMoreItem() {
+  console.log('=== 开始请求更多数据 ===')
+  console.log('isHistory:', isHistory.value)
+  console.log('currentScreenData.offset:', currentScreenData.value.offset)
+  console.log('currentSearchInputData.offset:', currentSearchInputData.value.offset)
+  console.log('isDeleted:', isDeleted)
+
   isLoading.value = true
   isLoadingMore.value = true
   manualDisable.value = true
@@ -187,16 +211,23 @@ async function loadMoreItem() {
       }
     } else if (currentScreenData.value.offset) {
       // 普通页面的筛选
+      console.log('执行筛选加载')
       isDeleted ? await fetchScreenSearchList(1) : await fetchScreenSearchList(0)
     } else if (currentSearchInputData.value.offset) {
       // 普通页面的搜索
+      console.log('执行搜索加载')
       isDeleted ? await searchItemByInput(1) : await searchItemByInput(0)
     } else {
       // 普通页面的默认加载
+      console.log('执行默认加载')
       isDeleted ? await fetchNewSearchList(1) : await fetchNewSearchList(0)
     }
+    console.log('=== 请求完成 ===')
+    console.log('新的 offset:', currentSearchList.value.offset)
+    console.log('新的 itemList.length:', currentSearchList.value.itemList.length)
     manualDisable.value = false
-  } catch {
+  } catch (error) {
+    console.error('请求失败:', error)
     manualDisable.value = true
   } finally {
     isLoadingMore.value = false
