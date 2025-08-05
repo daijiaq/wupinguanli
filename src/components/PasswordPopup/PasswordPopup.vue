@@ -180,6 +180,9 @@ const secondSetGesture = () => {
       title: '两次密码不一致',
       icon: 'error'
     })
+    // 重置手势密码设置次数，让用户重新输入
+    setGestureTime.value = 0
+    gesturePassword.value = 0
   }
 }
 
@@ -216,6 +219,9 @@ const setNumberPassword = () => {
         title: '两次密码不一致',
         icon: 'error'
       })
+      // 重置数字密码设置次数，让用户重新输入
+      setNumberTime.value = 0
+      numberPassword.value = ''
     }
   }
 }
@@ -251,7 +257,9 @@ const close = () => {
   // 清除数字密码缓存
   uni.removeStorageSync('number')
   // 清空数字密码输入框的值
-  numberPasswordBox.value.cleanVal()
+  if (numberPasswordBox.value) {
+    numberPasswordBox.value.cleanVal()
+  }
   emits('close')
 }
 </script>
