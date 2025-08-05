@@ -83,7 +83,9 @@
               <u-input
                 v-model="priceRange.lowPrice"
                 placeholder="自定最低价"
-                @input="(val:any) => handlePriceInput('lowPrice', val)"
+                type="number"
+                @input="(val:any) => handlePriceInput(val, 'lowPrice')"
+                :maxlength="9"
                 custom-style="
                   width: 130px;
                   height: 30px;
@@ -97,7 +99,9 @@
               <u-input
                 v-model="priceRange.highPrice"
                 placeholder="自定最高价"
-                @input="(val:any) => handlePriceInput('highPrice', val)"
+                type="number"
+                @input="(val:any) => handlePriceInput(val, 'highPrice')"
+                :maxlength="9"
                 custom-style="
                   width: 130px;
                   height: 30px;
@@ -257,30 +261,27 @@ const priceRange = reactive({
   highPrice: ''
 })
 
-// 自定义输入校验函数
-const validatePriceInput = (value: string) => {
-  if (value === '') return true // 允许清空输入
-  // 匹配：整数部分最多9位，小数部分最多2位（可选）
-  const regex = /^\d{0,9}(\.\d{0,2})?$/
-  return regex.test(value)
+const handlePriceInput = (value: string, field: 'lowPrice' | 'highPrice') => {
+  // 1. 移除非数字字符
+  let filteredValue = value.replace(/[^0-9]/g, '')
+  // 2. 限制最大长度为9位
+  if (filteredValue.length > 9) {
+    filteredValue = filteredValue.slice(0, 9)
+  }
+  // 3. 更新绑定值
+  priceRange[field] = filteredValue
+  // 4. 校验最高价不能低于最低价
+  validatePriceRange()
 }
 
-// 监听输入并过滤非法字符
-const handlePriceInput = (key: 'lowPrice' | 'highPrice', value: string) => {
-  if (value === '') {
-    priceRange[key] = ''
-    return
-  }
-  // 移除非数字和小数点的字符
-  let filtered = value.replace(/[^\d.]/g, '')
-  // 确保最多一个小数点
-  const parts = filtered.split('.')
-  if (parts.length > 2) {
-    filtered = parts[0] + '.' + parts.slice(1).join('')
-  }
-  // 校验整数和小数位数
-  if (validatePriceInput(filtered)) {
-    priceRange[key] = filtered
+const validatePriceRange = () => {
+  const { lowPrice, highPrice } = priceRange
+  if (lowPrice && highPrice && parseInt(lowPrice) > parseInt(highPrice)) {
+    uni.showToast({
+      title: '最高价不能低于最低价',
+      icon: 'none'
+    })
+    priceRange.highPrice = ''
   }
 }
 
