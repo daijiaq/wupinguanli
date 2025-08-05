@@ -22,9 +22,11 @@ import { filterHistory } from '@/network/apis/history'
 export const useSearchStore = defineStore('search', () => {
   // 搜索页的主体列表
   const currentSearchList = ref<CompleteSearchList>({
+    current: 0,
     offset: 0,
     total: 0,
     limit: 10,
+    effectiveSize: 0,
     itemList: [],
     checkedItemList: []
   })
@@ -108,20 +110,36 @@ export const useSearchStore = defineStore('search', () => {
       },
       deleted
     )
+    if (data.current > data.pages) return
+
+    // 获取当前用户ID并过滤数据
+    const uuid = uni.getStorageSync('uuid')
+    const filteredRecords = data.records.filter((item: any) => item.userId === uuid)
+
     // 更新列表
-    currentSearchList.value.itemList.push(...data.records)
-    let lastPageNum = data.size
-    if (data.current === data.pages) {
-      lastPageNum = data.total % data.size
-    }
+    currentSearchList.value.itemList.push(...filteredRecords)
+
     // 给新增的元素加上 isChecked 属性
     setItemList(
       currentSearchList.value.itemList,
-      currentSearchList.value.offset * data.size,
-      currentSearchList.value.offset * data.size + lastPageNum
+      currentSearchList.value.itemList.length - filteredRecords.length,
+      currentSearchList.value.itemList.length
     )
+
     // 更新 searchList 的 total 和 offset
+    // 如果过滤后没有数据，可能需要调整分页逻辑
+    if (filteredRecords.length === 0 && data.records.length > 0) {
+      // 当前页没有当前用户的数据，尝试获取下一页
+      currentSearchList.value.offset = data.current
+      if (data.current < data.pages) {
+        await fetchNewSearchList(deleted)
+        return
+      }
+    }
+
     currentSearchList.value.total = data.total
+    currentSearchList.value.effectiveSize = data.effectiveSize || 0
+    // currentSearchList.value.current = data.current
     currentSearchList.value.offset = data.current
   }
 
@@ -136,20 +154,32 @@ export const useSearchStore = defineStore('search', () => {
       },
       deleted
     )
+    // 获取当前用户ID并过滤数据
+    const uuid = uni.getStorageSync('uuid')
+    const filteredRecords = data.records.filter((item: any) => item.userId === uuid)
+
     // 更新列表
-    currentSearchList.value.itemList.push(...data.records)
-    let lastPageNum = data.size
-    if (data.current === data.pages) {
-      lastPageNum = data.total % data.size
-    }
+    currentSearchList.value.itemList.push(...filteredRecords)
+
     // 给新增的元素加上 isChecked 属性
     setItemList(
       currentSearchList.value.itemList,
-      currentSearchList.value.offset * data.size,
-      currentSearchList.value.offset * data.size + lastPageNum
+      currentSearchList.value.itemList.length - filteredRecords.length,
+      currentSearchList.value.itemList.length
     )
     // 更新 searchList 的 total 和 offset
+    // 如果过滤后没有数据，可能需要调整分页逻辑
+    if (filteredRecords.length === 0 && data.records.length > 0) {
+      // 当前页没有当前用户的数据，尝试获取下一页
+      currentSearchList.value.offset = data.current
+      if (data.current < data.pages) {
+        await fetchDependceItems(deleted)
+        return
+      }
+    }
+
     currentSearchList.value.total = data.total
+    currentSearchList.value.effectiveSize = data.effectiveSize || 0
     currentSearchList.value.offset = data.current
   }
   // 获取筛选中的标签列表
@@ -172,31 +202,31 @@ export const useSearchStore = defineStore('search', () => {
       deleted
     )
 
+    // 获取当前用户ID并过滤数据
+    const uuid = uni.getStorageSync('uuid')
+    const filteredRecords = data.records.filter((item: any) => item.userId === uuid)
+
     // 筛选第一页则替换整个列表，否则追加
     if (currentScreenData.offset === 0) {
-      currentSearchList.value.itemList = data.records
+      currentSearchList.value.itemList = filteredRecords
     } else {
-      currentSearchList.value.itemList.push(...data.records)
+      currentSearchList.value.itemList.push(...filteredRecords)
     }
     // 筛选后重置 currentSearchList 的 offset
     currentSearchList.value.offset = 0
 
-    // 获取最后一页的数量
-    let lastPageNum = data.size
-    if (data.current === data.pages) {
-      lastPageNum = data.total % data.size
-    }
     if (data.pages) {
       // 为新列表重新添加 isChecked 属性
       setItemList(
         currentSearchList.value.itemList,
-        currentScreenData.offset * data.size,
-        currentScreenData.offset * data.size + lastPageNum
+        currentSearchList.value.itemList.length - filteredRecords.length,
+        currentSearchList.value.itemList.length
       )
     }
 
     // 获取总数更新 searchList
     currentSearchList.value.total = data.total
+    currentSearchList.value.effectiveSize = data.effectiveSize || 0
     // 更新当前页数
     currentScreenData.offset = data.current
   }
@@ -214,31 +244,31 @@ export const useSearchStore = defineStore('search', () => {
       deleted
     )
 
+    // 获取当前用户ID并过滤数据
+    const uuid = uni.getStorageSync('uuid')
+    const filteredRecords = data.records.filter((item: any) => item.userId === uuid)
+
     // 筛选第一页则替换整个列表，否则追加
     if (currentScreenData.offset === 0) {
-      currentSearchList.value.itemList = data.records
+      currentSearchList.value.itemList = filteredRecords
     } else {
-      currentSearchList.value.itemList.push(...data.records)
+      currentSearchList.value.itemList.push(...filteredRecords)
     }
     // 筛选后重置 currentSearchList 的 offset
     currentSearchList.value.offset = 0
 
-    // 获取最后一页的数量
-    let lastPageNum = data.size
-    if (data.current === data.pages) {
-      lastPageNum = data.total % data.size
-    }
     if (data.pages) {
       // 为新列表重新添加 isChecked 属性
       setItemList(
         currentSearchList.value.itemList,
-        currentScreenData.offset * data.size,
-        currentScreenData.offset * data.size + lastPageNum
+        currentSearchList.value.itemList.length - filteredRecords.length,
+        currentSearchList.value.itemList.length
       )
     }
 
     // 获取总数更新 searchList
     currentSearchList.value.total = data.total
+    currentSearchList.value.effectiveSize = data.effectiveSize || 0
     // 更新当前页数
     currentScreenData.offset = data.current
   }
@@ -257,31 +287,31 @@ export const useSearchStore = defineStore('search', () => {
       deleted
     )
 
+    // 获取当前用户ID并过滤数据
+    const uuid = uni.getStorageSync('uuid')
+    const filteredRecords = data.records.filter((item: any) => item.userId === uuid)
+
     // 筛选第一页则替换整个列表，否则追加
     if (currentSearchInputData.offset === 0) {
-      currentSearchList.value.itemList = data.records
+      currentSearchList.value.itemList = filteredRecords
     } else {
-      currentSearchList.value.itemList.push(...data.records)
+      currentSearchList.value.itemList.push(...filteredRecords)
     }
 
     // 搜索后重置 currentSearchList 的 offset
     currentSearchList.value.offset = 0
 
-    // 获取最后一页的数量
-    let lastPageNum = data.size
-    if (data.current === data.pages) {
-      lastPageNum = data.total % data.size
-    }
     if (data.pages) {
       setItemList(
         currentSearchList.value.itemList,
-        currentSearchInputData.offset * data.size,
-        currentSearchInputData.offset * data.size + lastPageNum
+        currentSearchList.value.itemList.length - filteredRecords.length,
+        currentSearchList.value.itemList.length
       )
     }
 
     // 获取总数更新 searchList
     currentSearchList.value.total = data.total
+    currentSearchList.value.effectiveSize = data.effectiveSize || 0
     // 更新当前页数
     currentSearchInputData.offset = data.current
   }
@@ -309,31 +339,31 @@ export const useSearchStore = defineStore('search', () => {
     )
     console.log(currentScreenData)
 
+    // 获取当前用户ID并过滤数据
+    const uuid = uni.getStorageSync('uuid')
+    const filteredRecords = data.records.filter((item: any) => String(item.userId) === uuid)
+
     // 筛选第一页则替换整个列表，否则追加
     if (currentSearchInputData.offset === 0) {
-      currentSearchList.value.itemList = data.records
+      currentSearchList.value.itemList = filteredRecords
     } else {
-      currentSearchList.value.itemList.push(...data.records)
+      currentSearchList.value.itemList.push(...filteredRecords)
     }
 
     // 搜索后重置 currentSearchList 的 offset
     currentSearchList.value.offset = 0
 
-    // 获取最后一页的数量
-    let lastPageNum = data.size
-    if (data.current === data.pages) {
-      lastPageNum = data.total % data.size
-    }
     if (data.pages) {
       setItemList(
         currentSearchList.value.itemList,
-        currentSearchInputData.offset * data.size,
-        currentSearchInputData.offset * data.size + lastPageNum
+        currentSearchList.value.itemList.length - filteredRecords.length,
+        currentSearchList.value.itemList.length
       )
     }
 
     // 获取总数更新 searchList
     currentSearchList.value.total = data.total
+    currentSearchList.value.effectiveSize = data.effectiveSize || 0
     // 更新当前页数
     currentSearchInputData.offset = data.current
   }
@@ -358,18 +388,21 @@ export const useSearchStore = defineStore('search', () => {
       },
       1
     )
-    currentSearchList.value.itemList.push(...data.records)
-    let lastPageNum = data.size
-    if (data.current === data.pages) {
-      lastPageNum = data.total % data.size
-    }
+
+    // 获取当前用户ID并过滤数据
+    const uuid = uni.getStorageSync('uuid')
+    const filteredRecords = data.records.filter((item: any) => String(item.userId) === uuid)
+
+    currentSearchList.value.itemList.push(...filteredRecords)
+
     setItemList(
       currentSearchList.value.itemList,
-      currentSearchList.value.offset * data.size,
-      currentSearchList.value.offset * data.size + lastPageNum
+      currentSearchList.value.itemList.length - filteredRecords.length,
+      currentSearchList.value.itemList.length
     )
     console.log(currentSearchList.value.itemList)
     currentSearchList.value.total = data.total
+    currentSearchList.value.effectiveSize = data.effectiveSize || 0
     currentSearchList.value.offset = data.current
   }
 
@@ -388,6 +421,7 @@ export const useSearchStore = defineStore('search', () => {
       },
       name
     )
+    // 历史记录API本身就已经是用户相关的，不需要额外的用户ID过滤
     currentSearchList.value.itemList.push(...data.records)
     let lastPageNum = data.size
     if (data.current === data.pages) {
@@ -402,6 +436,7 @@ export const useSearchStore = defineStore('search', () => {
       )
     }
     currentSearchList.value.total = data.total
+    currentSearchList.value.effectiveSize = data.effectiveSize || 0
     currentSearchList.value.offset = data.current
   }
 

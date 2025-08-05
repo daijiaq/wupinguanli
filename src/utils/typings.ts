@@ -19,6 +19,7 @@ export interface Pages<T> {
    * 列表数组
    */
   records: T[]
+  effectiveSize?: number
 }
 
 export interface FullUserInfo {
