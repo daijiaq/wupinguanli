@@ -406,14 +406,19 @@ export const useSearchStore = defineStore('search', () => {
   }
 
   // 筛选物品的修改记录
-  async function fetchScreenHistoryList(filterParams: any) {
+  async function fetchScreenHistoryList(filterParams: any, isRefresh = false) {
     console.log('添加前的页数', currentScreenData.offset)
     console.log(filterParams)
-    currentScreenData.offset = currentScreenData.offset + 1
+    // 如果是下拉刷新操作，重置分页
+    if (isRefresh) {
+      currentScreenData.offset = 0
+    } else {
+      currentScreenData.offset = currentScreenData.offset + 1
+    }
     console.log('添加前:', [...currentSearchList.value.itemList])
     const data = await filterHistory(
       {
-        offset: currentScreenData.offset + 1
+        offset: isRefresh ? 1 : currentScreenData.offset + 1
       },
       filterParams
     )
@@ -440,8 +445,8 @@ export const useSearchStore = defineStore('search', () => {
     // currentSearchList.value.itemList.push(...NewDataList)
     // NewDataList = []
     console.log(currentScreenData.offset)
-    // 筛选第一页则替换整个列表， 否则追加
-    if (currentScreenData.offset === 0) {
+    // 筛选第一页或刷新操作则替换整个列表， 否则追加
+    if (currentScreenData.offset === 0 || isRefresh) {
       currentSearchList.value.itemList = NewDataList
     } else {
       currentSearchList.value.itemList.push(...NewDataList)

@@ -56,7 +56,7 @@ const handleInputUpdate = (value: string) => {
 
 const searchStore = useSearchStore()
 const { currentSearchList } = storeToRefs(searchStore)
-const { fetchHistoryItem } = searchStore
+const { fetchHistoryItem, fetchScreenHistoryList } = searchStore
 
 // 表示当前为历史记录页
 const isHistory = ref(true)
@@ -94,8 +94,23 @@ async function loadHistoryList() {
   isLoading.value = true
 
   try {
-    await fetchHistoryItem('')
-    console.log(111)
+    // 检查是否有筛选条件
+    const hasFilterParams =
+      filterParams.value &&
+      (filterParams.value.types?.length > 0 ||
+        filterParams.value.startDate ||
+        filterParams.value.endDate ||
+        filterParams.value.name)
+    if (hasFilterParams) {
+      // 如果有筛选条件，使用筛选接口
+      await fetchScreenHistoryList(filterParams.value, true) // 传递 isRefresh = true
+    } else if (searchInputValue.value && searchInputValue.value.trim() !== '') {
+      // 如果有搜索关键词，使用搜索接口
+      await fetchHistoryItem(searchInputValue.value)
+    } else {
+      // 默认加载所有数据
+      await fetchHistoryItem('')
+    }
   } catch {
     manualDisable.value = true
   } finally {
@@ -121,6 +136,7 @@ onPageScroll((e) => {
 })
 
 onShow(() => {
+  // 页面显示时重新加载数据，保持当前的筛选状态
   loadHistoryList()
   console.log('currentSearchList.value.itemList', currentSearchList.value.itemList)
 })
