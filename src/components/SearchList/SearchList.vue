@@ -142,9 +142,16 @@ const isNoMore = computed(() => {
   // 简化逻辑：只要还有更多页就继续加载
   // 因为过滤是在前端进行的，后端分页参数仍然有效
   const hasMorePages =
-    currentSearchList.value.offset <
+    currentSearchList.value.offset <=
     Math.ceil(currentSearchList.value.total / currentSearchList.value.limit)
   console.log(currentSearchList.value.total <= 10)
+  console.log(
+    '111',
+    Math.ceil(currentSearchList.value.total / currentSearchList.value.limit),
+    currentSearchList.value.offset,
+    currentSearchList.value.offset <=
+      Math.ceil(currentSearchList.value.total / currentSearchList.value.limit)
+  )
 
   return (
     !hasMorePages ||
@@ -155,7 +162,8 @@ const isNoMore = computed(() => {
 // isNoMore 改变时，改变列表加载状态
 watch(isNoMore, () => {
   if (isNoMore.value) {
-    ;(loadMoreStatus.value = 'nomore'), (currentSearchList.value.offset = 0)
+    loadMoreStatus.value = 'nomore'
+    // , (currentSearchList.value.offset = 0)
   } else {
     loadMoreStatus.value = 'loading'
   }
