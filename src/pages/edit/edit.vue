@@ -991,21 +991,24 @@ const submitForm = (): void => {
         }))
         if (formStore.tempItemData.type) {
           const path = []
-          console.log('图片', pathFloor.value, spacesBox.value)
-          if (pathFloor.value >= spacesBox.value.length) {
-            pathFloor.value = spacesBox.value.length - 1
-            console.log('图片修改后', pathFloor.value, spacesBox.value, pathFloor.value - 1)
-          }
-          for (let i = 0; i < pathFloor.value; i++) {
-            path.push({
-              id: spacesBox.value[i].id,
-              name: spacesBox.value[i].name
-            })
+          // 过滤掉空的路径条目，只保留有效的路径
+          for (let i = 0; i < spacesBox.value.length; i++) {
+            if (
+              spacesBox.value[i] &&
+              spacesBox.value[i].id !== 0 &&
+              spacesBox.value[i].name !== ''
+            ) {
+              path.push({
+                id: spacesBox.value[i].id,
+                name: spacesBox.value[i].name
+              })
+            }
           }
           finalpath.value = JSON.parse(JSON.stringify(path))
-          console.log('1', path)
-          console.log('2', finalpath)
-          console.log('fatherName', spacesBox.value[pathFloor.value - 1].name)
+          // 计算 fatherName：使用 spacesBox 去除所有 id 为 0 的项后取数组最后一位的 name
+          const filteredSpaces = spacesBox.value.filter((space) => space.id !== 0)
+          const fatherName =
+            filteredSpaces.length > 0 ? filteredSpaces[filteredSpaces.length - 1].name : ''
           formStore.tempItemData.hide = localPrivacyRoom.value ? 1 : 0
           const tempForm = <ItemForm>{
             privacy: privacy.value ? 1 : 0,
@@ -1018,7 +1021,7 @@ const submitForm = (): void => {
             date: currentTime(date.value),
             path: path,
             labels: formStore.tempItemData.labels,
-            fatherName: spacesBox.value[pathFloor.value - 1].name,
+            fatherName: fatherName,
             url: formStore.tempItemData.url,
             images: images,
             figures: figures,
