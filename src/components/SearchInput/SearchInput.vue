@@ -41,8 +41,22 @@ const emits = defineEmits<{
 const isDeleted = inject<boolean>('isDetele', false)
 const isHistory = inject<boolean>('isHistory', false)
 const isDependence = inject<boolean>('isDependence', false)
+const isFiltering = inject<Ref<number>>('isFiltering')
+if (!isFiltering) {
+  throw new Error('isFiltering is not provided')
+}
 
 const inputBox = ref('')
+
+// 监听搜索状态变化，保持输入框内容
+watch(
+  () => currentSearchInputData.value.inputData.name,
+  (newValue) => {
+    // 直接更新输入框内容，不管是否为空
+    inputBox.value = newValue || ''
+  },
+  { immediate: true }
+)
 
 const onFocus = () => {
   emits('onFocus')
@@ -56,12 +70,20 @@ const submitSearch = async () => {
   if (!isHistory && !isDependence) {
     currentSearchInputData.value.offset = 0
     currentSearchInputData.value.inputData.name = inputBox.value
-    isDeleted ? await searchItemByInput(1) : await searchItemByInput(0)
+    isSearching.value = 1 // 设置搜索状态
+    // 重置筛选状态
+    if (isFiltering) isFiltering.value = 0
+    isDeleted
+      ? await searchItemByInput(1, false, false, true)
+      : await searchItemByInput(0, false, false, true)
 
     // 历史修改页的搜索
   } else if (isDependence) {
     currentSearchInputData.value.offset = 0
     currentSearchInputData.value.inputData.name = inputBox.value
+    isSearching.value = 1 // 设置搜索状态
+    // 重置筛选状态
+    if (isFiltering) isFiltering.value = 0
     await searchDependceItemByInput(0)
   } else {
     // 重置列表状态
@@ -70,6 +92,8 @@ const submitSearch = async () => {
     currentSearchList.value.total = 0
     searchStore.currentScreenData.offset = 0
     isSearching.value = 1
+    // 重置筛选状态
+    if (isFiltering) isFiltering.value = 0
     await fetchHistoryItem(inputBox.value)
     emits('updateInput', inputBox.value)
   }
@@ -81,10 +105,15 @@ const submitSearch = async () => {
   emits('searchEmpty')
 }
 
+// 监听输入框值变化，同步到store
 watch(
   () => inputBox.value,
-  () => {
-    currentSearchInputData.value.inputData.name = inputBox.value
+  (newValue) => {
+    currentSearchInputData.value.inputData.name = newValue
+    // 如果输入框为空，重置搜索状态
+    if (!newValue && isSearching) {
+      isSearching.value = 0
+    }
   }
 )
 </script>

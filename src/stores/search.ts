@@ -192,7 +192,12 @@ export const useSearchStore = defineStore('search', () => {
   }
 
   // 筛选物品
-  async function fetchScreenSearchList(deleted: number) {
+  async function fetchScreenSearchList(deleted: number, isRefresh = false) {
+    // 如果是下拉刷新操作，重置分页
+    if (isRefresh) {
+      currentScreenData.offset = 0
+    }
+
     const data = await searchByScreen(
       {
         offset: currentScreenData.offset + 1
@@ -207,7 +212,7 @@ export const useSearchStore = defineStore('search', () => {
     const filteredRecords = data.records.filter((item: any) => item.userId === uuid)
 
     // 筛选第一页则替换整个列表，否则追加
-    if (currentScreenData.offset === 0) {
+    if (currentScreenData.offset === 0 || isRefresh) {
       currentSearchList.value.itemList = filteredRecords
     } else {
       currentSearchList.value.itemList.push(...filteredRecords)
@@ -274,10 +279,27 @@ export const useSearchStore = defineStore('search', () => {
   }
 
   // 输入框搜索物品
-  async function searchItemByInput(deleted: number, isRepagination?: boolean) {
-    if (isRepagination) {
+  async function searchItemByInput(
+    deleted: number,
+    isRepagination?: boolean,
+    isRefresh = false,
+    clearFilter = true
+  ) {
+    if (isRepagination || isRefresh) {
       currentSearchInputData.offset = 0
     }
+
+    // 搜索时清空筛选条件，确保从全部数据开始搜索
+    if (clearFilter) {
+      currentScreenData.screenData = {
+        type: -1,
+        lowPrice: -1,
+        highPrice: -1,
+        dateType: -1,
+        labelId: []
+      }
+    }
+
     const data = await searchByInput(
       {
         offset: currentSearchInputData.offset + 1
@@ -292,7 +314,7 @@ export const useSearchStore = defineStore('search', () => {
     const filteredRecords = data.records.filter((item: any) => item.userId === uuid)
 
     // 筛选第一页则替换整个列表，否则追加
-    if (currentSearchInputData.offset === 0) {
+    if (currentSearchInputData.offset === 0 || isRefresh) {
       currentSearchList.value.itemList = filteredRecords
     } else {
       currentSearchList.value.itemList.push(...filteredRecords)
@@ -400,7 +422,6 @@ export const useSearchStore = defineStore('search', () => {
       currentSearchList.value.itemList.length - filteredRecords.length,
       currentSearchList.value.itemList.length
     )
-    console.log(currentSearchList.value.itemList)
     currentSearchList.value.total = data.total
     currentSearchList.value.effectiveSize = data.effectiveSize || 0
     currentSearchList.value.offset = data.current

@@ -75,7 +75,7 @@ async function loadDeletedList(isRepagination?: boolean) {
   isLoading.value = true
 
   try {
-    await searchItemByInput(1, isRepagination)
+    await searchItemByInput(1, isRepagination, false, true)
   } catch {
     manualDisable.value = true
   } finally {
