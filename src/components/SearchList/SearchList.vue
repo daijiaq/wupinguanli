@@ -185,15 +185,20 @@ async function loadMoreItem() {
         // 调用普通历史记录接口
         await fetchHistoryItem('')
       }
-    } else if (currentScreenData.value.offset) {
-      // 普通页面的筛选
-      isDeleted ? await fetchScreenSearchList(1) : await fetchScreenSearchList(0)
-    } else if (currentSearchInputData.value.offset) {
-      // 普通页面的搜索
-      isDeleted ? await searchItemByInput(1) : await searchItemByInput(0)
     } else {
-      // 普通页面的默认加载
-      isDeleted ? await fetchNewSearchList(1) : await fetchNewSearchList(0)
+      // 普通页面，根据当前状态决定调用哪个接口
+      if (isFiltering?.value === 1) {
+        // 筛选状态
+        isDeleted ? await fetchScreenSearchList(1) : await fetchScreenSearchList(0)
+      } else if (isSearching?.value === 1) {
+        // 搜索状态
+        isDeleted
+          ? await searchItemByInput(1, false, false, true)
+          : await searchItemByInput(0, false, false, true)
+      } else {
+        // 默认状态
+        isDeleted ? await fetchNewSearchList(1) : await fetchNewSearchList(0)
+      }
     }
     manualDisable.value = false
   } catch {

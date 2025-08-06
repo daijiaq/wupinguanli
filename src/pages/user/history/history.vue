@@ -94,18 +94,27 @@ async function loadHistoryList() {
   isLoading.value = true
 
   try {
-    // 检查是否有筛选条件
-    const hasFilterParams =
-      filterParams.value &&
-      (filterParams.value.types?.length > 0 ||
-        filterParams.value.startDate ||
-        filterParams.value.endDate ||
-        filterParams.value.name)
-    if (hasFilterParams) {
-      // 如果有筛选条件，使用筛选接口
-      await fetchScreenHistoryList(filterParams.value, true) // 传递 isRefresh = true
-    } else if (searchInputValue.value && searchInputValue.value.trim() !== '') {
-      // 如果有搜索关键词，使用搜索接口
+    // 根据最后执行的操作来决定调用哪个接口
+    // 如果最后执行的是筛选，则使用筛选接口
+    if (isFiltering.value === 1 && filterParams.value) {
+      const hasFilterParams =
+        filterParams.value &&
+        (filterParams.value.types?.length > 0 ||
+          filterParams.value.startDate ||
+          filterParams.value.endDate ||
+          filterParams.value.name)
+      if (hasFilterParams) {
+        await fetchScreenHistoryList(filterParams.value, true) // 传递 isRefresh = true
+      } else {
+        // 如果没有有效的筛选参数，加载默认数据
+        await fetchHistoryItem('')
+      }
+    } else if (
+      isSearching.value === 1 &&
+      searchInputValue.value &&
+      searchInputValue.value.trim() !== ''
+    ) {
+      // 如果最后执行的是搜索，则使用搜索接口
       await fetchHistoryItem(searchInputValue.value)
     } else {
       // 默认加载所有数据

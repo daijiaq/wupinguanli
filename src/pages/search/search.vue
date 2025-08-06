@@ -3,8 +3,12 @@
     <u-navbar title="搜索" autoBack titleStyle="font-weight:bold" :bgColor="navBarColor"></u-navbar>
 
     <view style="display: flex">
-      <SearchInput @onFocus="onFocus" @searchEmpty="determineEmpty" />
-      <SearchScreen @screenEmpty="determineEmpty" />
+      <SearchInput
+        @onFocus="onFocus"
+        @searchEmpty="determineEmpty"
+        @updateInput="handleInputUpdate"
+      />
+      <SearchScreen @screenEmpty="determineEmpty" @filterParams="handleFilterParams" />
     </view>
 
     <view class="search__total">
@@ -42,8 +46,23 @@ const isEmpty = ref(false)
 // navBar 颜色
 const navBarColor = ref('transparent')
 
+// 新增：筛选/搜索相关状态
+const isFiltering = ref(0)
+provide('isFiltering', isFiltering)
 const isSearching = ref(0)
 provide('isSearching', isSearching)
+
+// 搜索输入回调
+const handleInputUpdate = (value: string) => {
+  isSearching.value = 1
+  isFiltering.value = 0
+}
+// 筛选参数回调
+const handleFilterParams = (params: any) => {
+  isFiltering.value = 1
+  isSearching.value = 0
+}
+
 // 判断搜索/筛选后是否为空
 const determineEmpty = () => {
   if (!currentSearchList.value.itemList.length) {
@@ -65,6 +84,10 @@ async function loadSearchList() {
   currentSearchList.value.itemList.length = 0
   currentSearchList.value.offset = 0
   isLoading.value = true
+
+  // 重置筛选和搜索状态
+  isFiltering.value = 0
+  isSearching.value = 0
 
   try {
     await fetchNewSearchList(0)
@@ -88,8 +111,30 @@ const getCapsule = () => {
 
 // 下拉刷新
 onPullDownRefresh(async () => {
-  await loadSearchList()
-  uni.stopPullDownRefresh()
+  manualDisable.value = false
+  currentSearchList.value.itemList.length = 0
+  currentSearchList.value.offset = 0
+  isLoading.value = true
+
+  try {
+    if (isFiltering.value === 1) {
+      // 重置筛选的偏移量，保持筛选条件
+      searchStore.currentScreenData.offset = 0
+      await searchStore.fetchScreenSearchList(0, true)
+    } else if (isSearching.value === 1) {
+      // 重置搜索的偏移量，保持搜索条件
+      searchStore.currentSearchInputData.offset = 0
+      await searchStore.searchItemByInput(0, false, true, true)
+    } else {
+      await fetchNewSearchList(0)
+    }
+  } catch {
+    manualDisable.value = true
+  } finally {
+    isLoading.value = false
+    currentSearchList.value.itemList.length ? (isEmpty.value = false) : (isEmpty.value = true)
+    uni.stopPullDownRefresh()
+  }
 })
 
 // 监听滚动
@@ -103,7 +148,25 @@ onPageScroll((e) => {
 
 onShow(() => {
   getCapsule()
-  loadSearchList()
+  // 如果当前有筛选或搜索状态，保持状态；否则加载默认列表
+  if (isFiltering.value === 1) {
+    // 恢复筛选状态
+    searchStore.fetchScreenSearchList(0)
+  } else if (isSearching.value === 1) {
+    // 恢复搜索状态，确保搜索内容已设置
+    const searchName = searchStore.currentSearchInputData.inputData.name
+    if (searchName) {
+      searchStore.currentSearchInputData.offset = 0
+      searchStore.searchItemByInput(0, false, true, true)
+    } else {
+      // 如果没有搜索内容，重置为默认状态
+      isSearching.value = 0
+      loadSearchList()
+    }
+  } else {
+    // 加载默认列表
+    loadSearchList()
+  }
 })
 </script>
 

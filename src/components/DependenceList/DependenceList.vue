@@ -66,7 +66,7 @@ async function loadMoreItem() {
       await fetchScreenSearchList(0)
       console.log(111)
     } else if (currentSearchInputData.value.offset) {
-      await searchItemByInput(0)
+      await searchItemByInput(0, false, false, true)
       console.log(222)
     } else {
       await fetchDependceItems(0)
