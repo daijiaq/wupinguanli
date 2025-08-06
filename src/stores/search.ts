@@ -462,7 +462,11 @@ export const useSearchStore = defineStore('search', () => {
   }
 
   // 筛选物品的修改记录
-  async function fetchScreenHistoryList(filterParams: any) {
+  async function fetchScreenHistoryList(filterParams: any, isRefresh = false) {
+    // 如果是下拉刷新操作，重置分页
+    if (isRefresh) {
+      currentScreenData.offset = 0
+    }
     console.log('添加前的页数', currentScreenData.offset)
     console.log(filterParams)
     currentScreenData.offset = currentScreenData.offset + 1
