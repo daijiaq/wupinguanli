@@ -145,7 +145,6 @@ onPageScroll((e) => {
 })
 
 onShow(() => {
-  // 页面显示时重新加载数据，保持当前的筛选状态
   loadHistoryList()
   console.log('currentSearchList.value.itemList', currentSearchList.value.itemList)
 })

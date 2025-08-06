@@ -180,62 +180,80 @@ const secondSetGesture = () => {
       title: '两次密码不一致',
       icon: 'error'
     })
-    // 重置手势密码设置次数，让用户重新输入
-    setGestureTime.value = 0
-    gesturePassword.value = 0
   }
 }
 
 // 数字密码
 // 验证数字密码
-const validateNumberPassword = () => {
-  emits('confirmNumber', numberPassword.value)
-}
+// const validateNumberPassword = () => {
+//   emits('confirmNumber', numberPassword.value)
+// }
 
 // 设置数字密码
-const setNumberPassword = () => {
-  if (numberPasswordBox.value.getValue().length !== 4) {
-    uni.showToast({
-      title: '请输入四位数字密码',
-      icon: 'error'
-    })
-    return
-  }
-  if (!setNumberTime.value) {
-    uni.setStorageSync('number', numberPassword.value)
-    numberPassword.value = ''
-    setNumberTime.value = 1
-  } else {
-    const isPass = uni.getStorageSync('number')
-    if (numberPassword.value === isPass) {
-      uni.showToast({
-        title: '设置成功',
-        icon: 'success'
-      })
-      emits('confirmNumber', numberPassword.value)
-      close()
-    } else {
-      uni.showToast({
-        title: '两次密码不一致',
-        icon: 'error'
-      })
-      // 重置数字密码设置次数，让用户重新输入
-      setNumberTime.value = 0
-      numberPassword.value = ''
-    }
-  }
-}
+// const setNumberPassword = () => {
+//   if (numberPasswordBox.value.getValue().length !== 4) {
+//     uni.showToast({
+//       title: '请输入四位数字密码',
+//       icon: 'error'
+//     })
+//     return
+//   }
+//   if (!setNumberTime.value) {
+//     uni.setStorageSync('number', numberPassword.value)
+//     numberPassword.value = ''
+//     setNumberTime.value = 1
+//   } else {
+//     const isPass = uni.getStorageSync('number')
+//     if (numberPassword.value === isPass) {
+//       uni.showToast({
+//         title: '设置成功',
+//         icon: 'success'
+//       })
+//       emits('confirmNumber', numberPassword.value)
+//       close()
+//     } else {
+//       uni.showToast({
+//         title: '两次密码不一致',
+//         icon: 'error'
+//       })
+//     }
+//   }
+// }
 
 // 数字密码输入框改变时执行
 const inputVerificationChange = (inputValues: string) => {
   if (inputValues.length === 4) {
     numberPassword.value = inputValues
-    props.isValidate ? validateNumberPassword() : setNumberPassword()
-    numberPasswordBox.value.cleanVal()
-    // 清空后重新设置焦点，确保下次输入时键盘能正常弹出
-    setTimeout(() => {
-      isFocus.value = true
-    }, 200)
+    console.log(111)
+
+    if (props.isValidate) {
+      // 1. 触发父组件验证密码
+      emits('confirmNumber', numberPassword.value)
+      // 2. 清空输入框 + 隐藏键盘（但不关闭弹窗）
+      numberPasswordBox.value.cleanVal()
+      isFocus.value = false // 关键点：让键盘消失
+    } else {
+      // 设置密码逻辑（保持不变）
+      if (!setNumberTime.value) {
+        uni.setStorageSync('number', numberPassword.value)
+        numberPassword.value = ''
+        setNumberTime.value = 1
+        numberPasswordBox.value.cleanVal()
+        isFocus.value = true
+      } else {
+        const isPass = uni.getStorageSync('number')
+        if (numberPassword.value === isPass) {
+          uni.showToast({ title: '设置成功', icon: 'success' })
+          emits('confirmNumber', numberPassword.value)
+          close()
+        } else {
+          uni.showToast({ title: '两次密码不一致', icon: 'error' })
+          numberPasswordBox.value.cleanVal()
+          isFocus.value = false
+          setNumberTime.value = 0
+        }
+      }
+    }
   }
 }
 
@@ -257,9 +275,7 @@ const close = () => {
   // 清除数字密码缓存
   uni.removeStorageSync('number')
   // 清空数字密码输入框的值
-  if (numberPasswordBox.value) {
-    numberPasswordBox.value.cleanVal()
-  }
+  numberPasswordBox.value.cleanVal()
   emits('close')
 }
 </script>

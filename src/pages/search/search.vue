@@ -12,7 +12,7 @@
     </view>
 
     <view class="search__total">
-      <view class="search__total__text">共{{ currentSearchList.total }}件物品</view>
+      <view class="search__total__text">共{{ currentSearchList.effectiveSize }}件物品</view>
     </view>
 
     <SearchList
@@ -91,9 +91,9 @@ async function loadSearchList() {
 
   try {
     await fetchNewSearchList(0)
-  } catch {
+  } catch (err) {
     manualDisable.value = true
-    console.log('请求失败')
+    console.log('请求失败', err)
   } finally {
     isLoading.value = false
     currentSearchList.value.itemList.length ? (isEmpty.value = false) : (isEmpty.value = true)
