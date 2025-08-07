@@ -233,14 +233,34 @@ const updatingWifiChange = () => {
 
 // 根据密码类型判断是验证模式还是设置模式
 const getIsValidate = (type: 0 | 1 | 2): boolean => {
+  // 检查是否已经设置过密码，如果设置过则返回true（验证模式），否则返回false（设置模式）
+  let result = false
   if (type === 0) {
-    return settingsInfo.value.unifiedPassword === 1
+    // 检查通用密码是否已设置过
+    result = settingsInfo.value.unifiedPassword === 1
+    console.log('通用密码检查:', {
+      type,
+      unifiedPassword: settingsInfo.value.unifiedPassword,
+      result
+    })
   } else if (type === 1) {
-    return settingsInfo.value.displayPassword === 1
+    // 检查隐藏空间密码是否已设置过
+    result = settingsInfo.value.displayPassword === 1
+    console.log('隐藏空间密码检查:', {
+      type,
+      displayPassword: settingsInfo.value.displayPassword,
+      result
+    })
   } else if (type === 2) {
-    return settingsInfo.value.privacyPassword === 1
+    // 检查私密物品不可见密码是否已设置过
+    result = settingsInfo.value.privacyPassword === 1
+    console.log('私密物品不可见密码检查:', {
+      type,
+      privacyPassword: settingsInfo.value.privacyPassword,
+      result
+    })
   }
-  return false
+  return result
 }
 
 onShow(async () => {
@@ -252,6 +272,16 @@ onShow(async () => {
   settingsData.privacyDisplay = settingsInfo.value.privacyDisplay
   settingsData.openRecycleBin = settingsInfo.value.openRecycleBin
   settingsData.updatingWifi = settingsInfo.value.updatingWifi
+
+  // 打印调试信息
+  console.log('初始化设置信息:', {
+    unifiedPassword: settingsInfo.value.unifiedPassword,
+    displayPassword: settingsInfo.value.displayPassword,
+    privacyPassword: settingsInfo.value.privacyPassword,
+    unifiedPasswordUsed: settingsInfo.value.unifiedPasswordUsed,
+    privacyDisplay: settingsInfo.value.privacyDisplay,
+    privacyItemInvisible: settingsInfo.value.privacyItemInvisible
+  })
 })
 
 // 设置数据
@@ -301,7 +331,14 @@ const setPrivacyDisplay = () => {
     // 立即回滚状态，避免按钮立即变色
     settingsData.privacyItemInvisible = 0
     tempType.value = 2
-    isValidate.value = getIsValidate(2)
+    // 检查是否已经设置过密码
+    const hasPassword = getIsValidate(2)
+    console.log('私密物品不可见开关切换:', {
+      tempType: tempType.value,
+      hasPassword,
+      isValidate: hasPassword
+    })
+    isValidate.value = hasPassword
     popup.value = true
   } else {
     // 立即回滚状态，避免按钮立即变色
@@ -326,7 +363,14 @@ const setUnifiedPassword = () => {
     // 立即回滚状态，避免按钮立即变色
     settingsData.unifiedPasswordUsed = 0
     tempType.value = 0
-    isValidate.value = getIsValidate(0)
+    // 检查是否已经设置过密码
+    const hasPassword = getIsValidate(0)
+    console.log('通用密码开关切换:', {
+      tempType: tempType.value,
+      hasPassword,
+      isValidate: hasPassword
+    })
+    isValidate.value = hasPassword
     popup.value = true
   } else {
     // 立即回滚状态，避免按钮立即变色
@@ -342,7 +386,14 @@ const setPrivacyDisplayRoom = () => {
     // 立即回滚状态，避免按钮立即变色
     settingsData.privacyDisplay = 0
     tempType.value = 1
-    isValidate.value = getIsValidate(1)
+    // 检查是否已经设置过密码
+    const hasPassword = getIsValidate(1)
+    console.log('隐藏空间开关切换:', {
+      tempType: tempType.value,
+      hasPassword,
+      isValidate: hasPassword
+    })
+    isValidate.value = hasPassword
     popup.value = true
   } else {
     // 立即回滚状态，避免按钮立即变色
@@ -572,25 +623,12 @@ const confirmChangePassword = async (password: string) => {
       title: '验证成功，请设置新密码',
       icon: 'none',
       success: () => {
-        isValidate.value = true
+        // 验证成功后，设置为设置新密码模式
+        isValidate.value = false
+        popup.value = true
+        fixPassword.value = true
       }
     })
-    // 验证成功后，根据当前状态重新设置密码
-    // 设置成功后设置正确的状态
-    popup.value = true
-    fixPassword.value = true
-    // if (tempType.value === 0) {
-    //   setUnifiedPassword()
-    // } else if (tempType.value === 1) {
-    //   setPrivacyDisplayRoom()
-    // } else if (tempType.value === 2) {
-    //   setPrivacyDisplay()
-    // }
-    // if (settingsData.privacyItemInvisible) {
-    //   setPrivacyDisplay()
-    // } else {
-    //   setUnifiedPassword()
-    // }
   } catch {
     uni.showToast({
       title: '密码错误',

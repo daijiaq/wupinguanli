@@ -107,13 +107,13 @@ export const useSettingsStore = defineStore('settings', () => {
     clearPassword(type)
     if (type === 0) {
       settingsInfo.value.unifiedPasswordUsed = 0
-      settingsInfo.value.unifiedPassword = 0
+      // settingsInfo.value.unifiedPassword = 0
     } else if (type === 1) {
       settingsInfo.value.privacyDisplay = 0
-      settingsInfo.value.displayPassword = 0
+      // settingsInfo.value.displayPassword = 0
     } else if (type === 2) {
       settingsInfo.value.privacyItemInvisible = 0
-      settingsInfo.value.privacyPassword = 0
+      // settingsInfo.value.privacyPassword = 0
     }
   }
 
