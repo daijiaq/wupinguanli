@@ -228,8 +228,8 @@ const {
   getFriendLogs,
   friend
 } = friendStore
-const { groupsInfo } = groupStore
-const { records } = groupsInfo
+const { groupsInfo, getAllGroups } = groupStore
+// const { records } = groupsInfo
 //接受参数
 const props = defineProps<{
   id: number
@@ -243,13 +243,17 @@ onLoad(async () => {
   const res = await determineWhetherFriend(props.id)
   if (res.buddy === 0) {
     isFriend.value = false
-    getStrangerInfoData(props.id)
+    await getStrangerInfoData(props.id)
   } else {
-    getUserInfoData(props.id)
+    await getUserInfoData(props.id)
     history.value = await getFriendLogs(props.id)
-    console.log('groupBaseInfo 类型：', typeof friend.groupBaseInfo.groupId)
+    console.log('详情:', friend)
+    console.log('groupBaseInfo 类型：', friend.groupId)
     // 从 groupStore 中查找好友所在的分组
-    const group = records.find((g) => g.id === friend.groupBaseInfo.groupId)
+    await getAllGroups()
+    console.log('分组', groupsInfo.records)
+    const group = groupsInfo.records.find((g) => g.id === friend.groupId)
+    console.log('找到group:', group)
     if (group) {
       // 更新当前分组信息
       friendStore.group.id = group.id
@@ -334,6 +338,8 @@ async function confirmMoveFriend() {
     })
     console.log(friendStore.oldGroupId)
     friendStore.setNeedRefresh(true, friendStore.oldGroupId, friendStore.group.id)
+    // 移动后需刷新最新历史记录数据
+    history.value = await getFriendLogs(props.id)
   } catch {
     uni.showToast({
       title: '移动失败',

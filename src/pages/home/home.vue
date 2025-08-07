@@ -256,7 +256,7 @@ async function confirmGesture(password: string) {
       })
     } else {
       uni.navigateTo({
-        url: `/pages/details/details?isShareItem=${isShareItem}&isOwner=${isOwner}`
+        url: `/pages/details/details?isShareItem=${isShareItem}`
       })
     }
     isEdit = false
@@ -283,7 +283,7 @@ async function confirmNumber(password: string) {
       })
     } else {
       uni.navigateTo({
-        url: `/pages/details/details?isShareItem=${isShareItem}&isOwner=${isOwner}`
+        url: `/pages/details/details?isShareItem=${isShareItem}`
       })
     }
     isEdit = false
