@@ -21,7 +21,7 @@ export function getUserInfo(): Promise<UserInfo> {
 // }
 export function changeUserAvatar(avatarUrl: string): Promise<UserInfo> {
   return service({
-    url: `/users/avatar?avatar=${avatarUrl}`,
+    url: `/users/avatar?avatar=${encodeURIComponent(avatarUrl)}`,
     method: 'POST'
   })
 }
@@ -36,7 +36,7 @@ export function changeUserAvatar(avatarUrl: string): Promise<UserInfo> {
 // 修改用户名
 export function changeUserName(name: string): Promise<UserInfo> {
   return service({
-    url: `/users/name?name=${name}`,
+    url: `/users/name?name=${encodeURIComponent(name)}`,
     method: 'PUT'
   })
 }
@@ -56,6 +56,6 @@ export function getAllHistory(
   name: string
 ): Promise<ResponseHistoryList> {
   return service({
-    url: `/items/logs?name=${name}&offset=${offset}&limit=${limit}`
+    url: `/items/logs?name=${encodeURIComponent(name)}&offset=${offset}&limit=${limit}`
   })
 }
