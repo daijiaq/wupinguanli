@@ -164,9 +164,35 @@ onShow(async () => {
     await getAllGroups()
   }
   if (friendStore.needRefresh) {
-    console.log(friendStore.oldGroupId)
-    getPageGroupFriend(friendStore.oldGroupId, 1, 10)
-    getPageGroupFriend(friendStore.newGroupId, 1, 10)
+    // 刷新所有当前打开的分组
+    const openGroupIds: number[] = []
+    const openGroupIndexes: number[] = []
+    showFriendsBox.value.forEach((isOpen, index) => {
+      if (isOpen && groupStore.groupsInfo.records[index]) {
+        openGroupIds.push(groupStore.groupsInfo.records[index].id)
+        openGroupIndexes.push(index)
+      }
+    })
+    // 重新获取所有打开分组的最新数据
+    for (const groupId of openGroupIds) {
+      await getPageGroupFriend(groupId, 1, 10)
+    }
+    // 如果从编辑分组页面返回，也刷新指定的分组
+    if (friendStore.oldGroupId) {
+      await getPageGroupFriend(friendStore.oldGroupId, 1, 10)
+    }
+    if (friendStore.newGroupId) {
+      await getPageGroupFriend(friendStore.newGroupId, 1, 10)
+    }
+    // 检查所有打开的分组，如果好友数为0则自动折叠
+    openGroupIndexes.forEach((groupIndex) => {
+      if (
+        groupStore.groupsInfo.records[groupIndex] &&
+        groupStore.groupsInfo.records[groupIndex].groupNum === 0
+      ) {
+        showFriendsBox.value[groupIndex] = false
+      }
+    })
     // 重置旧分组的折叠状态为收起（arrow-right）如果旧分组好友数为0才折叠
     const groupIndex = groupStore.groupsInfo.records.findIndex(
       (g) => g.id === friendStore.oldGroupId
