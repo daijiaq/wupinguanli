@@ -338,6 +338,8 @@ async function confirmMoveFriend() {
     })
     console.log(friendStore.oldGroupId)
     friendStore.setNeedRefresh(true, friendStore.oldGroupId, friendStore.group.id)
+    // 移动后需刷新最新历史记录数据
+    history.value = await getFriendLogs(props.id)
   } catch {
     uni.showToast({
       title: '移动失败',
