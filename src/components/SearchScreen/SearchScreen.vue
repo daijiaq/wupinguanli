@@ -304,7 +304,9 @@ const closePopupEvent = () => {
 
 const openPopup = () => {
   showPopup.value = !showPopup.value
-  fetchTagList()
+  fetchTagList().then(() => {
+    restoreScreenUIState() // 获取标签后恢复UI状态
+  })
 }
 
 const cancelScreen = () => {
@@ -402,7 +404,7 @@ const resetAllScreen = () => {
   currentTagList.value.tagsList.forEach((item) => {
     item.isChecked = false
   })
-  resetShowControl()
+  // resetShowControl()
   showControl.showProperties = true
 }
 
@@ -453,9 +455,34 @@ const updateScreenData = () => {
     currentScreenData.value.screenData.dateType = -1
   }
 }
+// 添加一个方法来恢复筛选UI状态
+const restoreScreenUIState = () => {
+  // 恢复属性筛选状态
+  isItemSelected.value = currentScreenData.value.screenData.type === 2
+  isSpaceSelected.value = currentScreenData.value.screenData.type === 1
+
+  // 恢复价格筛选状态
+  priceRange.lowPrice =
+    currentScreenData.value.screenData.lowPrice > 0
+      ? currentScreenData.value.screenData.lowPrice.toString()
+      : ''
+  priceRange.highPrice =
+    currentScreenData.value.screenData.highPrice > 0
+      ? currentScreenData.value.screenData.highPrice.toString()
+      : ''
+
+  // 恢复日期排序状态
+  sortInTime.value = currentScreenData.value.screenData.dateType === 0
+  sortInReverseTime.value = currentScreenData.value.screenData.dateType === 1
+
+  // 恢复标签选中状态
+  currentTagList.value.tagsList.forEach((tag) => {
+    tag.isChecked = currentScreenData.value.screenData.labelId.includes(tag.id)
+  })
+}
 
 onLoad(() => {
-  resetAllScreen()
+  // resetAllScreen()
   updateScreenData()
 })
 </script>
