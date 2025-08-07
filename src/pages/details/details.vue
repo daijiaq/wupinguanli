@@ -300,6 +300,7 @@ onLoad(async (options: any) => {
   } else {
     isOwner.value = true
   }
+  console.log('isOwner', isOwner.value)
   // 初始化isDeleted
   if (options.isDeleted === 'true') {
     isDeleted.value = true
