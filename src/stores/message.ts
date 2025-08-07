@@ -78,10 +78,12 @@ export const useMessageStore = defineStore('message', () => {
       itemShareList.content,
       shareType
     )
+    // 该接口会返回分享的好友（来源app），需要过滤掉
+    const filteredRecords = data.records.filter((item) => item.buddy !== true)
     // 更新 store 数据
     itemShareList.currentPage++
     itemShareList.total = data.pages
-    itemShareList.messageList = data.records
+    itemShareList.messageList = filteredRecords
   }
   // 系统通知是否有未读通知
   const systemHasUnreadMsg = ref(false)

@@ -109,6 +109,15 @@ export interface Friend {
    * 如果是好友，该好友分组的基本信息
    */
   groupBaseInfo: GroupBaseInfo
+  //以下两个是获取好友详情接口buddy/info会返回的
+  /**
+   * 好友分组id
+   */
+  groupId?: number
+  /**
+   * 好友分组名称
+   */
+  groupName?: string
 }
 
 export interface GroupBaseInfo {
