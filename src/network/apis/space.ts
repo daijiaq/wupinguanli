@@ -35,7 +35,7 @@ export function getRoomItemsAPI(
 // 查看空间详情
 export function getDetailRoomAPI(id: number, password: string): Promise<DetailData> {
   return service<DetailData>({
-    url: `/items/rooms/${id}?password=${password}`,
+    url: `/items/rooms/${id}?password=${encodeURIComponent(password)}`,
     method: 'GET'
   })
 }
@@ -43,7 +43,7 @@ export function getDetailRoomAPI(id: number, password: string): Promise<DetailDa
 // 查看物品详情
 export function getDetailItemAPI(id: number, password: string): Promise<DetailData> {
   return service<DetailData>({
-    url: `/items/${id}?password=${password}`,
+    url: `/items/${id}?password=${encodeURIComponent(password)}`,
     method: 'GET'
   })
 }
@@ -55,7 +55,7 @@ export function viewShareItemAPI(
   password: string
 ): Promise<DetailData> {
   return service<DetailData>({
-    url: `/items/${itemId}/${userId}?password=${password}`,
+    url: `/items/${itemId}/${userId}?password=${encodeURIComponent(password)}`,
     method: 'GET'
   })
 }
