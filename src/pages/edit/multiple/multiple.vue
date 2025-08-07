@@ -166,7 +166,7 @@
         :previewType="'localUrl'"
       />
       <u-textarea
-        maxlength="200"
+        maxlength="255"
         :count="true"
         :autoHeight="true"
         border="none"

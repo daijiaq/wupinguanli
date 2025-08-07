@@ -287,6 +287,13 @@ const changeUserName = () => {
 // 结束修改用户名
 const endChangeName = async () => {
   isChangingName.value = false
+  if (!userInfoData.name.trim()) {
+    uni.showToast({
+      title: '用户名不能为空',
+      icon: 'error'
+    })
+    return
+  }
   await changeName(userInfoData.name)
   uni.showToast({
     title: '用户名修改成功',

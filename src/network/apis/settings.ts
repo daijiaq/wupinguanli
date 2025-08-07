@@ -25,7 +25,7 @@ export function updateSettings(
 // 设置密码
 export function setPassword(password: string, type: 0 | 1 | 2): Promise<null> {
   return service({
-    url: `/settings/on/${type}?password=${password}`,
+    url: `/settings/on/${type}?password=${encodeURIComponent(password)}`,
     method: 'PUT'
   })
 }
@@ -41,14 +41,14 @@ export function clearPassword(type: 0 | 1 | 2): Promise<null> {
 // 验证设置密码
 export function validatePassword(password: string, type: 0 | 1 | 2): Promise<null> {
   return service({
-    url: `/settings/valid/${type}?password=${password}`
+    url: `/settings/valid/${type}?password=${encodeURIComponent(password)}`
   })
 }
 
 // 验证用户密码
 export function validateUserPassword(oldPassword: string): Promise<null> {
   return service({
-    url: `/users/valid/password?password=${oldPassword}`
+    url: `/users/valid/password?password=${encodeURIComponent(oldPassword)}`
   })
 }
 
@@ -63,7 +63,9 @@ export function validateUserPassword(oldPassword: string): Promise<null> {
 // 修改用户密码
 export function updateUserPassword(oldPassword: string, newPassword: string): Promise<null> {
   return service({
-    url: `/users/change/pwd?old_password=${oldPassword}&password=${newPassword}`,
+    url: `/users/change/pwd?old_password=${encodeURIComponent(
+      oldPassword
+    )}&password=${encodeURIComponent(newPassword)}`,
     method: 'PUT'
   })
 }
@@ -83,7 +85,9 @@ export function changeToken(
   identify = 0
 ): Promise<LoginResponse> {
   return service({
-    url: `/users/login/userId?loginId=${loginId}&password=${password}&identify=${identify}`,
+    url: `/users/login/userId?loginId=${loginId}&password=${encodeURIComponent(
+      password
+    )}&identify=${identify}`,
     method: 'PUT'
   })
 }

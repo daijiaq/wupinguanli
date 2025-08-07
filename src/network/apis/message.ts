@@ -28,7 +28,9 @@ export function getFriend(
   content: string
 ): Promise<ResponseFriendMsgList> {
   return service({
-    url: `/notices/buddyApplication?offset=${offset}&limit=${limit}&content=${content}`,
+    url: `/notices/buddyApplication?offset=${offset}&limit=${limit}&content=${encodeURIComponent(
+      content
+    )}`,
     method: 'GET'
   })
 }
@@ -40,7 +42,9 @@ export function getShareItem(
   shareType: number
 ): Promise<ResponseItemMsgList> {
   return service({
-    url: `/notices/getShareNoticeVO?offset=${offset}&limit=${limit}&content=${content}&shareType=${shareType}`,
+    url: `/notices/getShareNoticeVO?offset=${offset}&limit=${limit}&content=${encodeURIComponent(
+      content
+    )}&shareType=${shareType}`,
     method: 'GET'
   })
 }
