@@ -10,7 +10,10 @@
     >
     </u-navbar>
   </view>
-  <view class="records">
+  <view class="records-empty" v-if="types === '000000'">
+    <img :src="feedbackImg" alt="" class="records-empty-image" />
+  </view>
+  <view class="records" v-if="types !== '000000'">
     <view class="record-item-wrapper" v-for="(title, index) in titles" :key="index">
       <view class="record-item" v-if="types?.charAt(index) === '1'">
         <view class="record-title">
@@ -49,19 +52,13 @@
 import { fetchFeedbackListAPI, fetchFeedbackTypeAPI } from '@/network/apis/faceBack'
 import { FeedbackRequest, FeedbackResponse, FeedbackVO, FeedbackTypeResponse } from '@/types/user.d'
 import { onMounted, ref } from 'vue'
+import feedbackImg from '@/static/user/feedback.png'
 // const list = ref<FeedbackVO[]>([])
 const types = ref<string>('000000')
 const feedbackMap = ref<{ [key: number]: FeedbackVO[] }>({}) // 存储每个 type 的列表
 const offsetMap = ref<{ [key: number]: number }>({})
-const isShowList = ref([false, false, false, false, false, false])
-const titles = [
-  '无法打开小程序',
-  '小程序闪退',
-  '页面加载慢',
-  '其他异常',
-  '产品开发建议',
-  '意见反馈'
-]
+const isShowList = ref([false, false, false, false, false])
+const titles = ['无法打开程序', '程序闪退', '页面加载慢', '其他异常', '产品开发建议']
 const boxHeights = ref<string[]>([])
 // 获取某种类型的反馈数据
 async function getFeedbackListByType(type: number, offset: number) {
@@ -146,7 +143,17 @@ onMounted(async () => {
   width: 80%;
   margin: 30rpx auto;
 }
-
+.records-empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 1000rpx;
+  .records-empty-image {
+    width: 230.34px;
+    height: 241px;
+  }
+}
 .records {
   @extend %center;
   .record-item {

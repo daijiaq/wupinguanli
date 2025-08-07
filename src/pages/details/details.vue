@@ -252,7 +252,7 @@
 
 <script setup lang="ts">
 import { onLoad, onShow } from '@dcloudio/uni-app'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 
 // 引入类型
 import type { Path } from '@/types/space'
@@ -320,7 +320,6 @@ onShow(() => {
   getPrivacyDisplayPassword()
   console.log('~', 111)
   console.log(formStore.itemData)
-  privacyRoom.value = formStore.itemData.hide === 1 ? true : false
 })
 
 // onShareAppMessage(() => {
@@ -361,9 +360,9 @@ const radioValue = formStore.itemData.type === 2 ? ref('物品') : ref('空间')
 //显示二维码
 const showCode = ref(false)
 
-//隐私权
-const privacy = ref(formStore.itemData.privacy ? true : false)
-const privacyRoom = ref(formStore.itemData.hide === 1 ? true : false)
+//隐私权 - 使用计算属性确保响应式更新
+const privacy = computed(() => (formStore.itemData.privacy ? true : false))
+const privacyRoom = computed(() => (formStore.itemData.hide === 1 ? true : false))
 
 //日期
 const date = ref(new Date(formStore.itemData.date).getTime())

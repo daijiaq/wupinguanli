@@ -637,6 +637,14 @@ watch(
     else PIN.value = ''
   }
 )
+
+// 同步隐私状态到 tempItemData
+watch(
+  () => privacy.value,
+  (newValue) => {
+    formStore.tempItemData.privacy = newValue ? 1 : 0
+  }
+)
 watch(
   () => popup.value,
   () => {

@@ -272,7 +272,7 @@ export default {
           circleCoordinate.push({
             x: offsetx * (row + 1) + this.circleR * (2 * row + 1),
             y: offsety * (col + 1) + this.circleR * (2 * col + 1),
-            key: 3 * col + row + 1
+            key: 3 * col + row
           })
         }
       }
