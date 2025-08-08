@@ -7,7 +7,13 @@
           <u-text color="#353535" :bold="true" text="隐私" />
         </u-col>
         <u-col span="1.5">
-          <u-switch :disabled="false" v-model="form.privacy" size="20" :activeValue="true" />
+          <u-switch
+            :disabled="false"
+            v-model="form.privacy"
+            size="20"
+            :activeValue="1"
+            :inactiveValue="0"
+          />
         </u-col>
       </u-row>
       <u-row customStyle="margin-bottom: 10px">
@@ -160,7 +166,7 @@
         :previewType="'localUrl'"
       />
       <u-textarea
-        maxlength="200"
+        maxlength="255"
         :count="true"
         :autoHeight="true"
         border="none"

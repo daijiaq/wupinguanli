@@ -51,6 +51,7 @@ export const useGroupStore = defineStore('group', () => {
       groupsInfo.total = data.total
       console.log(data)
     } while (groupsInfo.records.length < groupsInfo.total)
+    console.log('获取所有分组:', groupsInfo.records)
   }
 
   // 添加分组
@@ -85,7 +86,9 @@ export const useFriendStore = defineStore('friend', () => {
   //获取好友详情
   const getUserInfoData = async (userId: number) => {
     const res = await getUserInfoAPI(userId)
-    friend.value = res
+    console.log('获取好友详情:', res)
+    Object.assign(friend.value, res)
+    console.log('获取好友详情 friend:', friend.value)
   }
 
   //获取好友详情
@@ -113,6 +116,8 @@ export const useFriendStore = defineStore('friend', () => {
     email: '',
     phone: '',
     buddy: false,
+    groupId: 0,
+    groupName: '',
     groupBaseInfo: {
       groupId: 0,
       groupName: ''

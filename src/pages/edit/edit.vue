@@ -301,7 +301,7 @@
           :previewType="'url'"
         />
         <u-textarea
-          maxlength="200"
+          maxlength="255"
           :count="true"
           :autoHeight="true"
           border="none"
@@ -635,6 +635,14 @@ watch(
     changed = true
     if (privacy.value) popup.value = true
     else PIN.value = ''
+  }
+)
+
+// 同步隐私状态到 tempItemData
+watch(
+  () => privacy.value,
+  (newValue) => {
+    formStore.tempItemData.privacy = newValue ? 1 : 0
   }
 )
 watch(

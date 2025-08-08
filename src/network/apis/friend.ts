@@ -38,7 +38,7 @@ export function deleteGroupAPI(id: number): Promise<null> {
 // 修改分组
 export function updateGroupAPI(id: number, name: string): Promise<T1> {
   return service({
-    url: `/groups/${id}?name=${name}`,
+    url: `/groups/${id}?name=${encodeURIComponent(name)}`,
     method: 'PUT'
   })
 }
@@ -84,7 +84,7 @@ export function moveFriendAPI(groupId: number, ids: number[]): Promise<null> {
 // 修改好友备注
 export function updateFriendNoteAPI(id: number, notes: string): Promise<null> {
   return service({
-    url: `/friends/${id}?notes=${notes}`,
+    url: `/friends/${id}?notes=${encodeURIComponent(notes)}`,
     method: 'PUT'
   })
 }
@@ -112,7 +112,7 @@ export function deleteFriendAPI(id: number): Promise<null> {
  */
 export function getFriendLogsAPI(id: number, content: string): Promise<Log[]> {
   return service({
-    url: `/friends/logs/${id}?content=${content}`,
+    url: `/friends/logs/${id}?content=${encodeURIComponent(content)}`,
     method: 'GET'
   })
 }
@@ -218,6 +218,8 @@ export function searchFriendsByName(
 ): Promise<getGroupFriendType> {
   return service({
     method: 'GET',
-    url: `/friends/searchByName?buddyName=${buddyName}&offset=${offset}&limit=${limit}`
+    url: `/friends/searchByName?buddyName=${encodeURIComponent(
+      buddyName
+    )}&offset=${offset}&limit=${limit}`
   })
 }
