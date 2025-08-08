@@ -56,7 +56,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { onLoad } from '@dcloudio/uni-app'
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, computed, nextTick } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { useMessageStore } from '@/stores/message'
 import { clearDots } from '@/network/apis/message'
@@ -94,6 +94,10 @@ onLoad(async () => {
   isLoad.value = false
   // 清除红点(进入页面就相当于已读)
   await clearDots(3)
+
+  // 页面加载完成后，检查是否需要加载更多数据
+  await nextTick()
+  checkNeedLoadMoreByHeight()
 })
 
 // 搜索框信息
@@ -136,13 +140,76 @@ const getMoreMessage = async () => {
   }
 }
 
+// 检查是否需要自动加载更多数据
+const checkNeedLoadMore = () => {
+  const totalDisplayedItems = latestMessageList.length + frontMessageList.length
+  const containerHeight = 1200 // 容器高度，对应CSS中的height: 1200rpx
+  const estimatedItemHeight = 200 // 估算每个item的高度
+  const maxVisibleItems = Math.ceil(containerHeight / estimatedItemHeight)
+
+  // 如果当前显示的项目数量少于容器能显示的最大数量，且还有更多页，则自动加载
+  if (
+    totalDisplayedItems < maxVisibleItems &&
+    itemShareList.value.currentPage <= itemShareList.value.total
+  ) {
+    return true
+  }
+  return false
+}
+
+// 更精确的检测方法：使用实际DOM高度
+const checkNeedLoadMoreByHeight = () => {
+  // 获取scroll-view的实际高度
+  const query = uni.createSelectorQuery()
+  query.select('.chatbox__search-list-item__content').boundingClientRect()
+  query.exec((res) => {
+    if (res && res[0]) {
+      const containerHeight = res[0].height
+      const totalDisplayedItems = latestMessageList.length + frontMessageList.length
+      const estimatedItemHeight = 200 // 估算每个item的高度
+      const maxVisibleItems = Math.ceil(containerHeight / estimatedItemHeight)
+
+      // 如果当前显示的项目数量少于容器能显示的最大数量，且还有更多页，则自动加载
+      if (
+        totalDisplayedItems < maxVisibleItems &&
+        itemShareList.value.currentPage <= itemShareList.value.total
+      ) {
+        console.log('基于实际高度检测：需要加载更多数据')
+        messageStore.fetchItemShareList(0, 10)
+      }
+    }
+  })
+}
+
+// 自动加载更多数据的函数
+const autoLoadMore = async () => {
+  if (checkNeedLoadMore()) {
+    console.log('自动加载更多数据')
+    await messageStore.fetchItemShareList(0, 10)
+  }
+}
+
+const isNoMore = computed(() => {
+  // 简化逻辑：只要还有更多页就继续加载
+  // 因为过滤是在前端进行的，后端分页参数仍然有效
+  const hasMorePages = itemShareList.value.currentPage <= itemShareList.value.total
+  console.log('hasMorePages:', hasMorePages)
+  return !hasMorePages
+})
+
+// 监听数据变化，自动加载更多
+watch(
+  () => [latestMessageList.length, frontMessageList.length],
+  async () => {
+    // 延迟执行，确保DOM更新完成
+    await nextTick()
+    // 使用更精确的高度检测方法
+    checkNeedLoadMoreByHeight()
+  }
+)
+
 // 获取筛选后的聊天信息
 const submitSearch = async () => {
-  // 前端筛选
-  // currentMessageList.value.messageList = currentMessageList.value.messageList.filter(
-  //   (item) => item.item.name.indexOf(inputBox.value) !== -1
-  // )
-  // console.log(currentMessageList.value.messageList)
   isSearch.value = true
   itemShareList.value.currentPage = 1
   itemShareList.value.content = inputBox.value
@@ -154,6 +221,10 @@ const submitSearch = async () => {
   uni.showToast({
     title: '搜索成功'
   })
+
+  // 搜索完成后，检查是否需要加载更多数据
+  await nextTick()
+  checkNeedLoadMoreByHeight()
 }
 </script>
 
