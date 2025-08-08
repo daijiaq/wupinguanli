@@ -20,7 +20,13 @@
     <view v-if="showNew" class="groups__new">
       <view class="groups__new-title"> 名称 </view>
       <view class="groups__new-input">
-        <u-input v-model="name" fontSize="35rpx" border="none" placeholder="输入分组名称" />
+        <u-input
+          v-model="name"
+          maxlength="8"
+          fontSize="35rpx"
+          border="none"
+          placeholder="输入分组名称"
+        />
       </view>
       <view class="groups__new-title"> 分组成员 </view>
       <view
@@ -131,6 +137,14 @@ async function confirmDelete() {
 async function confirmChangeName() {
   showChangeName.value = false
   console.log(submitId, submitName)
+  if (submitName.trim() === '') {
+    uni.showToast({
+      title: '分组名称不能为空',
+      icon: 'none',
+      duration: 2000
+    })
+    return
+  }
   await updateGroup(submitId, submitName)
   uni.showToast({
     title: '修改成功',
@@ -144,6 +158,14 @@ async function submit() {
   let ids: number[] = []
   for (let i = 0; i < friendStore.tempFriends.length; i++) {
     ids.push(friendStore.tempFriends[i].id)
+  }
+  if (name.value.trim() === '') {
+    uni.showToast({
+      title: '分组名称不能为空',
+      icon: 'none',
+      duration: 2000
+    })
+    return
   }
   const newGroup = await createGroup(name.value)
   await moveFriend(newGroup.id, ids)
