@@ -399,6 +399,9 @@ const resetAllScreen = () => {
   isSpaceSelected.value = false
   priceRange.lowPrice = ''
   priceRange.highPrice = ''
+  // 确保也重置store中的数据
+  currentScreenData.value.screenData.lowPrice = -1
+  currentScreenData.value.screenData.highPrice = -1
   sortInTime.value = false
   sortInReverseTime.value = false
   currentTagList.value.tagsList.forEach((item) => {
@@ -431,17 +434,10 @@ const updateScreenData = () => {
     .map((item) => item.id)
 
   // 筛选金额
-  if (priceRange.lowPrice !== '') {
-    // 选择金额
-    currentScreenData.value.screenData.lowPrice = parseFloat(priceRange.lowPrice)
-  }
-  if (priceRange.highPrice !== '') {
-    currentScreenData.value.screenData.highPrice = parseFloat(priceRange.highPrice)
-  }
-  if (priceRange.lowPrice === '' && priceRange.highPrice === '') {
-    // 恢复默认
-    currentScreenData.value.screenData.lowPrice = -1
-  }
+  currentScreenData.value.screenData.lowPrice =
+    priceRange.lowPrice !== '' ? parseFloat(priceRange.lowPrice) : -1
+  currentScreenData.value.screenData.highPrice =
+    priceRange.highPrice !== '' ? parseFloat(priceRange.highPrice) : -1
 
   // 筛选时间
   if (sortInTime.value) {
