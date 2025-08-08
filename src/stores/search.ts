@@ -333,6 +333,7 @@ export const useSearchStore = defineStore('search', () => {
     currentSearchList.value.effectiveSize = data.effectiveSize || 0
     // 更新当前页数
     currentSearchInputData.offset = data.current
+    currentSearchList.value.offset = data.current
   }
 
   // 关联物品输入框搜索物品
