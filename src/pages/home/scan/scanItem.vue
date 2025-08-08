@@ -62,7 +62,7 @@
       </view>
     </u-checkbox-group>
     <!-- 底部操作栏 -->
-    <view class="scan-page__actions" v-if="multiSelectMode || !isSpace">
+    <view class="scan-page__actions" v-if="multiSelectMode || isSpace">
       <view class="action-item" @click="handleAction('delete')">
         <image class="action-icon" src="@/static/icons/trash.png" />
         <view class="action-label">删除</view>
@@ -392,8 +392,7 @@ const mainItems = ref<ScanItem[]>([])
 // 空间内部物品列表
 const innerItems = ref<ScanItem[]>([])
 // 默认图片
-const DEFAULT_IMG =
-  'https://tse2.mm.bing.net/th/id/OIP.8KlnNUYOJudsgoReJE6KsAHaQD?rs=1&pid=ImgDetMain&o=7&rm=3'
+const DEFAULT_IMG = 'https://www.szlab.xyz/item/image/2025/03/08/ZeeZdZdcdbcdeZtksBsdlomf.png'
 
 // 长按进入多选模式
 const handleLongPress = () => {
@@ -591,6 +590,15 @@ const handleAction = async (action: string) => {
             setTimeout(() => {
               uni.navigateBack()
             }, 1200)
+            // 如果扫描到的是物品 删除之后也应该返回上一页
+          } else if (!isSpace.value) {
+            uni.showToast({
+              title: '物品已删除',
+              icon: 'success'
+            })
+            setTimeout(() => {
+              uni.navigateBack()
+            }, 1200)
           } else {
             // 4. 获取最新数据渲染
             await fetchScanData(pageOptions)
@@ -741,10 +749,6 @@ async function fetchScanData(options: any) {
       const item = res
       isSpace.value = String(item.type) === '0' || String(item.type) === '1' ? true : false
       console.log('isSpace', item.type, isSpace.value)
-      moveToItemFatherId.value.push(item.path[0]?.id)
-      movePath.value = (item.path || []).reverse()
-      movePath.value.push({ id: item.id, name: item.name })
-      moveItemFatherId.value.push(movePath.value[0].id || 0)
       // moveToItemPath.value = (item.path || []).reverse()
       // console.log('moveToItemPath', moveToItemPath.value)
       const parsed = [
@@ -762,6 +766,11 @@ async function fetchScanData(options: any) {
         }
       ]
       mainItems.value = parsed
+      moveToItemFatherId.value.push(item.path[0]?.id)
+      movePath.value = (item.path || []).reverse()
+      movePath.value.push({ id: item.id, name: item.name })
+      moveItemFatherId.value.push(movePath.value[0].id || 0)
+      console.log('mainItems 扫到的空间', mainItems.value)
     }
   } catch (error) {
     console.log('scanItemRequest error', error)
@@ -775,8 +784,6 @@ async function fetchScanData(options: any) {
     try {
       const innerRes = await getInnerItems(Number(options?.userId), Number(options?.itemId), 1, 10)
       if (innerRes && Array.isArray(innerRes.records)) {
-        movePath.value = (innerRes.records[0].path || []).reverse()
-        moveItemFatherId.value.push(movePath.value[0].id || 0)
         innerItems.value = innerRes.records.map((item: any) => ({
           name: item.name,
           path: (item.path || [])
@@ -789,6 +796,9 @@ async function fetchScanData(options: any) {
           id: item.id,
           userId: item.userId
         }))
+        console.log('路径', innerRes.records, innerItems.value)
+        movePath.value = (innerRes.records[0].path || []).reverse()
+        moveItemFatherId.value.push(movePath.value[0].id || 0)
       } else {
         innerItems.value = []
       }
