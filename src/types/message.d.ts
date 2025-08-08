@@ -232,7 +232,7 @@ export interface ItemMessageDetail {
   /**
    * 被分享的好友是否已经添加
    */
-  buddy: boolean
+  buddy?: boolean
   /**
    * 隐私设置(0非隐私1隐私2隐私及内层隐私)，1隐私是查看该物品的详情要输密码，而点进内层不需要 2隐私及内层隐私就是查看该物品详情和点进内层都需要密码
    */
