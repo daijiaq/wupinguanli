@@ -80,7 +80,7 @@ export const useMessageStore = defineStore('message', () => {
     )
     // 该接口会返回分享的好友（来源app），需要过滤掉
     console.log(data.records)
-    const filteredRecords = data.records.filter((item) => item.buddy !== true || item.attribute)
+    const filteredRecords = data.records.filter((item) => item.attribute || item.attribute === 0)
     console.log(filteredRecords)
     // 更新 store 数据
     itemShareList.currentPage++
