@@ -788,6 +788,15 @@ const submitForm = (): void => {
   formVerify.value
     .validate()
     .then(async () => {
+      const amount = String(form.price).trim()
+      if (!/^[1-9]\d*(\.\d{1,2})?$|^0(\.\d{1,2})?$/.test(amount)) {
+        uni.showToast({
+          title: '金额格式错误：示例 123 或 123.45',
+          icon: 'none'
+        })
+        isLoading.value = false
+        return
+      }
       try {
         isLoading.value = true
         // 检查图片是否已经上传完成
