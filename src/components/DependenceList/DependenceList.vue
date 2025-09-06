@@ -45,18 +45,20 @@ const { isLoading } = toRefs(props)
 const isLoadingMore = ref(false)
 
 // 是否无法加载更多了
-const loadMoreStatus = ref('nomore')
 const isNoMore = computed(() => {
   console.log('itemList length:', currentSearchList.value.itemList.length)
   console.log('limit:', currentSearchList.value.limit)
   console.log('total:', currentSearchList.value.total)
-  return (
-    currentSearchList.value.itemList.length < currentSearchList.value.limit ||
-    (currentSearchList.value.itemList.length &&
-      currentSearchList.value.itemList.length === currentSearchList.value.total)
-  )
+  const { offset, limit, total } = currentSearchList.value
+  const totalPages = Math.ceil(total / limit)
+  return offset >= totalPages
 })
-
+// loadmore 状态
+const loadMoreStatus = computed(() => {
+  if (isLoading.value) return 'loading'
+  if (isNoMore.value) return 'nomore'
+  return 'loadmore'
+})
 // 请求更多
 async function loadMoreItem() {
   isLoadingMore.value = true
@@ -119,10 +121,7 @@ const checkIfItemAlreadyRelated = (itemId: number): boolean => {
 // 触底加载更多
 onReachBottom(async () => {
   if (!isNoMore.value) {
-    loadMoreStatus.value = 'loading'
     await loadMoreItem()
-  } else {
-    loadMoreStatus.value = 'nomore'
   }
 })
 </script>
