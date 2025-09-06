@@ -788,6 +788,9 @@ const submitForm = (): void => {
   formVerify.value
     .validate()
     .then(async () => {
+      if (form.price === '') {
+        form.price = '0'
+      }
       const amount = String(form.price).trim()
       if (!/^[1-9]\d*(\.\d{1,2})?$|^0(\.\d{1,2})?$/.test(amount)) {
         uni.showToast({
