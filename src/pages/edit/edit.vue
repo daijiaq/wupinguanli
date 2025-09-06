@@ -978,7 +978,11 @@ const submitForm = (): void => {
   formVerify.value
     .validate()
     .then(async () => {
-      const amount = String(formStore.tempItemData.price).trim()
+      let amount = String(formStore.tempItemData.price).trim()
+      if (amount === '') {
+        formStore.tempItemData.price = 0
+      }
+      amount = String(formStore.tempItemData.price).trim()
       if (!/^[1-9]\d*(\.\d{1,2})?$|^0(\.\d{1,2})?$/.test(amount)) {
         uni.showToast({
           title: '金额格式错误：示例 123 或 123.45',
