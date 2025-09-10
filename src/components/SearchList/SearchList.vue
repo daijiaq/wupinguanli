@@ -53,6 +53,7 @@ import type { ItemList } from '@/types/search'
 import { filterHistory } from '@/network/apis/history'
 const isFiltering = inject<Ref<number>>('isFiltering')
 const isSearching = inject<Ref<number>>('isSearching')
+const checkAndScrollIfNeeded = inject<() => boolean>('checkAndScrollIfNeeded')
 
 const searchStore = useSearchStore()
 const { currentSearchList, currentScreenData, currentSearchInputData } = storeToRefs(searchStore)
@@ -108,6 +109,7 @@ async function setID(id: number, type: number, privacy: number): Promise<void> {
     tempID.value = id
     tempType.value = type
     popup.value = true
+    checkAndScrollIfNeeded?.()
   } else {
     await getDetail(type, id, '')
     uni.navigateTo({
