@@ -6,6 +6,8 @@
       round="16"
       @close="close"
       custom-style="width: 300px; background-color: #F6F5F5;"
+      :overlay="true"
+      @touchmove.stop.prevent
     >
       <view v-if="isNumber" class="password-popup__title">
         {{ isValidate ? '请输入密码' : !setNumberTime ? '请输入数字密码' : '请确认数字密码' }}
@@ -102,16 +104,74 @@ watch(
     isShow.value = newVal
 
     if (newVal) {
+      // 禁止页面滚动
+      disablePageScroll()
       isFocus.value = false
       nextTick(() => {
         isFocus.value = true
       })
     } else {
+      // 恢复页面滚动
+      enablePageScroll()
       isClosePopup.value = true
       isFocus.value = false
     }
   }
 )
+
+// 禁止页面滚动
+const disablePageScroll = () => {
+  // try {
+  //   // 设置全局样式禁止滚动
+  //   const style = document.createElement('style')
+  //   style.id = 'noScrollStyle'
+  //   style.innerHTML = `
+  //     .uni-page-body, .uni-page-head {
+  //       height: 100% !important;
+  //       overflow: hidden !important;
+  //     }
+  //   `
+  //   document.head.appendChild(style)
+  // } catch (e) {
+  //   console.log('禁止页面滚动失败', e)
+  // }
+  // 在uni-app中也可以使用这种方式
+  uni
+    .createSelectorQuery()
+    .select('.uni-page-body')
+    .node((res) => {
+      if (res && res.node) {
+        res.node.style.overflow = 'hidden'
+        res.node.style.height = '100%'
+      }
+    })
+    .exec()
+}
+
+// 恢复页面滚动
+const enablePageScroll = () => {
+  // try {
+  //   // 移除禁止滚动的样式
+  //   const style = document.getElementById('noScrollStyle')
+  //   if (style) {
+  //     document.head.removeChild(style)
+  //   }
+  // } catch (e) {
+  //   console.log('恢复页面滚动失败', e)
+  // }
+
+  // 恢复uni-app页面滚动
+  uni
+    .createSelectorQuery()
+    .select('.uni-page-body')
+    .node((res) => {
+      if (res && res.node) {
+        res.node.style.overflow = ''
+        res.node.style.height = ''
+      }
+    })
+    .exec()
+}
 
 // 切换 tab
 const tabClick = (item: any) => {
@@ -272,6 +332,8 @@ const handleNumberClick = () => {
 const close = () => {
   // 关闭弹出框
   isShow.value = false
+  // 恢复页面滚动
+  // enablePageScroll()
   // 重置手势密码设置次数
   setGestureTime.value = 0
   // 重置数字密码设置次数

@@ -109,8 +109,27 @@ const getCapsule = () => {
   navBarHeight.value = menuButton.bottom + 16
 }
 
+const enablePullDownRefresh = ref(true)
+// 提供方法给子组件，用于控制下拉刷新
+const setPullDownRefresh = (enabled: boolean) => {
+  enablePullDownRefresh.value = enabled
+  // 动态设置下拉刷新状态
+  uni.stopPullDownRefresh()
+  if (enabled) {
+    uni.startPullDownRefresh({
+      success: () => {
+        uni.stopPullDownRefresh()
+      }
+    })
+  }
+}
+provide('setPullDownRefresh', setPullDownRefresh)
 // 下拉刷新
 onPullDownRefresh(async () => {
+  if (!enablePullDownRefresh.value) {
+    uni.stopPullDownRefresh()
+    return
+  }
   manualDisable.value = false
   currentSearchList.value.itemList.length = 0
   currentSearchList.value.offset = 0
@@ -137,14 +156,42 @@ onPullDownRefresh(async () => {
   }
 })
 
+// // 监听滚动
+// onPageScroll((e) => {
+//   if (e.scrollTop !== 0) {
+//     navBarColor.value = '#ffffff'
+//   } else {
+//     navBarColor.value = 'transparent'
+//   }
+// })
+
 // 监听滚动
+const isAtTop = ref(true)
 onPageScroll((e) => {
   if (e.scrollTop !== 0) {
-    navBarColor.value = '#ffffff'
+    navBarColor.value = 'transparent'
+    isAtTop.value = false
   } else {
     navBarColor.value = 'transparent'
+    isAtTop.value = true
   }
 })
+
+// 提供方法给子组件，用于检查是否需要滚动
+const checkAndScrollIfNeeded = () => {
+  if (isAtTop.value === true) {
+    // 滚动一下
+    // uni.pageScrollTo({
+    //   scrollTop: 100,
+    //   duration: 300
+    // })
+    return true
+  }
+  return false
+}
+
+// 提供这个方法给子组件
+provide('checkAndScrollIfNeeded', checkAndScrollIfNeeded)
 
 onShow(() => {
   getCapsule()
