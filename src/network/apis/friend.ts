@@ -7,7 +7,8 @@ import type {
   IFriendRelationship,
   Friend,
   PageGroup,
-  getGroupFriendType
+  getGroupFriendType,
+  AgreeFriendRequestResponse
 } from '@/types/friend'
 
 // 获取好友分组
@@ -44,8 +45,12 @@ export function updateGroupAPI(id: number, name: string): Promise<T1> {
 }
 
 // 同意好友申请添加好友（新接口）
-export function addFriendAPI(noticeId: number, groupId: number, notes: string) {
-  return service({
+export function addFriendAPI(
+  noticeId: number,
+  groupId: number,
+  notes: string
+): Promise<AgreeFriendRequestResponse> {
+  const res = service<AgreeFriendRequestResponse>({
     url: `/friends/agree`,
     method: 'POST',
     data: {
@@ -54,6 +59,9 @@ export function addFriendAPI(noticeId: number, groupId: number, notes: string) {
       notes
     }
   })
+  console.log('原始接口返回的数据:', res)
+
+  return res
 }
 
 // 获取所有好友(这个接口就是刚进好友页面一次性拉取所有分组和分组里面的好友 这个接口不用了)
