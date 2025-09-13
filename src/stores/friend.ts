@@ -26,7 +26,8 @@ import type {
   Friend,
   PageGroup,
   getGroupFriendType,
-  BuddyVO
+  BuddyVO,
+  AgreeFriendRequestResponse
 } from '@/types/friend'
 import type { T1 } from '@/utils/typings'
 
@@ -80,8 +81,15 @@ export const useGroupStore = defineStore('group', () => {
 
 export const useFriendStore = defineStore('friend', () => {
   // 添加好友
-  async function addFriend(noticeId: number, groupId: number, notes: string): Promise<void> {
-    await addFriendAPI(noticeId, groupId, notes)
+  async function addFriend(
+    noticeId: number,
+    groupId: number,
+    notes: string
+  ): Promise<AgreeFriendRequestResponse> {
+    const result = await addFriendAPI(noticeId, groupId, notes)
+    console.log(result)
+    console.log(result.msg)
+    return result
   }
   //获取好友详情
   const getUserInfoData = async (userId: number) => {

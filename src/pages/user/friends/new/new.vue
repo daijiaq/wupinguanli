@@ -32,8 +32,18 @@
         <u-line color="rgba(255,255,255,0)" margin="5rpx 0"></u-line>
         <u-text color="#a4a4a4" size="20rpx" :text="`id: ${user.id}`"></u-text>
       </view>
-      <view v-if="!isFriend" @click="confirmAddFriend" class="friends__new__confirm">
-        <u-text color="#3988ff" size="26rpx" align="center" text="加好友"></u-text>
+      <view
+        v-if="!isFriend"
+        @click="!disabled && confirmAddFriend()"
+        class="friends__new__confirm"
+        :class="disabled ? 'disabled' : ''"
+      >
+        <u-text
+          color="#3988ff"
+          size="26rpx"
+          align="center"
+          :text="disabled ? '已发送' : '加好友'"
+        ></u-text>
       </view>
     </view>
   </view>
@@ -68,7 +78,7 @@ const user = ref<Friend>({
     groupName: ''
   }
 })
-
+const disabled = ref(false)
 // 搜索用户
 async function searchUserById() {
   const data = await searchUser(inputBox.value)
@@ -82,6 +92,7 @@ const showAdd = ref(false)
 
 // 确认添加好友
 async function confirmAddFriend() {
+  disabled.value = true
   showGroup.value = false
   showAdd.value = false
   await sendApplication(user.value.id, user.value.notes, '', '')
@@ -173,5 +184,9 @@ const jumpPageDetail = () => {
 
 :deep(.u-search__content) {
   border-radius: 10px !important;
+}
+.disabled {
+  pointer-events: none; /* 禁止点击 */
+  opacity: 0.5; /* 变灰 */
 }
 </style>

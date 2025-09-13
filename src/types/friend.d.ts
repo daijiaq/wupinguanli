@@ -242,3 +242,22 @@ export interface BuddyVO {
    */
   checked?: boolean
 }
+
+/**
+ * (新)同意好友申请接口返回数据
+ */
+export interface AgreeFriendRequestResponse {
+  /**
+   * Http状态码
+   */
+  code?: number
+  /**
+   * 返回的数据对象
+   */
+  data?: { [key: string]: any }
+  /**
+   * 返回的状态信息
+   */
+  msg?: string
+  [property: string]: any
+}
